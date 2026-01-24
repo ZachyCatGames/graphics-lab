@@ -1,0 +1,126 @@
+#pragma once
+#include <cmath>
+#include <iostream>
+
+template<typename ValueT = float>
+class Vector3D {
+public:
+    using ValueType = std::remove_reference_t<ValueT>;
+
+    constexpr Vector3D() noexcept : e{0,0,0} {}
+    constexpr Vector3D(ValueT x, ValueT y, ValueT z) : e{x,y,z} {}
+
+    constexpr auto x() const noexcept { return e[0]; }
+    constexpr auto y() const noexcept { return e[1]; }
+    constexpr auto z() const noexcept { return e[2]; }
+
+    constexpr Vector3D operator-() const noexcept { return Vector3D{-this->x(), -this->y(), -this->z()}; }
+    template<typename Self>
+    constexpr auto&& operator[](this Self&& self, int index) {
+        return std::forward<Self>(self).e[index];
+    }
+
+    constexpr Vector3D& operator+=(const Vector3D<ValueT> &rhs) noexcept {
+        this->e[0] += rhs.e[0];
+        this->e[1] += rhs.e[1];
+        this->e[2] += rhs.e[2];
+        return *this;
+    }
+
+    constexpr Vector3D& operator-=(const Vector3D<ValueT> &rhs) noexcept {
+        this->e[0] -= rhs.e[0];
+        this->e[1] -= rhs.e[1];
+        this->e[2] -= rhs.e[2];
+        return *this;
+    }
+
+    constexpr Vector3D& operator*=(const Vector3D<ValueT> &rhs) noexcept {
+        this->e[0] *= rhs.e[0];
+        this->e[1] *= rhs.e[1];
+        this->e[2] *= rhs.e[2];
+        return *this;
+    }
+
+    constexpr Vector3D& operator/=(const Vector3D<ValueT> &rhs) noexcept {
+        this->e[0] /= rhs.e[0];
+        this->e[1] /= rhs.e[1];
+        this->e[2] /= rhs.e[2];
+        return *this;
+    }
+
+    constexpr ValueType length() const noexcept { // cxx26 constexpr
+        return std::sqrt(this->length_squared());
+    }
+
+    constexpr ValueType length_squared() const noexcept {
+        return e[0]*e[0] + e[1] * e[1] + e[2] * e[2];
+    }
+
+    constexpr Vector3D<ValueT> normalize() const noexcept {
+        const auto length = this->length();
+
+        /* Zero special case. */
+        if (length == 0.0)
+            return {0,0,0};
+
+        return {this->x() / length, this->y() / length, this->z() / length};
+    }
+
+    constexpr Vector3D<ValueT> clamp(ValueType max) const noexcept {
+        const auto x = std::min(this->x(), max);
+        const auto y = std::min(this->y(), max);
+        const auto z = std::min(this->z(), max);
+        return {x, y, z};
+    }
+private:
+    ValueT e[3];
+}; // class Vector3D
+
+template<typename ValueT>
+inline std::ostream& operator<<(std::ostream &out, const Vector3D<ValueT> &vec) {
+    return out << vec.x() << ' ' << vec.y() << ' ' << vec.z();
+}
+
+template<typename ValueT>
+constexpr Vector3D<ValueT> operator+(const Vector3D<ValueT> &lhs, const Vector3D<ValueT> &rhs) {
+    return Vector3D{lhs.x() + rhs.x(), lhs.y() + rhs.y(), lhs.z() + rhs.z()};
+}
+
+template<typename ValueT>
+constexpr Vector3D<ValueT> operator-(const Vector3D<ValueT> &lhs, const Vector3D<ValueT> &rhs) {
+    return Vector3D{lhs.x() - rhs.x(), lhs.y() - rhs.y(), lhs.z() - rhs.z()};
+}
+
+template<typename ValueT>
+constexpr Vector3D<ValueT> operator*(const Vector3D<ValueT> &lhs, const Vector3D<ValueT> &rhs) {
+    return Vector3D{lhs.x() * rhs.x(), lhs.y() * rhs.y(), lhs.z() * rhs.z()};
+}
+
+template<typename ValueT>
+constexpr Vector3D<ValueT> operator*(const Vector3D<ValueT> &lhs, ValueT rhs) {
+    return Vector3D { lhs.x() * rhs, lhs.y() * rhs, lhs.z() * rhs };
+}
+
+template<typename ValueT>
+constexpr Vector3D<ValueT> operator*(ValueT lhs, const Vector3D<ValueT> &rhs) {
+    return rhs * lhs;
+}
+
+template<typename ValueT>
+constexpr Vector3D<ValueT> operator/(const Vector3D<ValueT> &lhs, ValueT rhs) {
+    return (rhs / 1) * lhs;
+}
+
+template<typename ValueT>
+constexpr double dot(const Vector3D<ValueT> &u, const Vector3D<ValueT> &v) {
+    return u.x() * v.x() +
+           u.y() * v.y() +
+           u.z() * u.z();
+}
+
+template<typename ValueT>
+constexpr Vector3D<ValueT> cross(const Vector3D<ValueT> &u, const Vector3D<ValueT> &v) {
+    return Vector3D { u.y() * v.z() - u.z() * v.y(),
+                  u.z() * v.x() - u.x() * v.z(),
+                  u.x() * v.y() - u.y() * v.x() };
+}
