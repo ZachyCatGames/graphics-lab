@@ -10,6 +10,11 @@ public:
     constexpr Vector3D() noexcept : e{0,0,0} {}
     constexpr Vector3D(ValueT x, ValueT y, ValueT z) : e{x,y,z} {}
 
+    template<typename OtherT>
+    constexpr explicit Vector3D(const Vector3D<OtherT>& other) :
+        e{static_cast<ValueType>(other.x()), static_cast<ValueType>(other.y()), static_cast<ValueType>(other.z())}
+        {}
+
     constexpr auto x() const noexcept { return e[0]; }
     constexpr auto y() const noexcept { return e[1]; }
     constexpr auto z() const noexcept { return e[2]; }
@@ -76,39 +81,59 @@ private:
     ValueT e[3];
 }; // class Vector3D
 
+using Vector3DF = Vector3D<float>;
+
 template<typename ValueT>
 inline std::ostream& operator<<(std::ostream &out, const Vector3D<ValueT> &vec) {
     return out << vec.x() << ' ' << vec.y() << ' ' << vec.z();
 }
 
-template<typename ValueT>
-constexpr Vector3D<ValueT> operator+(const Vector3D<ValueT> &lhs, const Vector3D<ValueT> &rhs) {
+template<typename ValueT, typename ValueS>
+constexpr auto operator+(const Vector3D<ValueT> &lhs, const Vector3D<ValueS> &rhs) {
     return Vector3D{lhs.x() + rhs.x(), lhs.y() + rhs.y(), lhs.z() + rhs.z()};
 }
 
-template<typename ValueT>
-constexpr Vector3D<ValueT> operator-(const Vector3D<ValueT> &lhs, const Vector3D<ValueT> &rhs) {
+template<typename ValueT, typename ValueS>
+constexpr auto operator-(const Vector3D<ValueT> &lhs, const Vector3D<ValueS> &rhs) {
     return Vector3D{lhs.x() - rhs.x(), lhs.y() - rhs.y(), lhs.z() - rhs.z()};
 }
 
-template<typename ValueT>
-constexpr Vector3D<ValueT> operator*(const Vector3D<ValueT> &lhs, const Vector3D<ValueT> &rhs) {
+template<typename ValueT, typename ValueS>
+constexpr auto operator*(const Vector3D<ValueT> &lhs, const Vector3D<ValueS> &rhs) {
     return Vector3D{lhs.x() * rhs.x(), lhs.y() * rhs.y(), lhs.z() * rhs.z()};
 }
 
-template<typename ValueT>
-constexpr Vector3D<ValueT> operator*(const Vector3D<ValueT> &lhs, ValueT rhs) {
+template<typename ValueT, typename ValueS>
+constexpr auto operator*(const Vector3D<ValueT> &lhs, ValueS rhs) {
     return Vector3D { lhs.x() * rhs, lhs.y() * rhs, lhs.z() * rhs };
 }
 
-template<typename ValueT>
-constexpr Vector3D<ValueT> operator*(ValueT lhs, const Vector3D<ValueT> &rhs) {
+template<typename ValueT, typename ValueS>
+constexpr auto operator*(ValueT lhs, const Vector3D<ValueS> &rhs) {
     return rhs * lhs;
 }
 
-template<typename ValueT>
-constexpr Vector3D<ValueT> operator/(const Vector3D<ValueT> &lhs, ValueT rhs) {
+template<typename ValueT, typename ValueS>
+constexpr auto operator/(const Vector3D<ValueT> &lhs, ValueS rhs) {
     return (rhs / 1) * lhs;
+}
+
+template<typename ValueT, typename WithinT>
+constexpr bool equal_within(const Vector3D<ValueT>& lhs, const Vector3D<ValueT>& rhs, const WithinT& within) {
+    const auto withint = static_cast<std::remove_reference_t<ValueT>>(within);
+    if (lhs.x() > rhs.x() + withint || lhs.x() < rhs.x() - withint)
+        return false;
+    if (lhs.y() > rhs.y() + withint || lhs.y() < rhs.y() - withint)
+        return false;
+    if (lhs.z() > rhs.z() + withint || lhs.z() < rhs.z() - withint)
+        return false;
+    return true; 
+}
+
+// DO NOT use this for comparing math results
+template<typename ValueT>
+constexpr bool equal_exact(const Vector3D<ValueT>& lhs, const Vector3D<ValueT>& rhs) {
+    return lhs.x() == rhs.x() && lhs.y() == rhs.y() && lhs.z() == rhs.z();
 }
 
 template<typename ValueT>
