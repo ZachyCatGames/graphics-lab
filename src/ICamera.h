@@ -1,6 +1,8 @@
 #pragma once
 #include "ray.h"
 
+namespace eng {
+
 class ICamera {
 public:
     constexpr ICamera() = default;
@@ -10,3 +12,5 @@ public:
 private:
     /* ... */
 }; // class ICamera
+
+} // namespace eng

@@ -2,6 +2,8 @@
 #include "ICamera.h"
 #include "vec.h"
 
+namespace eng {
+
 class PerspectiveCamera : public ICamera {
 public:
     constexpr PerspectiveCamera() : 
@@ -15,3 +17,5 @@ private:
     float m_focal_length;
     int m_img_plane_width, m_img_plane_height;
 }; // class PerspectiveCamera
+
+} // namespace eng

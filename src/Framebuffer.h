@@ -6,6 +6,8 @@
 
 #include "vec.h"
 
+namespace eng {
+
 class Framebuffer {
 public:
 	constexpr Framebuffer();
@@ -39,3 +41,4 @@ constexpr Framebuffer::Framebuffer() : m_width(100), m_height(100), m_fb(CalcSiz
 constexpr Framebuffer::Framebuffer(const int width, const int height) :
 	m_width(width), m_height(height), m_fb(CalcSize(width, height)) {}
 
+} // namespace eng

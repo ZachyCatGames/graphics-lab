@@ -1,5 +1,7 @@
 #include "PerspectiveCamera.h"
 
+namespace eng {
+
 ray PerspectiveCamera::GenerateRay(int i, int j) {
     const auto right_bound  = static_cast<float>(m_img_plane_width) / 2;
     const auto left_bound   = -right_bound;
@@ -14,3 +16,5 @@ ray PerspectiveCamera::GenerateRay(int i, int j) {
 
     return {origin, direction};
 }
+
+} // namespace eng

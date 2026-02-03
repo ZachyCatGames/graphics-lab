@@ -2,6 +2,8 @@
 #include <cmath>
 #include <iostream>
 
+namespace eng {
+
 template<typename ValueT = float>
 class Vector3D {
 public:
@@ -149,3 +151,6 @@ constexpr Vector3D<ValueT> cross(const Vector3D<ValueT> &u, const Vector3D<Value
                   u.z() * v.x() - u.x() * v.z(),
                   u.x() * v.y() - u.y() * v.x() };
 }
+
+} // namespace eng
+

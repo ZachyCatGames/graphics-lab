@@ -2,6 +2,8 @@
 
 #include "png++/png.hpp"
 
+namespace eng {
+
 void Framebuffer::ExportToPng(std::string_view path) {
 	png::image<png::rgb_pixel> img(m_width, m_height);
 
@@ -14,3 +16,5 @@ void Framebuffer::ExportToPng(std::string_view path) {
 
 	img.write(path.data());
 }
+
+} // namespace eng

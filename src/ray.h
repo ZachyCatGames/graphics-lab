@@ -1,6 +1,7 @@
 #pragma once
-
 #include "vec.h"
+
+namespace eng {
 
 class ray {
 public:
@@ -19,3 +20,5 @@ private:
     Vector3DF m_origin;
     Vector3DF m_direction;
 }; // class ray
+
+} // namespace eng
