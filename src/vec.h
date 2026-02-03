@@ -115,7 +115,7 @@ constexpr auto operator*(ValueT lhs, const Vector3D<ValueS> &rhs) {
 
 template<typename ValueT, typename ValueS>
 constexpr auto operator/(const Vector3D<ValueT> &lhs, ValueS rhs) {
-    return (rhs / 1) * lhs;
+    return (1 / rhs) * lhs;
 }
 
 template<typename ValueT, typename WithinT>
