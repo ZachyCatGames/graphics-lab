@@ -22,6 +22,7 @@ public:
     constexpr auto z() const noexcept { return e[2]; }
 
     constexpr Vector3D operator-() const noexcept { return Vector3D{-this->x(), -this->y(), -this->z()}; }
+
     template<typename Self>
     constexpr auto&& operator[](this Self&& self, int index) {
         return std::forward<Self>(self).e[index];
@@ -96,8 +97,18 @@ constexpr auto operator+(const Vector3D<ValueT> &lhs, const Vector3D<ValueS> &rh
 }
 
 template<typename ValueT, typename ValueS>
+constexpr auto operator+(const Vector3D<ValueT> &lhs, const ValueS& rhs) {
+    return Vector3D{lhs.x() + rhs, lhs.y() + rhs, lhs.z() + rhs};
+}
+
+template<typename ValueT, typename ValueS>
 constexpr auto operator-(const Vector3D<ValueT> &lhs, const Vector3D<ValueS> &rhs) {
     return Vector3D{lhs.x() - rhs.x(), lhs.y() - rhs.y(), lhs.z() - rhs.z()};
+}
+
+template<typename ValueT, typename ValueS>
+constexpr auto operator-(const Vector3D<ValueT> &lhs, const ValueS& rhs) {
+    return Vector3D{lhs.x() - rhs, lhs.y() - rhs, lhs.z() - rhs};
 }
 
 template<typename ValueT, typename ValueS>
