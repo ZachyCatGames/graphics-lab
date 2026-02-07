@@ -55,12 +55,14 @@ endif(NOT PNG_FOUND)
 Include(FetchContent)
 
 # Catch2
-FetchContent_Declare(
-  Catch2
-  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-  GIT_TAG        v3.8.0 # or a later release
-)
-FetchContent_MakeAvailable(Catch2)
+if (NOT ${CMAKE_SYSTEM_NAME} STREQUAL "NintendoSwitch")
+  FetchContent_Declare(
+    Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG        v3.8.0 # or a later release
+  )
+  FetchContent_MakeAvailable(Catch2)
+endif()
 
 # Boost
 # Necessary to get Win32 version to work, plus, not a bad idea to link statically for our purposes.
@@ -68,9 +70,16 @@ if(WIN32)
   set(Boost_USE_STATIC_LIBS ON)
 endif(WIN32)
 
-find_package(Boost REQUIRED COMPONENTS program_options)
-if(NOT ${Boost_FOUND})
-  message(STATUS "Could not find the Boost Libraries!")
+#find_package(Boost REQUIRED COMPONENTS program_options)
+#if(NOT ${Boost_FOUND})
+#  message(STATUS "Could not find the Boost Libraries!")
+#endif()
+
+if (${CMAKE_SYSTEM_NAME} STREQUAL "NintendoSwitch")
+  add_compile_options(-march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -fPIE -O2)
+  add_link_options(-g -march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -fPIE)
+
+  include_directories(${NX_ROOT}/include ${DKP_INSTALL_PREFIX_INIT}/include)
 endif()
 
 # --------------------------------------------------------------------
@@ -78,7 +87,8 @@ endif()
 # --------------------------------------------------------------------
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
-find_package(glm CONFIG REQUIRED)
+#find_package(glm CONFIG REQUIRED)
+include($ENV{DEVKITPRO}/portlibs/switch/include/glm/CMakeLists.txt)
 find_package(glfw3 CONFIG REQUIRED)
 
 # not using Vulkan at the moment
@@ -90,8 +100,10 @@ add_subdirectory(src)
 # Add my renderlib
 # add_subdirectory(renderlib)
 
-# Some examples
-add_subdirectory(examples)
+if (NOT ${CMAKE_SYSTEM_NAME} STREQUAL "NintendoSwitch")
+  # Some examples
+  #add_subdirectory(examples)
+endif()
 
 #
 # Renderer code
@@ -104,7 +116,7 @@ add_subdirectory(examples)
 #
 # This builds a simple OpenGL example that you can use to get started with OpenGL.
 #
-add_subdirectory(OpenGL)
+#add_subdirectory(OpenGL)
 # add_subdirectory(Vulkan)
 
 #
@@ -113,5 +125,7 @@ add_subdirectory(OpenGL)
 #
 # make test
 #
-enable_testing()
-add_subdirectory(utests)
+if (NOT ${CMAKE_SYSTEM_NAME} STREQUAL "NintendoSwitch")
+  enable_testing()
+  add_subdirectory(utests)
+endif()

@@ -33,6 +33,16 @@
         "__comment__": "Set VCPKG_ROOT to your local vcpkg installation path",
         "VCPKG_ROOT": "C:/Users/willemsn/dev/vcpkg"
       }
+    },
+    {
+      "name": "NX",
+      "binaryDir": "${sourceDir}/buildNX",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{DEVKITPRO}/cmake/Switch.cmake",
+        "ENABLE_DEV_MODE": "ON",
+        "ENABLE_TESTS": "ON",
+        "CMAKE_POLICY_VERSION_MINIMUM": "3.5"
+      }
     }
   ]
 }
