@@ -18,16 +18,20 @@ public:
         m_img_plane_width = m_img_plane_height * aspect_ratio;
 
         /* W is just the direction normalized, since W _is_ the direction we're facing. */
-        m_W = dir.normalize();
+        m_W = -dir.normalize();
 
         /* V points to our right. We'll use a cross product with "up" to get right. We don't yet have an up, so use absolute up for now. */
         {
             static constexpr Vector3DF b {0, 1, 0};
-            m_U = cross(m_W, b).normalize();
+            m_U = cross(b, m_W).normalize();
         }
 
         /* U points up, take a cross product with our forward and right to get up. */
-        m_V = cross(m_U, m_W).normalize();
+        m_V = cross(m_W, m_U).normalize();
+
+        std::cout << m_W << '\n';
+        std::cout << m_U << '\n';
+        std::cout << m_V << '\n';
     }
 
     virtual ~PerspectiveCamera() = default;

@@ -9,8 +9,6 @@ ray PerspectiveCamera::GenerateRay(int i, int j) {
     const auto top_bound    = static_cast<float>(m_img_plane_width) / 2.0;
     const auto bottom_bound = -top_bound;
 
-    std::print(stderr, "{} {} {} {} {} {}\n", right_bound, left_bound, top_bound, bottom_bound, m_img_plane_width, m_img_plane_height);
-
     const float u = left_bound + (right_bound - left_bound) * (static_cast<float>(i) + 0.5) / static_cast<float>(m_img_width);
     const float v = bottom_bound + (top_bound - bottom_bound) * (static_cast<float>(j) + 0.5) / static_cast<float>(m_img_height);
 
