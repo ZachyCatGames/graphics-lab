@@ -153,7 +153,7 @@ template<typename ValueT>
 constexpr double dot(const Vector3D<ValueT> &u, const Vector3D<ValueT> &v) {
     return u.x() * v.x() +
            u.y() * v.y() +
-           u.z() * u.z();
+           u.z() * v.z();
 }
 
 template<typename ValueT>
