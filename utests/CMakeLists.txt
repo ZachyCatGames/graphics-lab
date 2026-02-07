@@ -22,6 +22,7 @@ set(UTESTS
   utest_Failure
   utest_vec3
   utest_ray
+  utest_ObjectManager
   )
 
 # 
