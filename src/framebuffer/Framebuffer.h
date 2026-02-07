@@ -4,7 +4,7 @@
 #include <vector>
 #include <utility>
 
-#include "vec.h"
+#include "../vec.h"
 
 namespace eng {
 
@@ -19,9 +19,11 @@ public:
 	constexpr const Vector3D<float>& GetPixelColor(const int x, const int y) const { return m_fb[XyToIndex(x, y)]; }
 	constexpr const Vector3D<float>& GetPixelColor(const int index) const { return m_fb[index]; }
 
-	constexpr void FillColor(const Vector3D<float> &v) { std::ranges::fill(m_fb, v); }
+	constexpr auto GetWidth() const { return m_width; }
+	constexpr auto GetHeight() const { return m_height; }
+	constexpr auto GetDimensions() const { return std::pair{m_width, m_height}; }
 
-	void ExportToPng(std::string_view path);
+	constexpr void FillColor(const Vector3D<float> &v) { std::ranges::fill(m_fb, v); }
 private:
 	static constexpr int CalcSize(const int width, const int height) { return width * height; }
 
