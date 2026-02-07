@@ -52,6 +52,8 @@
 #include <machine/endian.h>
 #include <sys/endian.h>
 
+#elif defined(__SWITCH__)
+
 #else
 
 #error Byte-order could not be detected.
