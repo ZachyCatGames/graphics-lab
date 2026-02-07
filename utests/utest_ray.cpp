@@ -3,6 +3,8 @@
 
 #include "ray.h"
 
+using namespace eng; // lazy
+
 TEST_CASE( "Origin Test" )
 {
     static constexpr Vector3DF origin    {4.2, 6.9, 9001};

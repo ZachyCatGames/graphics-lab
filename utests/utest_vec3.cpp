@@ -7,6 +7,8 @@
 
 #include "vec.h"
 
+using namespace eng;
+
 using FloatLimits = std::numeric_limits<float>;
 
 namespace cg = Catch::Generators;
