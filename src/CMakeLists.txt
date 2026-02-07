@@ -16,6 +16,10 @@ add_library (cs4212-util
   ray.h
   ICamera.h
   PerspectiveCamera.cpp PerspectiveCamera.h
+
+  shapes/IShape.h
+  shapes/Sphere.cpp shapes/Sphere.h
+
   ${UTIL_PLAT_SRC}
 )
 target_compile_definitions(cs4212-util PUBLIC HAS_GLM)
