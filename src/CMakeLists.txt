@@ -19,6 +19,7 @@ add_library (cs4212-util
 
   shapes/IShape.h
   shapes/Sphere.cpp shapes/Sphere.h
+  shapes/Triangle.cpp shapes/Triangle.h
 
   ${UTIL_PLAT_SRC}
 )
