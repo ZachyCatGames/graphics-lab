@@ -17,6 +17,7 @@ private:
 private:
     std::string m_path;
     png::image<png::rgb_pixel> m_img;
+    int m_width, m_height;
 }; // class PngWriter
 
 } // namespace eng
