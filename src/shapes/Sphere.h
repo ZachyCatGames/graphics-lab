@@ -1,9 +1,10 @@
 #pragma once
 #include "IShape.h"
+#include "../ObjectBase.h"
 
 namespace eng {
 
-class Sphere : public IShape {
+class Sphere : public IShape, public eng::ObjectBase<Sphere> {
 public:
     constexpr Sphere(const Vector3DF& pos, float radius) : m_position(pos), m_radius(radius) {}
 

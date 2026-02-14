@@ -1,9 +1,10 @@
 #pragma once
 #include "IShape.h"
+#include "../ObjectBase.h"
 
 namespace eng {
 
-class Triangle : public IShape {
+class Triangle : public IShape, public ObjectBase<Triangle> {
 public:
     constexpr Triangle(const Vector3DF& a, const Vector3DF& b, const Vector3DF& c) :
         m_a(a), m_b(b), m_c(c) {}
