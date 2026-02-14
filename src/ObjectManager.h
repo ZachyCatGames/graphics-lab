@@ -9,104 +9,52 @@
 
 namespace eng {
 
+namespace detail {
+
 template<typename T, typename AllocatorType = std::allocator<T>>
-class ObjectManager : public detail::ObjectPoolImpl<detail::ControlBlock<std::remove_reference_t<T>>, ObjectManager<T, AllocatorType>, AllocatorType> {
+class ObjectManagerImpl : public detail::IControlBlockDeallocator, public detail::ObjectPoolImpl<detail::ControlBlockImpl<std::remove_reference_t<T>>, ObjectManagerImpl<T, AllocatorType>, AllocatorType> {
 public:
-    using value_type     = detail::ObjectPoolImpl<T, ObjectManager, AllocatorType>::value_type;
-    using reference_type = detail::ObjectPoolImpl<T, ObjectManager, AllocatorType>::reference_type;
-    using pointer_type   = detail::ObjectPoolImpl<T, ObjectManager, AllocatorType>::pointer_type;
+    using value_type     = std::remove_reference_t<T>;
+    using reference_type = value_type*;
+    using pointer_type   = value_type&;
 private:
-    using control_blk = detail::ControlBlock<value_type>;
-    using base_type   = detail::ObjectPoolImpl<detail::ControlBlock<std::remove_reference_t<T>>, ObjectManager<T, AllocatorType>, AllocatorType>;
+    using control_blk      = detail::ControlBlock;
+    using control_blk_impl = detail::ControlBlockImpl<value_type>;
+    using base_type        = detail::ObjectPoolImpl<detail::ControlBlockImpl<std::remove_reference_t<T>>, ObjectManagerImpl<T, AllocatorType>, AllocatorType>;
 public:
-    /**
-     * Object handle.
-     * 
-     * The ObjectPool class returns object handles when allocating objects.
-     * These function similar to shared pointers in that they use reference counting and
-     * destroy/free the pointed-to object once no references remain.
-     * 
-     * Handles can be duplicated (Clone), explicitly cleared (Destroy), and moved (move constructor).
-     */
-    class Handle {
-    public:
-        constexpr Handle(const Handle& other) {
-            this->Free();
-            m_ctlr_blk_ptr = other.m_ctlr_blk_ptr;
-            m_ctlr_blk_ptr->ref_cnt.Increment();
-        }
-    
-        constexpr Handle(Handle&& other) {
-            this->Free();
-            m_ctlr_blk_ptr = other.m_ctlr_blk_ptr;
-            other.m_ctlr_blk_ptr = nullptr;
-        }
-    
-        constexpr ~Handle() {
-            this->Free();
-        }
-    
-        template<typename Self>
-        [[nodiscard]] constexpr auto& operator*(this Self&& self) {
-            return self.m_ctlr_blk_ptr->val;
-        } 
-    
-        template<typename Self>
-        [[nodiscard]] constexpr auto operator->(this Self&& self) {
-            return &self.m_ctlr_blk_ptr->val;
-        }
-    
-        template<typename Self>
-        [[nodiscard]] constexpr auto Get(this Self&& self) {
-            return &self.m_ctlr_blk_ptr->val;
-        }
-    
-        [[nodiscard]] constexpr auto Clone() const {
-            return Handle(*this);
-        }
+    [[nodiscard]] constexpr auto GetActiveObjectCount() const { return m_active.size(); }
 
-        [[nodiscard]] constexpr auto GetRefCount() const {
-            return m_ctlr_blk_ptr->ref_cnt.GetCount();
-        }
-    
-        constexpr void Destroy() {
-            m_ctlr_blk_ptr->ref_cnt.Decrement();
-            m_ctlr_blk_ptr = nullptr;
-        }
+    template<typename F, typename... Args>
+    constexpr void InvokeOnAll(F&& f, Args&&... args) {
+        /* Invoke the function on each active object. */
+        for (auto& blk : m_active)
+            std::invoke(f, &blk->val, std::forward<Args>(args)...);
+    }
 
-        constexpr Handle& operator=(const Handle& rhs) {
-            this->Free();
-            m_ctlr_blk_ptr = rhs.m_ctlr_blk_ptr;
-            m_ctlr_blk_ptr->ref_cnt.Increment();
-            return *this;
-        }
+    template<typename... Args>
+    [[nodiscard]] constexpr auto CreateObject(Args&&... args);
+protected:
+    constexpr ObjectManagerImpl() = default;
+private:
+    constexpr void Free(control_blk* p_ctrl) {
+        auto p_impl = static_cast<control_blk_impl*>(p_ctrl);
 
-        constexpr Handle& operator=(Handle&& rhs) {
-            this->Free();
-            m_ctlr_blk_ptr = rhs.m_ctlr_blk_ptr;
-            rhs.m_ctlr_blk_ptr = nullptr;
-            return *this;
-        }
+        /* Free the object. */
+        base_type::Free(p_impl->pool_hndl);
 
-        [[nodiscard]] constexpr bool operator==(const Handle& rhs) {
-            return this->m_ctlr_blk_ptr == rhs.m_ctlr_blk_ptr;
-        }
-    private:
-        using Manager = ObjectManager<T, AllocatorType>;
-        friend class ObjectManager<T, AllocatorType>;
-    
-        constexpr Handle(control_blk* ctlr_blk) : m_ctlr_blk_ptr(ctlr_blk) {
-            /* Increment ref count. */
-            m_ctlr_blk_ptr->ref_cnt.Increment();
-        }
+        /* Remove it from the free list*/
+        m_active.erase(std::ranges::find(m_active, p_impl));
+    }
+private:
+    friend class detail::ControlBlock;
 
-        constexpr void Free() {
-            if (m_ctlr_blk_ptr != nullptr && m_ctlr_blk_ptr->ref_cnt.Decrement())
-                Manager::Get()->Free(m_ctlr_blk_ptr);
-        }
-    private:
-        control_blk* m_ctlr_blk_ptr;
-    }; // class Handle
+    std::vector<control_blk_impl*> m_active;
+}; // class ObjectManagerImpl
+
+} // namespace detail
+
+template<typename T, typename AllocatorType = std::allocator<T>>
+class ObjectManager : public detail::ObjectManagerImpl<T, AllocatorType> {
 public:
     [[nodiscard]] static constexpr auto Get() {
         if (!s_manager.IsInitialized()) {
@@ -115,47 +63,139 @@ public:
 
         return &s_manager;
     }
-
-    [[nodiscard]] constexpr auto GetActiveObjectCount() const { return m_active.size(); }
-
-    template<typename F, typename... Args>
-    constexpr void InvokeOnAll(F&& f, Args&&... args) {
-        /* Invoke the function on each active object. */
-        for (auto& obj : m_active)
-            std::invoke(f, &obj->obj.val, std::forward<Args>(args)...);
-    }
-
-
-    template<typename... Args>
-    [[nodiscard]] constexpr Handle CreateObject(Args&&... args) {
-        /* Allocate a new object / control block. */
-        auto blk = base_type::CreateObject(std::forward<Args>(args)...);
-
-        /* Add it to the active list. */
-        m_active.push_back(blk);
-
-        return Handle(blk);
-    }
-private:
-    constexpr ObjectManager() = default;
-
-    constexpr void Free(control_blk* p_obj) {
-        /* Free the object. */
-        base_type::Free(p_obj);
-
-        /* Remove it from the free list*/
-        m_active.erase(std::ranges::find(m_active, p_obj));
-    }
 private:
     static constinit ObjectManager s_manager;
-
-    std::vector<control_blk*> m_active;
 }; // class ObjectManager
 
 template<typename T, typename AllocatorType>
 constinit ObjectManager<T, AllocatorType> ObjectManager<T, AllocatorType>::s_manager{};
 
-template<typename T, typename AllocatorType>
-using Handle = typename ObjectManager<T, AllocatorType>::Handle;
+/**
+ * Object handle.
+ * 
+ * The ObjectPool class returns object handles when allocating objects.
+ * These function similar to shared pointers in that they use reference counting and
+ * destroy/free the pointed-to object once no references remain.
+ * 
+ * Handles can be duplicated (Clone), explicitly cleared (Destroy), and moved (move constructor).
+ */
+template<typename T>
+class Handle {
+public:
+    using value_type     = std::remove_reference_t<T>;
+    using pointer_type   = value_type*;
+    using reference_type = value_type&;
+
+    template<std::derived_from<value_type> OtherType>
+    constexpr Handle(const Handle<OtherType>& other) { this->CopyFrom(other); }
+
+    template<std::derived_from<value_type> OtherType>
+    constexpr Handle(Handle<OtherType>&& other) { this->MoveFrom(std::move(other)); }
+
+    constexpr ~Handle() { this->Free(); }
+
+    template<typename Self>
+    [[nodiscard]] constexpr auto& operator*(this Self&& self) {
+        return *self.m_ctlr_blk_ptr->template Get<value_type>();
+    } 
+
+    template<typename Self>
+    [[nodiscard]] constexpr auto operator->(this Self&& self) {
+        return self.Get();
+    }
+
+    template<typename Self>
+    [[nodiscard]] constexpr auto Get(this Self&& self) {
+        return self.m_ctlr_blk_ptr->template Get<value_type>();
+    }
+
+    [[nodiscard]] constexpr auto Clone() const {
+        return Handle<T>(*this);
+    }
+
+    [[nodiscard]] constexpr auto GetRefCount() const {
+        return m_ctlr_blk_ptr->ref_cnt.GetCount();
+    }
+
+    constexpr void Destroy() { this->Free(); }
+
+    constexpr bool IsValid() const noexcept { return m_ctlr_blk_ptr != nullptr; }
+
+    template<std::derived_from<value_type> OtherType>
+    constexpr Handle<T>& operator=(const Handle<OtherType>& rhs) {
+        this->CopyFrom(rhs);
+        return *this;
+    }
+
+    template<std::derived_from<value_type> OtherType>
+    constexpr Handle<T>& operator=(Handle<OtherType>&& rhs) {
+        this->MoveFrom(std::move(rhs));
+        return *this;
+    }
+
+    template<typename T1, typename T2>
+    friend constexpr bool operator==(const Handle<T1>& lhs, const Handle<T2>& rhs) noexcept;
+private:
+    using control_blk = detail::ControlBlock;
+
+    template<typename U>
+    friend class Handle;
+
+    template<typename U, typename Allocator>
+    friend class detail::ObjectManagerImpl;
+
+    template<typename OtherType>
+    constexpr void CopyFrom(const Handle<OtherType>& other) {
+        auto old = this->m_ctlr_blk_ptr;
+
+        m_ctlr_blk_ptr = other.m_ctlr_blk_ptr;
+
+        m_ctlr_blk_ptr->AddOne();
+        old->ReleaseOne();
+    }
+
+    template<typename OtherType>
+    constexpr void MoveFrom(Handle<OtherType>&& other) {
+        if (this->m_ctlr_blk_ptr != other.m_ctlr_blk_ptr)
+            this->Free();
+
+        m_ctlr_blk_ptr = other.m_ctlr_blk_ptr;
+        other.m_ctlr_blk_ptr = nullptr;
+    }
+
+    constexpr Handle(control_blk* ctlr_blk) : m_ctlr_blk_ptr(ctlr_blk) {
+        /* Increment ref count. */
+        m_ctlr_blk_ptr->ref_cnt.Increment();
+    }
+
+    constexpr void Free() {
+        if (m_ctlr_blk_ptr != nullptr)
+            m_ctlr_blk_ptr->ReleaseOne();
+    }
+private:
+    control_blk* m_ctlr_blk_ptr;
+}; // class Handle
+
+template<typename T1, typename T2>
+[[nodiscard]] constexpr bool operator==(const Handle<T1>& lhs, const Handle<T2>& rhs) noexcept {
+    return lhs.m_ctlr_blk_ptr == rhs.m_ctlr_blk_ptr;
+}
+
+namespace detail {
+
+template<typename T, typename Allocator>
+template<typename... Args>
+[[nodiscard]] constexpr auto ObjectManagerImpl<T, Allocator>::CreateObject(Args&&... args) {
+    /* Allocate a new object / control block. */
+    auto blk = base_type::CreateObject(this, std::forward<Args>(args)...);
+    blk->pool_hndl = blk;
+
+    /* Add it to the active list. */
+    m_active.push_back(blk.Get());
+
+    return Handle<value_type>(blk.Get());
+}
+
+} // namespace detail
 
 } // namespace eng

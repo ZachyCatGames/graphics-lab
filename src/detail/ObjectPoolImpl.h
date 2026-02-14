@@ -1,6 +1,8 @@
 #pragma once
 #include <cassert>
+#include <cstring>
 #include <memory>
+#include "ObjectPoolTypes.h"
 
 namespace eng::detail {
 
@@ -19,20 +21,10 @@ public:
 private:
     using Traits = PoolTraits<T>;
 
-    union PoolEntry;
+    using PoolEntry   = PoolEntry<value_type>;
+    using BlockHeader = BlockHeader<value_type>;
 
-    struct BlockHeader {
-        PoolEntry* p_prev;
-        size_t n;
-    };
-
-    union PoolEntry {
-        BlockHeader hdr;
-        T obj;
-        PoolEntry* next_free;
-    };
-
-    using allocator_type = typename std::allocator_traits<Allocator>::rebind_alloc<PoolEntry>;
+    using allocator_type = typename std::allocator_traits<Allocator>::template rebind_alloc<PoolEntry>;
 public:
     constexpr ~ObjectPoolImplBase() {
         /* We can't really cleanly cleanup... just trash everything. */
@@ -78,20 +70,23 @@ protected:
         auto obj = this->AllocateImpl();
 
         /* Initialize it. */
-        std::construct_at(obj, std::forward<Args>(args)...);
+        std::construct_at(obj.Get(), std::forward<Args>(args)...);
 
         return obj;
     }
 
-    constexpr void FreeImpl(pointer_type p_obj) {
-        /* Destroy both the ref count and object. */
-        std::destroy_at(p_obj);
+    constexpr void FreeImpl(PoolObjectHolder<value_type> p_obj) {
+        /* Destroy the contained object. */
+        auto p_pool_ent = p_obj.m_entry;
+        std::destroy_at(&p_pool_ent->obj);
+
+        /* Cast back to a pool entry. */
+        //auto p_pool_ent = new (p_obj) PoolEntry(m_first_free);
+        //auto p_pool_ent = static_cast<PoolEntry*>(static_cast<void*>(p_obj));
 
         /* Insert back into the free list. */
-        /* Note: p_obj is actually to our union, specifically the control block object. */
-        /* Note2: This... might not be constexpr approved, but _shrug_. */
-        auto p_it = new (p_obj) PoolEntry*(m_first_free);
-        m_first_free = *p_it;
+        p_pool_ent->next_free = m_first_free;
+        m_first_free = p_pool_ent;
     }
 private:
     [[nodiscard]] constexpr auto AllocateImpl() {
@@ -110,7 +105,7 @@ private:
         /* Destroy next iterator / pointer. */
         std::destroy_at(&cur->next_free);
 
-        return &cur->obj;
+        return PoolObjectHolder(cur);
     }
 
     constexpr void AllocateNewBlock(size_t n) {
@@ -118,16 +113,15 @@ private:
         auto new_blk = m_alloc.allocate(n);
 
         /* First block is a pointer to the previous.*/
-        auto& hdr  = new_blk[0].hdr;
-        hdr.p_prev = m_cur_pool_block;
-        hdr.n      = n;
+        std::construct_at(&new_blk[0], BlockHeader{ m_cur_pool_block, n});
 
         /* Initialize each block to point to the next block. */
-        for (size_t i = 1; i < n; i++)
-            new_blk[i].next_free = &new_blk[i+1];
+        for (size_t i = 1; i < n; i++) {
+            std::construct_at(&new_blk[i], &new_blk[i+1]);
+        }
 
         /* Link the beginning and ending. */
-        new_blk[n-1].next_free = m_first_free;
+        std::construct_at(&new_blk[n-1], m_first_free);
         m_first_free = &new_blk[1];
 
         /* Point the current pool block at the new block. */
@@ -153,15 +147,15 @@ protected:
         auto obj = this->CreateObjectImpl(std::forward<Args>(args)...);
 
         /* Call NotifyAllocate on manager. */
-        if constexpr (requires { GetDerived()->NotifyAllocate(&obj->val); })
+        if constexpr (requires { GetDerived()->NotifyAllocate(&obj); })
             GetDerived()->NotifyAllocate(&obj);
 
         return obj;
     }
 
-    constexpr void Free(pointer_type p_obj) {
+    constexpr void Free(PoolObjectHolder<value_type> p_obj) {
         /* Call NotifyFree on manager. */
-        if constexpr (requires { GetDerived()->NotifyFree(&p_obj->val); })
+        if constexpr (requires { GetDerived()->NotifyFree(&p_obj); })
             GetDerived()->NotifyFree(p_obj);
 
         /* Call FreeImpl. */

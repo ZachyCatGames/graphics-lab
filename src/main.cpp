@@ -2,6 +2,9 @@
 #include "framebuffer/Framebuffer.h"
 #include "framebuffer/PngWriter.h"
 
+#include "shapes/Sphere.h"
+#include "shapes/Triangle.h"
+
 #include <print>
 #include <cstdio>
 
@@ -9,19 +12,53 @@
 #include "framebuffer/nx/NativeWindowWriter.plat-nx.h"
 #endif
 
+#define VECTOR_COLOR_IMG
+
 extern "C" int main(int argc, char** argv) {
-    int img_width  = 1280;
-    int img_height = 720;
+    int img_width  = 200;
+    int img_height = 200;
 
     auto aspect_ratio = static_cast<float>(img_width) / img_height;
 
-    float vp_height = 0.5;
+#if 1
+    float vp_height = 2.0;
     float vp_width  = 0.5;
 
-    eng::Vector3DF pos{3, -4, 12};
-    eng::Vector3DF dir{69, 420, 64};
-    float foc_len = 0.01;
+    eng::Vector3DF pos{0, 0, 0.0};
+    eng::Vector3DF dir{0, 0, -1};
+    float foc_len = 1.0;
     
+    eng::PerspectiveCamera cam(pos, dir, foc_len, img_width, img_height, vp_width);
+    eng::Framebuffer fb(img_width, img_height);
+
+    //eng::Sphere sphere({0, 0, -4}, 4.955);
+    eng::Sphere sphere({0, 0, -15}, 5);
+    eng::Triangle tri({0.426795, 1.13923, -7}, {-0.833013, -0.44282, -5}, {-0.45, -0.779423, -5});
+    for (int y = 0; y < img_height; y++) {
+        for (int x = 0; x < img_width; x++) {
+            auto r = cam.GenerateRay(x, y);
+
+            float tmax = std::numeric_limits<float>::max();
+            eng::HitStruct rec;
+            if (tri.Intersect(r, eng::Interval<float>(foc_len, tmax), &rec)) {
+                fb.SetPixelColor(x, y, {1, 1, 1});
+                //std::print("{} {}: {}\n", x, y, tmax);
+            } else {
+                fb.SetPixelColor(x, y, {0, 0, 0});
+            }
+        }
+    }
+#endif
+
+#if 0
+
+    float vp_height = 2.0;
+    float vp_width  = 0.5;
+
+    eng::Vector3DF pos{13,-7,12};
+    eng::Vector3DF dir{5,18,2};
+    float foc_len = 0.001;
+
     eng::PerspectiveCamera cam(pos, dir, foc_len, img_width, img_height, vp_width);
     eng::Framebuffer fb(img_width, img_height);
 
@@ -34,6 +71,7 @@ extern "C" int main(int argc, char** argv) {
             //std::cout << (r.direction()) << '\n';
         }
     }
+#endif // VECTOR_COLOR_IMG
 
 #ifndef __SWITCH__
     eng::PngWriter png_writer("test.png");
