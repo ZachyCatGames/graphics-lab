@@ -1,14 +1,9 @@
 #pragma once
 #include "../ray.h"
 #include "../Interval.h"
+#include "../HitStruct.h"
 
 namespace eng {
-
-struct HitStruct {
-    Vector3DF normal;
-    Vector3DF position;
-    float t;
-}; // struct HitStruct
 
 class IShape {
 public:
