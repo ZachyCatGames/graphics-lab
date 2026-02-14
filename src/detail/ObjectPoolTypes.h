@@ -7,16 +7,17 @@ union PoolEntry;
 
 template<typename T>
 struct BlockHeader {
-    PoolEntry<T>* p_prev;
+    constexpr BlockHeader(BlockHeader<T>* prev, PoolEntry<T>* block, size_t n) : p_prev(prev), p_block(block), n(n) {}
+
+    BlockHeader<T>* p_prev;
+    PoolEntry<T>* p_block;
     size_t n;
 };
 
 template<typename T>
 union PoolEntry {
-    explicit constexpr PoolEntry(const BlockHeader<T>& hdr) : hdr(hdr) {}
     explicit constexpr PoolEntry(PoolEntry<T>* next_free) : next_free(next_free) {}
-    
-    BlockHeader<T> hdr;
+
     T obj;
     PoolEntry<T>* next_free;
 };

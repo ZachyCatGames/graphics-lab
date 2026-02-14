@@ -24,14 +24,16 @@ private:
     using PoolEntry   = PoolEntry<value_type>;
     using BlockHeader = BlockHeader<value_type>;
 
-    using allocator_type = typename std::allocator_traits<Allocator>::template rebind_alloc<PoolEntry>;
+    using block_alloc_type  = typename std::allocator_traits<Allocator>::template rebind_alloc<PoolEntry>;
+    using header_alloc_type = typename std::allocator_traits<Allocator>::template rebind_alloc<BlockHeader>;
 public:
     constexpr ~ObjectPoolImplBase() {
         /* We can't really cleanly cleanup... just trash everything. */
-        PoolEntry* p_ent = m_cur_pool_block;
+        auto p_ent = m_cur_pool_block;
         while (p_ent != nullptr) {
-            auto p_prev = p_ent->hdr.p_prev;
-            m_alloc.deallocate(p_ent, p_ent->hdr.n);
+            auto p_prev = p_ent->p_prev;
+            m_block_alloc.deallocate(p_ent->p_block, p_ent->n);
+            m_header_alloc.deallocate(p_ent, 1);
             p_ent = p_prev;
         }
     }
@@ -39,26 +41,14 @@ public:
     constexpr bool IsInitialized() const { return m_cur_pool_block != nullptr; }
 protected:
     constexpr ObjectPoolImplBase(const Allocator& alloc = {}) :
-        m_alloc(alloc), m_cur_pool_block(nullptr), m_first_free(nullptr) {}
-
-    constexpr ObjectPoolImplBase(Allocator&& alloc) :
-        m_alloc(std::move(alloc)), m_cur_pool_block(nullptr), m_first_free(nullptr) {}
+        m_header_alloc(alloc), m_block_alloc(alloc), m_cur_pool_block(nullptr), m_first_free(nullptr) {}
 
     constexpr void Initialize(const Allocator& alloc = {}) {
         assert(!this->IsInitialized());
 
         /* Set Allocator. */
-        m_alloc = alloc;
-
-        /* Allocate initial block. */
-        this->AllocateNewBlock(Traits::InitialObjectCount);
-    }
-
-    constexpr void Initialize(Allocator&& alloc) {
-        assert(!this->IsInitialized());
-
-        /* Set Allocator. */
-        m_alloc = std::move(alloc);
+        m_header_alloc = alloc;
+        m_block_alloc  = alloc;
 
         /* Allocate initial block. */
         this->AllocateNewBlock(Traits::InitialObjectCount);
@@ -80,20 +70,23 @@ protected:
         auto p_pool_ent = p_obj.m_entry;
         std::destroy_at(&p_pool_ent->obj);
 
-        /* Cast back to a pool entry. */
-        //auto p_pool_ent = new (p_obj) PoolEntry(m_first_free);
-        //auto p_pool_ent = static_cast<PoolEntry*>(static_cast<void*>(p_obj));
-
         /* Insert back into the free list. */
         p_pool_ent->next_free = m_first_free;
         m_first_free = p_pool_ent;
     }
 private:
+    // Only used for contexpr allocations.
+    struct AllocationBlock {
+        BlockHeader hdr;
+        PoolEntry entries[Traits::InitialObjectCount];
+    }; // struct AllocationBlock
+
     [[nodiscard]] constexpr auto AllocateImpl() {
         /* Allocate a new block if needed. */
-        if (m_cur_pool_block == nullptr) {
-            this->AllocateNewBlock(Traits::InitialObjectCount);
+        if (m_first_free == nullptr) {
             assert(m_cur_pool_block != nullptr);
+            this->AllocateNewBlock(m_cur_pool_block->n * 2);
+            assert(m_first_free != nullptr);
         }
 
         /* Get first free object. */
@@ -110,13 +103,10 @@ private:
 
     constexpr void AllocateNewBlock(size_t n) {
         assert(n >= 2);
-        auto new_blk = m_alloc.allocate(n);
-
-        /* First block is a pointer to the previous.*/
-        std::construct_at(&new_blk[0], BlockHeader{ m_cur_pool_block, n});
+        auto new_blk = m_block_alloc.allocate(n);
 
         /* Initialize each block to point to the next block. */
-        for (size_t i = 1; i < n; i++) {
+        for (size_t i = 0; i < n; i++) {
             std::construct_at(&new_blk[i], &new_blk[i+1]);
         }
 
@@ -125,11 +115,19 @@ private:
         m_first_free = &new_blk[1];
 
         /* Point the current pool block at the new block. */
-        m_cur_pool_block = new_blk;
+        m_first_free = new_blk;
+
+        /* Allocate block list header. */
+        auto p_hdr = m_header_alloc.allocate(1);
+
+        /* Link it in. */
+        std::construct_at(p_hdr, m_cur_pool_block, m_first_free, n);
+        m_cur_pool_block = p_hdr;
     }
 private:
-    allocator_type m_alloc;
-    PoolEntry* m_cur_pool_block;
+    block_alloc_type m_block_alloc;
+    header_alloc_type m_header_alloc;
+    BlockHeader* m_cur_pool_block;
     PoolEntry* m_first_free;
 }; // class ObjectPool
 
