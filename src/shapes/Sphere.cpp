@@ -16,14 +16,16 @@ bool Sphere::Intersect(const ray& r, Interval<float> t_range, HitStruct* p_hit_i
         return false;
 
     auto disc_sqrt = std::sqrt(disc);
-    auto t         = (-b - disc_sqrt) / (2 * a);
+    float t        = (-b - disc_sqrt) / (2 * a);
     if (!t_range.Surrounds(t)) {
         t = (b + disc_sqrt) / (2 * a);
         if (!t_range.Surrounds(t))
             return false;
     }
 
-    p_hit_info_out->t = t;
+    p_hit_info_out->t        = t;
+    p_hit_info_out->position = r.origin() + r.direction() * t;
+    p_hit_info_out->normal   = (p_hit_info_out->position - m_position).normalize();
 
     return true;
 }

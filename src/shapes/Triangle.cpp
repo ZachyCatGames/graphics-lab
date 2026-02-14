@@ -52,7 +52,12 @@ bool Triangle::Intersect(const ray& r, Interval<float> t_range, HitStruct* p_hit
     if (beta < 0 || beta > (1 - gamma))
         return false;
 
-    p_hit_info_out->t = t;
+    const auto u = m_b - m_a;
+    const auto v = m_c - m_a;
+
+    p_hit_info_out->normal   = cross(u, v).normalize();
+    p_hit_info_out->position = r.direction() * float(t);
+    p_hit_info_out->t        = t;
 
     return true;
 }
