@@ -21,6 +21,9 @@ add_library (cs4212-util
   shapes/Sphere.cpp shapes/Sphere.h
   shapes/Triangle.cpp shapes/Triangle.h
 
+  shaders/NormalShader.cpp shaders/NormalShader.h
+  shaders/FlatColorShader.h
+
   ${UTIL_PLAT_SRC}
 )
 target_compile_definitions(cs4212-util PUBLIC HAS_GLM)
