@@ -4,7 +4,7 @@
 
 namespace eng {
 
-bool Triangle::Intersect(const ray& r, Interval<float> t_range, HitStruct* p_hit_info_out) {
+bool Triangle::Intersect(const ray& r, Interval<float> t_range, HitStruct* p_hit_info_out) const {
     const auto& dir  = r.direction();
     const auto& orig = r.origin();
 

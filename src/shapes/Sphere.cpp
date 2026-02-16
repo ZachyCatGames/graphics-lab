@@ -4,7 +4,7 @@
 
 namespace eng {
 
-bool Sphere::Intersect(const ray& r, Interval<float> t_range, HitStruct* p_hit_info_out) {
+bool Sphere::Intersect(const ray& r, Interval<float> t_range, HitStruct* p_hit_info_out) const {
     Vector3DF oc = r.origin() - m_position;
     auto a = dot(r.direction(), r.direction());
     auto b = 2.0 * dot(r.direction(), oc);
