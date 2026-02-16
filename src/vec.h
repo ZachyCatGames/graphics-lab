@@ -13,7 +13,7 @@ public:
     constexpr Vector3D(ValueT x, ValueT y, ValueT z) : e{x,y,z} {}
 
     template<typename OtherT>
-    constexpr explicit Vector3D(const Vector3D<OtherT>& other) :
+    constexpr Vector3D(const Vector3D<OtherT>& other) :
         e{static_cast<ValueType>(other.x()), static_cast<ValueType>(other.y()), static_cast<ValueType>(other.z())}
         {}
 
