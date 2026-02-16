@@ -18,7 +18,7 @@ struct ControlBlock {
     ControlBlock(ControlBlock&& other) = delete;
 
     template<typename T>
-    constexpr auto Get() const { return static_cast<T*>(p_val); }
+    [[nodiscard]] constexpr auto Get() const { return static_cast<T*>(p_val); }
 
     constexpr void AddOne() { ref_cnt.Increment(); }
 

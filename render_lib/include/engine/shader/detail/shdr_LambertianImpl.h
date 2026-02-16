@@ -8,7 +8,7 @@ class LambertianImpl {
 public:
     constexpr LambertianImpl(ray point_light) : m_point_light(point_light) {}
 
-    Vector3DF GetColor(const HitStruct& rec);
+    [[nodiscard]] Vector3DF GetColor(const HitStruct& rec);
 protected:
     ray m_point_light;
 }; // class LambertianImpl

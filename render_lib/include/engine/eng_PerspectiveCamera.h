@@ -36,7 +36,7 @@ public:
 
     virtual ~PerspectiveCamera() = default;
 
-    virtual ray GenerateRay(int i, int j) override;
+    [[nodiscard]] virtual ray GenerateRay(int i, int j) override;
 private:
     Vector3DF m_position;
     Vector3DF m_U, m_V, m_W;

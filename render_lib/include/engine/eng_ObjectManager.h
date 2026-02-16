@@ -121,7 +121,7 @@ public:
 
     constexpr void Destroy() { this->Free(); }
 
-    constexpr bool IsValid() const noexcept { return m_ctlr_blk_ptr != nullptr; }
+    [[nodiscard]] constexpr bool IsValid() const noexcept { return m_ctlr_blk_ptr != nullptr; }
 
     constexpr operator bool() const noexcept { return this->IsValid(); }
 

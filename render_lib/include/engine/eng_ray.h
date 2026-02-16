@@ -9,10 +9,10 @@ public:
 
     constexpr ray(const Vector3DF& orig, const Vector3DF& dir) : m_origin(orig), m_direction(dir) {}
 
-    constexpr const Vector3DF& origin() const { return m_origin; }
-    constexpr const Vector3DF& direction() const { return m_direction; }
+    [[nodiscard]] constexpr const Vector3DF& origin() const { return m_origin; }
+    [[nodiscard]] constexpr const Vector3DF& direction() const { return m_direction; }
 
-    constexpr Vector3DF at(float t) const {
+    [[nodiscard]] constexpr Vector3DF at(float t) const {
         return m_origin + m_direction * t;
     }
 

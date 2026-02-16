@@ -32,7 +32,7 @@ public:
         return &self.m_entry->obj;
     }
 
-    constexpr bool IsValid() const noexcept { return m_entry == nullptr; }
+    [[nodiscard]] constexpr bool IsValid() const noexcept { return m_entry == nullptr; }
 
     template<typename Self>
     [[nodiscard]] constexpr auto& operator*(this Self&& self) {
@@ -60,13 +60,13 @@ private:
 }; // class PoolObjectHolder
 
 template<typename T>
-constexpr bool operator==(PoolObjectHolder<T> lhs, std::nullptr_t) noexcept { return lhs.IsValid(); }
+[[nodiscard]] constexpr bool operator==(PoolObjectHolder<T> lhs, std::nullptr_t) noexcept { return lhs.IsValid(); }
 
 template<typename T>
-constexpr bool operator==(std::nullptr_t, PoolObjectHolder<T> rhs) noexcept { return rhs == nullptr; }
+[[nodiscard]] constexpr bool operator==(std::nullptr_t, PoolObjectHolder<T> rhs) noexcept { return rhs == nullptr; }
 
 template<typename T>
-constexpr bool operator==(PoolObjectHolder<T> lhs, PoolObjectHolder<T> rhs) noexcept {
+[[nodiscard]] constexpr bool operator==(PoolObjectHolder<T> lhs, PoolObjectHolder<T> rhs) noexcept {
     return lhs.m_entry == rhs.m_entry;
 }
 

@@ -33,10 +33,10 @@ public:
             return *this;
         }
 
-        constexpr auto GetShader() const { return this->GetAttribs()->shader; }
-        constexpr auto GetHandle() const { return std::get<0>(*m_iter); }
+        [[nodiscard]] constexpr auto GetShader() const { return this->GetAttribs()->shader; }
+        [[nodiscard]]  auto GetHandle() const { return std::get<0>(*m_iter); }
 
-        constexpr auto IsValid() const { return this->GetHandle().IsValid(); }
+        [[nodiscard]] constexpr auto IsValid() const { return this->GetHandle().IsValid(); }
     private:
         friend class Scene;
         constexpr ObjectContext(IterType iter) : m_iter(iter), valid(true) {}
@@ -58,7 +58,7 @@ public:
 
     ObjectContext InsertShape(Handle<IShape> handle);
 
-    bool Contains(Handle<IShape> shape);
+    [[nodiscard]] bool Contains(Handle<IShape> shape);
 
     ObjectContext GetContext(Handle<IShape> shape);
 
