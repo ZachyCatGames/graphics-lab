@@ -1,9 +1,10 @@
 #pragma once
 #include "IShader.h"
+#include "../ObjectBase.h"
 
 namespace eng {
 
-class FlatColorShader : public IShader {
+class FlatColorShader : public IShader, ObjectBase<FlatColorShader> {
 public:
     constexpr FlatColorShader(const Vector3DF& color) : m_color(color) {}
 
