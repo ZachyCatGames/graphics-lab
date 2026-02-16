@@ -39,19 +39,19 @@ int main(int argc, char** argv) {
     float foc_len = 0.25;
     
     eng::PerspectiveCamera cam(pos, dir, foc_len, img_width, img_height, vp_width);
-    eng::Framebuffer fb(img_width, img_height);
+    eng::fb::Framebuffer fb(img_width, img_height);
 
     //auto shader = eng::BlinnPhongShader::Create(eng::ray{ eng::Vector3DF{ 0,0,0 }, eng::Vector3DF(3, 4,5)}, 20.0);
-    auto shader = eng::LambertianShader::Create(eng::ray{ eng::Vector3DF{ 0,0,0 }, eng::Vector3DF(3, 4,5)});
+    auto shader = eng::shdr::Lambertian::Create(eng::ray{ eng::Vector3DF{ 0,0,0 }, eng::Vector3DF(3, 4,5)});
 
     eng::Scene scene;
-    scene.EmplaceShape<eng::Sphere>(eng::Vector3DF{0, 0, -15}, 5)
+    scene.EmplaceShape<eng::shape::Sphere>(eng::Vector3DF{0, 0, -15}, 5)
         .BindShader(shader);
-    scene.EmplaceShape<eng::Triangle>(eng::Vector3DF{-4.426795, 1.13923, -7}, eng::Vector3DF{-4.833013, -0.44282, -5}, eng::Vector3DF{-4.45, -0.779423, -5});
+    scene.EmplaceShape<eng::shape::Triangle>(eng::Vector3DF{-4.426795, 1.13923, -7}, eng::Vector3DF{-4.833013, -0.44282, -5}, eng::Vector3DF{-4.45, -0.779423, -5});
 
     std::vector<eng::Handle<eng::IShape>> shapes {
-        eng::Sphere::Create(eng::Vector3DF{0, 0, -15}, 5),
-        eng::Triangle::Create(eng::Vector3DF{-4.426795, 1.13923, -7}, eng::Vector3DF{-4.833013, -0.44282, -5}, eng::Vector3DF{-4.45, -0.779423, -5})
+        eng::shape::Sphere::Create(eng::Vector3DF{0, 0, -15}, 5),
+        eng::shape::Triangle::Create(eng::Vector3DF{-4.426795, 1.13923, -7}, eng::Vector3DF{-4.833013, -0.44282, -5}, eng::Vector3DF{-4.45, -0.779423, -5})
     };
     //std::vector<std::shared_ptr<eng::IShape>> shapes {
     //    std::make_shared<eng::Sphere>(eng::Vector3DF{0, 0, -15}, 5),
@@ -92,7 +92,7 @@ int main(int argc, char** argv) {
 #endif // VECTOR_COLOR_IMG
 
 #ifndef __SWITCH__
-    eng::PngWriter png_writer("test.png");
+    eng::fb::PngWriter png_writer("test.png");
     png_writer.WriteFramebuffer(fb);
 #else
     // Configure our supported input layout: a single player with standard controller styles
