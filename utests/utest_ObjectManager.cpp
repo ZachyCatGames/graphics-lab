@@ -21,7 +21,36 @@ private:
     Func m_endf;
 }; // class TestObject
 
+class TestObject2 : public eng::ObjectBase<TestObject2> {
+public:
+    constexpr TestObject2(int a) : m_a(a) {
+    }
+
+    constexpr auto GetA() const noexcept { return m_a; }
+
+    constexpr ~TestObject2() {
+
+    }
+
+private:
+    int m_a;
+}; // class TestObject
+
+template<typename T, typename AllocatorType = std::allocator<T>>
+class ThinObjectManagerWrapperForTest : public eng::detail::ObjectManagerImpl<T, AllocatorType> {
+public:
+    constexpr ThinObjectManagerWrapperForTest() = default;
+    constexpr void Initialize() { eng::detail::ObjectManagerImpl<T, AllocatorType>::Initialize(); }
+};
+
 using Manager = eng::ObjectManager<TestObject>;
+
+static_assert([]() {
+    ThinObjectManagerWrapperForTest<TestObject2> man;
+    man.Initialize();
+    auto obj_hndl = man.CreateObject(5);
+    return true;
+}());
 
 TEST_CASE( "Allocate Free Single" )
 {
