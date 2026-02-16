@@ -18,7 +18,7 @@ TEST_CASE( "Basic Hit" )
     constexpr ray r({0, 0, 0}, {0.1, 0.1, 0.5});
 
     float vmax = std::numeric_limits<float>::max();
-    REQUIRE(sphere.Intersect(r, 0, &vmax, nullptr) == true);
+    REQUIRE(sphere.Intersect(r, Interval<float>(0, std::numeric_limits<float>::max()), nullptr) == true);
 }
 
 TEST_CASE( "Basic Miss" )
@@ -27,6 +27,6 @@ TEST_CASE( "Basic Miss" )
     constexpr ray r({0, 0, 0}, {0.5, 0.5, 0.5});
 
     float vmax = std::numeric_limits<float>::max();
-    REQUIRE(sphere.Intersect(r, 0, &vmax, nullptr) == false);
+    REQUIRE(sphere.Intersect(r, Interval<float>(0, std::numeric_limits<float>::max()), nullptr) == false);
 }
 
