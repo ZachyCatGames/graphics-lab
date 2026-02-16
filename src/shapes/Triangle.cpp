@@ -34,10 +34,10 @@ bool Triangle::Intersect(const ray& r, Interval<float> t_range, HitStruct* p_hit
     const auto M = a * ei_minus_hf + b * gf_minus_di + c * (dh_minus_eg);
 
     const auto t = -(f * ak_minus_jb + e * jc_minus_al + d * bl_minus_kc) / M;
-    std::cout << m_a << '\n' << m_b << '\n' << m_c << '\n';
-    std::cout << orig << '\n';
-    std::print("{} {} {}\n", j, k, l);
-    std::print("{}\n", t);
+    //std::cout << m_a << '\n' << m_b << '\n' << m_c << '\n';
+    //std::cout << orig << '\n';
+    //std::print("{} {} {}\n", j, k, l);
+    //std::print("{}\n", t);
     //if (!t_range.Surrounds(t))
     if (!t_range.Surrounds(t))
         return false;
