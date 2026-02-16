@@ -23,6 +23,10 @@ add_library (cs4212-util
 
   shaders/NormalShader.cpp shaders/NormalShader.h
   shaders/FlatColorShader.h
+  shaders/Lambertian.h
+  shaders/BlinnPhong.cpp shaders/BlinnPhong.h
+
+  shaders/detail/LambertianImpl.cpp shaders/detail/LambertianImpl.h
 
   Scene.cpp Scene.h
 
