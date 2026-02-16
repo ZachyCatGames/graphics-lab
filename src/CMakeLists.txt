@@ -24,6 +24,8 @@ add_library (cs4212-util
   shaders/NormalShader.cpp shaders/NormalShader.h
   shaders/FlatColorShader.h
 
+  Scene.cpp Scene.h
+
   ${UTIL_PLAT_SRC}
 )
 target_compile_definitions(cs4212-util PUBLIC HAS_GLM)
