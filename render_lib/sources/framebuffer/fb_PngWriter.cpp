@@ -1,4 +1,4 @@
-#include "PngWriter.h"
+#include <engine/framebuffer/fb_PngWriter.h>
 
 #include "../png++/png.hpp"
 

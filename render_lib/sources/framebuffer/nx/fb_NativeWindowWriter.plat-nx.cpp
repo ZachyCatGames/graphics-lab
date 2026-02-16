@@ -1,4 +1,4 @@
-#include "NativeWindowWriter.plat-nx.h"
+#include <engine/framebuffer/nx/NativeWIndowWriter.plat-nx.h"
 
 namespace eng::plat::nx {
 
