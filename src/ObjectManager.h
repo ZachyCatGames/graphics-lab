@@ -86,11 +86,13 @@ public:
     using pointer_type   = value_type*;
     using reference_type = value_type&;
 
-    template<std::derived_from<value_type> OtherType>
-    constexpr Handle(const Handle<OtherType>& other) { this->CopyFrom(other); }
+    constexpr Handle() : m_ctlr_blk_ptr(nullptr) {}
 
     template<std::derived_from<value_type> OtherType>
-    constexpr Handle(Handle<OtherType>&& other) { this->MoveFrom(std::move(other)); }
+    constexpr Handle(const Handle<OtherType>& other) : m_ctlr_blk_ptr(nullptr) { this->CopyFrom(other); }
+
+    template<std::derived_from<value_type> OtherType>
+    constexpr Handle(Handle<OtherType>&& other) : m_ctlr_blk_ptr(nullptr) { this->MoveFrom(std::move(other)); }
 
     constexpr ~Handle() { this->Free(); }
 
@@ -121,6 +123,8 @@ public:
 
     constexpr bool IsValid() const noexcept { return m_ctlr_blk_ptr != nullptr; }
 
+    constexpr operator bool() const noexcept { return this->IsValid(); }
+
     template<std::derived_from<value_type> OtherType>
     constexpr Handle<T>& operator=(const Handle<OtherType>& rhs) {
         this->CopyFrom(rhs);
@@ -144,6 +148,8 @@ private:
     template<typename U, typename Allocator>
     friend class detail::ObjectManagerImpl;
 
+    friend struct std::hash<Handle<value_type>>;
+
     template<typename OtherType>
     constexpr void CopyFrom(const Handle<OtherType>& other) {
         auto old = this->m_ctlr_blk_ptr;
@@ -151,7 +157,8 @@ private:
         m_ctlr_blk_ptr = other.m_ctlr_blk_ptr;
 
         m_ctlr_blk_ptr->AddOne();
-        old->ReleaseOne();
+        if (old != nullptr)
+            old->ReleaseOne();
     }
 
     template<typename OtherType>
@@ -199,3 +206,27 @@ template<typename... Args>
 } // namespace detail
 
 } // namespace eng
+
+namespace std {
+
+template<typename T>
+struct hash<eng::Handle<T>> {
+    constexpr hash() = default;
+    constexpr hash(const hash<eng::Handle<T>>& other) = default;
+
+    constexpr size_t operator()(const eng::Handle<T>& hndl) const {
+        return hasher(hndl.m_ctlr_blk_ptr);
+    }
+
+    std::hash<eng::detail::ControlBlock*> hasher;
+}; // struct hash<eng::Handle<T>>
+
+template<typename T>
+void swap(std::hash<eng::Handle<T>>& hndl1, std::hash<eng::Handle<T>>& hndl2) {
+    auto tmp = hndl1.hasher;
+    hndl1.hasher = hndl2.hasher;
+    hndl2.hasher = tmp;
+}
+
+} // namespace std
+
