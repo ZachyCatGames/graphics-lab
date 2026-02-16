@@ -1,45 +1,34 @@
 if (${CMAKE_SYSTEM_NAME} STREQUAL "NintendoSwitch")
   set(UTIL_PLAT_SRC
-    framebuffer/nx/NativeWindowWriter.plat-nx.cpp framebuffer/nx/NativeWindowWriter.plat-nx.h
+    sources/framebuffer/nx/fb_NativeWindowWriter.plat-nx.cpp
   )
 endif()
 
-add_library (cs4212-util
-#  ArgumentParsing.cpp ArgumentParsing.h
-#  handleGraphicsArgs.cpp handleGraphicsArgs.h
-  model_obj.cpp model_obj.h
-  framebuffer/Framebuffer.cpp framebuffer/Framebuffer.h
-  framebuffer/IFramebufferWriter.h
-  framebuffer/FramebufferWriterBase.h
-  framebuffer/PngWriter.cpp framebuffer/PngWriter.h
-  vec.h
-  ray.h
-  ICamera.h
-  PerspectiveCamera.cpp PerspectiveCamera.h
+add_library (render_lib
+  # Framebuffer Library.
+  sources/framebuffer/fb_Framebuffer.cpp
+  sources/framebuffer/fb_PngWriter.cpp
 
-  shapes/IShape.h
-  shapes/Sphere.cpp shapes/Sphere.h
-  shapes/Triangle.cpp shapes/Triangle.h
+  # Shader Library.
+  sources/shader/detail/shdr_LambertianImpl.cpp
+  sources/shader/shdr_BlinnPhong.cpp
+  sources/shader/shdr_NormalShader.cpp
 
-  shaders/NormalShader.cpp shaders/NormalShader.h
-  shaders/FlatColorShader.h
-  shaders/Lambertian.h
-  shaders/BlinnPhong.cpp shaders/BlinnPhong.h
+  # Shape Library
+  sources/shape/shape_Sphere.cpp
+  sources/shape/shape_Triangle.cpp
 
-  shaders/detail/LambertianImpl.cpp shaders/detail/LambertianImpl.h
-
-  Scene.cpp Scene.h
+  # Core Library.
+  sources/eng_PerspectiveCamera.cpp
+  sources/eng_Scene.cpp
 
   ${UTIL_PLAT_SRC}
 )
-target_compile_definitions(cs4212-util PUBLIC HAS_GLM)
+target_compile_definitions(render_lib PUBLIC HAS_GLM)
 #target_link_libraries(cs4212-util PRIVATE Boost::program_options)
 #target_link_libraries(cs4212-util PUBLIC glm::glm)
 
-# TODO: do smth more elegant
-add_executable (cs4212-exec
-  main.cpp
-)
+target_include_directories(render_lib PUBLIC include)
 
-target_link_libraries(cs4212-exec PRIVATE cs4212-util)
-target_link_libraries(cs4212-exec PRIVATE PNG::PNG)
+target_link_libraries(render_lib PRIVATE PNG::PNG)
+

@@ -1,6 +1,6 @@
 #pragma once
-#include "ICamera.h"
-#include "vec.h"
+#include <engine/eng_ICamera.h>
+#include <engine/eng_vec.h>
 
 namespace eng {
 

@@ -3,10 +3,11 @@
 #include <memory>
 #include <type_traits>
 #include <vector>
-#include "shapes/IShape.h"
-#include "shaders/IShader.h"
-#include "ICamera.h"
-#include "ObjectManager.h"
+
+#include <engine/eng_ICamera.h>
+#include <engine/eng_ObjectManager.h>
+#include <engine/shader/shdr_IShader.h>
+#include <engine/shape/shape_IShape.h>
 
 namespace eng {
 

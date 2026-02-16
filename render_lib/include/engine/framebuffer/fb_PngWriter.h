@@ -1,7 +1,7 @@
 #pragma once
-#include "FramebufferWriterBase.h"
+#include <engine/framebuffer/fb_FramebufferWriterBase.h>
 
-#include "../png++/png.hpp"
+#include <engine/png++/png.hpp>
 
 namespace eng {
 

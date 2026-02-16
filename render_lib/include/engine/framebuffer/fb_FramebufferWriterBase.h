@@ -1,5 +1,5 @@
 #pragma once
-#include "IFramebufferWriter.h"
+#include <engine/framebuffer/fb_IFramebufferWriter.h>
 
 namespace eng {
 

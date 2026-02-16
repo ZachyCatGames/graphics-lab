@@ -1,6 +1,6 @@
 #pragma once
-#include "../../ray.h"
-#include "../../HitStruct.h"
+#include <engine/eng_HitStruct.h>
+#include <engine/eng_ray.h>
 
 namespace eng::detail {
 

@@ -1,4 +1,4 @@
-#include "BlinnPhong.h"
+#include <engine/shader/shdr_BlinnPhong.h>
 
 namespace eng {
 

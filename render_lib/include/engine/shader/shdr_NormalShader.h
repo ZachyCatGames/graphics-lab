@@ -1,6 +1,6 @@
 #pragma once
-#include "IShader.h"
-#include "../ObjectBase.h"
+#include <engine/eng_ObjectBase.h>
+#include <engine/shader/shdr_IShader.h>
 
 namespace eng {
 

@@ -4,7 +4,7 @@
 #include <vector>
 #include <utility>
 
-#include "../vec.h"
+#include <engine/eng_vec.h>
 
 namespace eng {
 

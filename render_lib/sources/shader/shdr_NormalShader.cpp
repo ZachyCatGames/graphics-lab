@@ -1,4 +1,4 @@
-#include "NormalShader.h"
+#include <engine/shader/shdr_NormalShader.h>
 
 namespace eng {
 

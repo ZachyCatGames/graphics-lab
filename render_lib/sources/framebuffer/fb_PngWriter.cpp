@@ -1,7 +1,5 @@
 #include <engine/framebuffer/fb_PngWriter.h>
 
-#include "../png++/png.hpp"
-
 namespace eng {
 
 PngWriter::PngWriter(std::string_view path) : m_path(path), m_img() {}

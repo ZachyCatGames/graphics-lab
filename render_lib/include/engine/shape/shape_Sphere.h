@@ -1,6 +1,6 @@
 #pragma once
-#include "IShape.h"
-#include "../ObjectBase.h"
+#include <engine/eng_ObjectBase.h>
+#include <engine/shape/shape_IShape.h>
 
 namespace eng {
 

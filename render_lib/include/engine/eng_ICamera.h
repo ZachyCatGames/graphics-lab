@@ -1,5 +1,5 @@
 #pragma once
-#include "ray.h"
+#include <engine/eng_ray.h>
 
 namespace eng {
 

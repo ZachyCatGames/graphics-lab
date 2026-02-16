@@ -1,5 +1,5 @@
 #pragma once
-#include "../FramebufferWriterBase.h"
+#include <engine/framebuffer/fb_FramebufferWriterBase.h>
 #include <switch.h>
 
 #ifdef __SWITCH__

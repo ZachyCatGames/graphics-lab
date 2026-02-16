@@ -1,6 +1,6 @@
 #pragma once
-#include "ray.h"
-#include "vec.h"
+#include <engine/eng_ray.h>
+#include <engine/eng_vec.h>
 
 namespace eng {
 

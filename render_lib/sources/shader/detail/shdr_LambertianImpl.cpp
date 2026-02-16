@@ -1,4 +1,4 @@
-#include "LambertianImpl.h"
+#include <engine/shader/detail/shdr_LambertianImpl.h>
 #include <print>
 
 namespace eng::detail {

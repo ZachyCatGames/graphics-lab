@@ -1,5 +1,5 @@
 #pragma once
-#include "../ReferenceCount.h"
+#include <engine/eng_ReferenceCount.h>
 #include "ObjectPoolTypes.h"
 
 namespace eng::detail {

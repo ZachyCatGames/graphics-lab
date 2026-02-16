@@ -1,7 +1,8 @@
 #pragma once
-#include "IShader.h"
-#include "detail/LambertianImpl.h"
-#include "../ObjectBase.h"
+#include <engine/eng_ObjectBase.h>
+#include <engine/shader/shdr_IShader.h>
+
+#include <engine/shader/detail/shdr_LambertianImpl.h>
 
 namespace eng {
 

@@ -1,7 +1,7 @@
 #pragma once
-#include "../ray.h"
-#include "../Interval.h"
-#include "../HitStruct.h"
+#include <engine/eng_HitStruct.h>
+#include <engine/eng_Interval.h>
+#include <engine/eng_ray.h>
 
 namespace eng {
 
