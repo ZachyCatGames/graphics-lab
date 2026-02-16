@@ -5,8 +5,18 @@
 #include "shapes/Sphere.h"
 #include "shapes/Triangle.h"
 
+#include "shaders/NormalShader.h"
+#include "shaders/Lambertian.h"
+#include "shaders/BlinnPhong.h"
+
+#include "ObjectManager.h"
+
+#include "Scene.h"
+
 #include <print>
 #include <cstdio>
+#include <memory>
+#include <vector>
 
 #ifdef __SWITCH__
 #include "framebuffer/nx/NativeWindowWriter.plat-nx.h"
@@ -14,7 +24,7 @@
 
 #define VECTOR_COLOR_IMG
 
-extern "C" int main(int argc, char** argv) {
+int main(int argc, char** argv) {
     int img_width  = 200;
     int img_height = 200;
 
@@ -26,26 +36,34 @@ extern "C" int main(int argc, char** argv) {
 
     eng::Vector3DF pos{0, 0, 0.0};
     eng::Vector3DF dir{0, 0, -1};
-    float foc_len = 1.0;
+    float foc_len = 0.25;
     
     eng::PerspectiveCamera cam(pos, dir, foc_len, img_width, img_height, vp_width);
     eng::Framebuffer fb(img_width, img_height);
 
+    //auto shader = eng::BlinnPhongShader::Create(eng::ray{ eng::Vector3DF{ 0,0,0 }, eng::Vector3DF(3, 4,5)}, 20.0);
+    auto shader = eng::LambertianShader::Create(eng::ray{ eng::Vector3DF{ 0,0,0 }, eng::Vector3DF(3, 4,5)});
+
+    eng::Scene scene;
+    scene.EmplaceShape<eng::Sphere>(eng::Vector3DF{0, 0, -15}, 5)
+        .BindShader(shader);
+    scene.EmplaceShape<eng::Triangle>(eng::Vector3DF{-4.426795, 1.13923, -7}, eng::Vector3DF{-4.833013, -0.44282, -5}, eng::Vector3DF{-4.45, -0.779423, -5});
+
+    std::vector<eng::Handle<eng::IShape>> shapes {
+        eng::Sphere::Create(eng::Vector3DF{0, 0, -15}, 5),
+        eng::Triangle::Create(eng::Vector3DF{-4.426795, 1.13923, -7}, eng::Vector3DF{-4.833013, -0.44282, -5}, eng::Vector3DF{-4.45, -0.779423, -5})
+    };
+    //std::vector<std::shared_ptr<eng::IShape>> shapes {
+    //    std::make_shared<eng::Sphere>(eng::Vector3DF{0, 0, -15}, 5),
+    //    std::make_shared<eng::Triangle>(eng::Vector3DF{-4.426795, 1.13923, -7}, eng::Vector3DF{-4.833013, -0.44282, -5}, eng::Vector3DF{-4.45, -0.779423, -5})
+    //};
+
     //eng::Sphere sphere({0, 0, -4}, 4.955);
-    eng::Sphere sphere({0, 0, -15}, 5);
-    eng::Triangle tri({0.426795, 1.13923, -7}, {-0.833013, -0.44282, -5}, {-0.45, -0.779423, -5});
     for (int y = 0; y < img_height; y++) {
         for (int x = 0; x < img_width; x++) {
-            auto r = cam.GenerateRay(x, y);
+            auto color = scene.GetPixelColor(&cam, x, y);
 
-            float tmax = std::numeric_limits<float>::max();
-            eng::HitStruct rec;
-            if (tri.Intersect(r, eng::Interval<float>(foc_len, tmax), &rec)) {
-                fb.SetPixelColor(x, y, {1, 1, 1});
-                //std::print("{} {}: {}\n", x, y, tmax);
-            } else {
-                fb.SetPixelColor(x, y, {0, 0, 0});
-            }
+            fb.SetPixelColor(x, y, color);
         }
     }
 #endif
