@@ -1,17 +1,17 @@
-#include "PerspectiveCamera.h"
-#include "framebuffer/Framebuffer.h"
-#include "framebuffer/PngWriter.h"
+#include <engine/eng_ObjectBase.h>
+#include <engine/eng_PerspectiveCamera.h>
+#include <engine/eng_Scene.h>
 
-#include "shapes/Sphere.h"
-#include "shapes/Triangle.h"
+#include <engine/framebuffer/fb_Framebuffer.h>
+#include <engine/framebuffer/fb_PngWriter.h>
 
-#include "shaders/NormalShader.h"
-#include "shaders/Lambertian.h"
-#include "shaders/BlinnPhong.h"
+#include <engine/shape/shape_Sphere.h>
+#include <engine/shape/shape_Triangle.h>
 
-#include "ObjectManager.h"
+#include <engine/shader/shdr_NormalShader.h>
+#include <engine/shader/shdr_Lambertian.h>
+#include <engine/shader/shdr_BlinnPhong.h>
 
-#include "Scene.h"
 
 #include <print>
 #include <cstdio>
