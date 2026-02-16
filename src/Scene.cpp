@@ -45,6 +45,9 @@ Vector3DF Scene::GetPixelColor(ICamera* p_cam, int x, int y) {
             closest_found = rec.t;
             closest_shape = shape;
             closest_rec   = rec;
+
+            /* Populate ray field of hitstruct. */
+            closest_rec.r = r;
         }
     }
 
@@ -53,14 +56,14 @@ Vector3DF Scene::GetPixelColor(ICamera* p_cam, int x, int y) {
         /* Run the shape's shader if available. */
         auto shader = m_attribs[closest_shape].shader;
         if (shader) 
-            return shader->GetColor(closest_rec);
+            return shader->GetColor(closest_rec) * Vector3DF(1.0, 0.60, 0.12);
 
         /* If no shader is available, fallback to returning white. */
         return Vector3DF{1.0, 1.0, 1.0};
     }
 
     /* Return black if no shape was found. */
-    return Vector3DF{0, 0, 0};
+    return Vector3DF{0.43, 1.0, 0.29};
 }
 
 } // namespace eng
