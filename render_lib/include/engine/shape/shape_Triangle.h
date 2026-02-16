@@ -1,8 +1,8 @@
 #pragma once
+#include <engine/eng_IShape.h>
 #include <engine/eng_ObjectBase.h>
-#include <engine/shape/shape_IShape.h>
 
-namespace eng {
+namespace eng::shape {
 
 class Triangle : public IShape, public ObjectBase<Triangle> {
 public:
@@ -14,4 +14,4 @@ private:
     Vector3DF m_a, m_b, m_c;
 }; // class Triangle
 
-} // namespace eng
+} // namespace eng::shape

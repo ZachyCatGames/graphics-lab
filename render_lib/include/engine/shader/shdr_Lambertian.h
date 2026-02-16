@@ -1,20 +1,18 @@
 #pragma once
+#include <engine/eng_IShader.h>
 #include <engine/eng_ObjectBase.h>
-#include <engine/shader/shdr_IShader.h>
 
 #include <engine/shader/detail/shdr_LambertianImpl.h>
 
-namespace eng {
+namespace eng::shdr {
 
-
-//public ObjectBase<LambertianShader>
-class LambertianShader : public IShader, public ObjectBase<LambertianShader>, private detail::LambertianShaderImpl {
+class Lambertian : public IShader, public ObjectBase<Lambertian>, private detail::LambertianImpl {
 public:
-    constexpr LambertianShader(ray point_light) : detail::LambertianShaderImpl(point_light) {}
+    constexpr Lambertian(ray point_light) : detail::LambertianImpl(point_light) {}
 
     virtual Vector3DF GetColor(const HitStruct& rec) override {
-        return detail::LambertianShaderImpl::GetColor(rec);
+        return detail::LambertianImpl::GetColor(rec);
     }
-}; // class LambertianShader
+}; // class Lambertian
 
-} // namespace eng
+} // namespace eng::shdr

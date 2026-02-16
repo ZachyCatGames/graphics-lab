@@ -1,6 +1,6 @@
-#include <engine/framebuffer/nx/NativeWIndowWriter.plat-nx.h"
+#include <engine/framebuffer/nx/NativeWIndowWriter.plat-nx.h>
 
-namespace eng::plat::nx {
+namespace eng::fb::nx {
 
 NativeWindowWriter::NativeWindowWriter(::Framebuffer* fb) : m_framebuffer(fb) {
     
@@ -29,4 +29,4 @@ void NativeWindowWriter::NotifyAllPixelsWritten(const Framebuffer&) {
     ::framebufferEnd(m_framebuffer);
 }
 
-} // namespace eng::plat::nx
+} // namespace eng::fb::nx

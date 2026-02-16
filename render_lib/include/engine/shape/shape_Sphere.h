@@ -1,8 +1,8 @@
 #pragma once
+#include <engine/eng_IShape.h>
 #include <engine/eng_ObjectBase.h>
-#include <engine/shape/shape_IShape.h>
 
-namespace eng {
+namespace eng::shape {
 
 class Sphere : public IShape, public eng::ObjectBase<Sphere> {
 public:
@@ -14,4 +14,4 @@ private:
     float m_radius;
 }; // class Sphere
 
-} // namespace eng
+} // namespace eng::shape

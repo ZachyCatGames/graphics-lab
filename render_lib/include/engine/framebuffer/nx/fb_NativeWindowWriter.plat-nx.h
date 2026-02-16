@@ -4,7 +4,7 @@
 
 #ifdef __SWITCH__
 
-namespace eng::plat::nx {
+namespace eng::fb::nx {
 
 class NativeWindowWriter : public FramebufferWriterBase<NativeWindowWriter> {
 public:
@@ -22,7 +22,7 @@ private:
     u32 m_stride;
 }; // class NativeWindowWriter
 
-} // namespace eng::plat::nx
+} // namespace eng::fb::nx
 
 #else
 

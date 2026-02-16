@@ -1,7 +1,7 @@
 #include <engine/shape/shape_Sphere.h>
 #include <print>
 
-namespace eng {
+namespace eng::shape {
 
 bool Sphere::Intersect(const ray& r, Interval<float> t_range, HitStruct* p_hit_info_out) const {
     Vector3DF oc = r.origin() - m_position;
@@ -29,4 +29,4 @@ bool Sphere::Intersect(const ray& r, Interval<float> t_range, HitStruct* p_hit_i
     return true;
 }
 
-} // namespace eng
+} // namespace eng::shape

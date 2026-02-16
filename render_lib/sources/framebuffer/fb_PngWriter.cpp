@@ -1,6 +1,6 @@
 #include <engine/framebuffer/fb_PngWriter.h>
 
-namespace eng {
+namespace eng::fb {
 
 PngWriter::PngWriter(std::string_view path) : m_path(path), m_img() {}
 
@@ -21,4 +21,4 @@ void PngWriter::NotifyAllPixelsWritten(const Framebuffer&) {
 	m_img.write(m_path.c_str());
 }
 
-} // namespace eng
+} // namespace eng::fb

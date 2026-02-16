@@ -3,7 +3,7 @@
 
 #include <engine/png++/png.hpp>
 
-namespace eng {
+namespace eng::fb {
 
 class PngWriter : public FramebufferWriterBase<PngWriter> {
 public:
@@ -20,4 +20,4 @@ private:
     int m_width, m_height;
 }; // class PngWriter
 
-} // namespace eng
+} // namespace eng::fb

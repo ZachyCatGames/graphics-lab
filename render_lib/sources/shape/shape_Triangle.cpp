@@ -1,7 +1,7 @@
 #include <engine/shape/shape_Triangle.h>
 #include <print>
 
-namespace eng {
+namespace eng::shape {
 
 bool Triangle::Intersect(const ray& r, Interval<float> t_range, HitStruct* p_hit_info_out) const {
     const auto& dir  = r.direction();
@@ -61,4 +61,4 @@ bool Triangle::Intersect(const ray& r, Interval<float> t_range, HitStruct* p_hit
     return true;
 }
 
-} // namespace eng
+} // namespace eng::shape

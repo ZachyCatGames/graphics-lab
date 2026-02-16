@@ -5,9 +5,9 @@
 #include <vector>
 
 #include <engine/eng_ICamera.h>
+#include <engine/eng_IShader.h>
+#include <engine/eng_IShape.h>
 #include <engine/eng_ObjectManager.h>
-#include <engine/shader/shdr_IShader.h>
-#include <engine/shape/shape_IShape.h>
 
 namespace eng {
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <engine/framebuffer/fb_IFramebufferWriter.h>
 
-namespace eng {
+namespace eng::fb {
 
 template<typename DerivedT>
 class FramebufferWriterBase : public IFramebufferWriter {
@@ -26,4 +26,4 @@ private:
     const auto GetDerived() const { return static_cast<const DerivedT*>(this); }
 }; // class FramebufferWriterBase
 
-} // namespace eng
+} // namespace eng::fb

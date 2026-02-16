@@ -1,12 +1,12 @@
 #pragma once
+#include <engine/eng_IShader.h>
 #include <engine/eng_ObjectBase.h>
-#include <engine/shader/shdr_IShader.h>
 
-namespace eng {
+namespace eng::shdr {
 
-class NormalShader : public IShader, public ObjectBase<NormalShader> {
+class Normal : public IShader, public ObjectBase<Normal> {
 public:
     virtual Vector3DF GetColor(const HitStruct& rec) override;
-}; // class NormalShader
+}; // class Normal
 
-} // namespace eng
+} // namespace eng::shdr
