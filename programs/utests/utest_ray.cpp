@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-#include "ray.h"
+#include <engine/eng_ray.h>
 
 using namespace eng; // lazy
 

@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-#include "shapes/Sphere.h"
+#include <engine/shape/shape_Sphere.h>
 
 using namespace eng; // lazy
 
@@ -14,7 +14,7 @@ using namespace eng; // lazy
 
 TEST_CASE( "Basic Hit" )
 {
-    Sphere sphere({0, 0, -15}, 5);
+    shape::Sphere sphere({0, 0, -15}, 5);
     constexpr ray r({0, 0, 0}, {0.1, 0.1, 0.5});
 
     float vmax = std::numeric_limits<float>::max();
@@ -23,7 +23,7 @@ TEST_CASE( "Basic Hit" )
 
 TEST_CASE( "Basic Miss" )
 {
-    Sphere sphere({0, 0, -15}, 5);
+    shape::Sphere sphere({0, 0, -15}, 5);
     constexpr ray r({0, 0, 0}, {0.5, 0.5, 0.5});
 
     float vmax = std::numeric_limits<float>::max();

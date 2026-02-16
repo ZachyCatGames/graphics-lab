@@ -33,7 +33,7 @@ set(UTESTS
 foreach(uexec ${UTESTS})
   add_executable(${uexec} ${uexec}.cpp)
   target_link_libraries(${uexec} PRIVATE Catch2::Catch2WithMain)
-  target_link_libraries(${uexec} PRIVATE cs4212-util)
+  target_link_libraries(${uexec} PRIVATE render_lib)
 
   add_test(NAME ${uexec} COMMAND ${uexec})
 endforeach(uexec)

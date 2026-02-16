@@ -5,7 +5,7 @@
 #include <catch2/generators/catch_generators_adapters.hpp>
 #include <catch2/catch_get_random_seed.hpp>
 
-#include "vec.h"
+#include <engine/eng_vec.h>
 
 using namespace eng;
 
