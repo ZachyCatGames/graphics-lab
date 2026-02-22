@@ -10,7 +10,7 @@ class Lambertian : public IShader, public ObjectBase<Lambertian>, private detail
 public:
     constexpr Lambertian(Ray point_light) : detail::LambertianImpl(point_light) {}
 
-    virtual Vector3DF GetColor(const HitStruct& rec) override {
+    virtual Vector3DF GetColor(Scene* p_scene, const HitStruct& rec) override {
         return detail::LambertianImpl::GetColor(rec);
     }
 }; // class Lambertian

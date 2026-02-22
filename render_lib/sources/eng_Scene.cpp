@@ -53,7 +53,7 @@ Vector3DF Scene::GetRayColor(const Ray& r) {
         /* Run the shape's shader if available. */
         auto shader = m_attribs[closest_shape].shader;
         if (shader) 
-            return shader->GetColor(closest_rec) * Vector3DF(1.0, 0.60, 0.12);
+            return shader->GetColor(this, closest_rec) * Vector3DF(1.0, 0.60, 0.12);
 
         /* If no shader is available, fallback to returning white. */
         return Vector3DF{1.0, 1.0, 1.0};

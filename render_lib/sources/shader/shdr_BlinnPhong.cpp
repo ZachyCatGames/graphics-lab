@@ -2,7 +2,7 @@
 
 namespace eng::shdr {
 
-Vector3DF BlinnPhong::GetColor(const HitStruct& rec) {
+Vector3DF BlinnPhong::GetColor(Scene* p_scene, const HitStruct& rec) {
     /* Use lambertian shader to get the base color. */
     const auto base_color = detail::LambertianImpl::GetColor(rec);
 

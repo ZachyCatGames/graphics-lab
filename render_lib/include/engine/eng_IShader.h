@@ -4,9 +4,11 @@
 
 namespace eng {
 
+class Scene;
+
 class IShader {
 public:
-    virtual Vector3DF GetColor(const HitStruct& rec) = 0;
+    virtual Vector3DF GetColor(Scene* p_scene, const HitStruct& rec) = 0;
 }; // class IShader
 
 } // namespace eng

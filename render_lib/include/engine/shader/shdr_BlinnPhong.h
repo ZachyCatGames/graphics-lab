@@ -10,7 +10,7 @@ class BlinnPhong : public IShader, public ObjectBase<BlinnPhong>, private detail
 public:
     constexpr BlinnPhong(Ray pt_light, float exp) : detail::LambertianImpl(pt_light), m_exp(exp) {}
 
-    virtual Vector3DF GetColor(const HitStruct& rec) override;
+    virtual Vector3DF GetColor(Scene* p_scene, const HitStruct& rec) override;
 private:
     float m_exp;
 }; // class BlinnPhong
