@@ -42,21 +42,12 @@ int main(int argc, char** argv) {
     eng::fb::Framebuffer fb(img_width, img_height);
 
     //auto shader = eng::BlinnPhongShader::Create(eng::ray{ eng::Vector3DF{ 0,0,0 }, eng::Vector3DF(3, 4,5)}, 20.0);
-    auto shader = eng::shdr::Lambertian::Create(eng::ray{ eng::Vector3DF{ 0,0,0 }, eng::Vector3DF(3, 4,5)});
+    auto shader = eng::shdr::Lambertian::Create(eng::Ray{ eng::Vector3DF{ 0,0,0 }, eng::Vector3DF(3, 4,5)});
 
     eng::Scene scene;
     scene.EmplaceShape<eng::shape::Sphere>(eng::Vector3DF{0, 0, -15}, 5)
         .BindShader(shader);
     scene.EmplaceShape<eng::shape::Triangle>(eng::Vector3DF{-4.426795, 1.13923, -7}, eng::Vector3DF{-4.833013, -0.44282, -5}, eng::Vector3DF{-4.45, -0.779423, -5});
-
-    std::vector<eng::Handle<eng::IShape>> shapes {
-        eng::shape::Sphere::Create(eng::Vector3DF{0, 0, -15}, 5),
-        eng::shape::Triangle::Create(eng::Vector3DF{-4.426795, 1.13923, -7}, eng::Vector3DF{-4.833013, -0.44282, -5}, eng::Vector3DF{-4.45, -0.779423, -5})
-    };
-    //std::vector<std::shared_ptr<eng::IShape>> shapes {
-    //    std::make_shared<eng::Sphere>(eng::Vector3DF{0, 0, -15}, 5),
-    //    std::make_shared<eng::Triangle>(eng::Vector3DF{-4.426795, 1.13923, -7}, eng::Vector3DF{-4.833013, -0.44282, -5}, eng::Vector3DF{-4.45, -0.779423, -5})
-    //};
 
     //eng::Sphere sphere({0, 0, -4}, 4.955);
     for (int y = 0; y < img_height; y++) {
