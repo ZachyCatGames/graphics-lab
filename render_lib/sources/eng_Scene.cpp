@@ -32,10 +32,7 @@ void Scene::Remove(Handle<IShape> shape) {
     m_attribs.erase(shape);
 }
 
-Vector3DF Scene::GetPixelColor(ICamera* p_cam, int x, int y) {
-    /* Generate a ray. */
-    auto r = p_cam->GenerateRay(x, y);
-
+Vector3DF Scene::GetRayColor(const Ray& r) {
     float closest_found = std::numeric_limits<float>::infinity();
     Handle<IShape> closest_shape;
     HitStruct closest_rec;
@@ -64,6 +61,37 @@ Vector3DF Scene::GetPixelColor(ICamera* p_cam, int x, int y) {
 
     /* Return black if no shape was found. */
     return Vector3DF{0.43, 1.0, 0.29};
+}
+
+Vector3DF Scene::GetPixelColor(ICamera* p_cam, int x, int y) {
+    const auto subpix_stride = 1.0 / m_samples_per_pixel;
+    Rng<float> rng(0.0, subpix_stride);
+    Vector3DF color_sum;
+    for (int i = 0; i < m_samples_per_pixel; i++) {
+        for (int j = 0; j < m_samples_per_pixel; j++) {
+            /* Sample at a random point if random sampling is enabled, otherwise
+               sample at the middle. */
+            float x_offs, y_offs;
+            if (m_randomize_pixel_samples) {
+                x_offs = rng();
+                y_offs = rng();
+            } else {
+                x_offs = subpix_stride / 2;
+                y_offs = x_offs;
+            }
+
+            auto pos_x = x + j * subpix_stride + x_offs;
+            auto pos_y = y + i * subpix_stride + y_offs;
+
+            /* Generate a ray. */
+            auto r = p_cam->GenerateRay(pos_x, pos_y);
+
+            /* Call GetRayColor. */
+            color_sum += this->GetRayColor(r);
+        }
+    }
+
+    return color_sum / float(m_samples_per_pixel * m_samples_per_pixel);
 }
 
 } // namespace eng

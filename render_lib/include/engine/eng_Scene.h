@@ -8,6 +8,7 @@
 #include <engine/eng_IShader.h>
 #include <engine/eng_IShape.h>
 #include <engine/eng_ObjectManager.h>
+#include <engine/eng_Rng.h>
 
 namespace eng {
 
@@ -64,7 +65,13 @@ public:
 
     void Remove(Handle<IShape> shape);
 
+    Vector3DF GetRayColor(const Ray& r);
     Vector3DF GetPixelColor(ICamera* p_cam, int x, int y);
+private:
+
+public:
+    bool m_randomize_pixel_samples = true;
+    int m_samples_per_pixel = 2;
 private:
     std::vector<Handle<IShape>> m_shapes;
     MapType m_attribs;
