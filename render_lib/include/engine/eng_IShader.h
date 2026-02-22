@@ -1,6 +1,6 @@
 #pragma once
 #include <engine/eng_HitStruct.h>
-#include <engine/eng_vec.h>
+#include <engine/eng_Vector3D.h>
 
 namespace eng {
 

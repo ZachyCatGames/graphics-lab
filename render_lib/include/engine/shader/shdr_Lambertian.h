@@ -8,7 +8,7 @@ namespace eng::shdr {
 
 class Lambertian : public IShader, public ObjectBase<Lambertian>, private detail::LambertianImpl {
 public:
-    constexpr Lambertian(ray point_light) : detail::LambertianImpl(point_light) {}
+    constexpr Lambertian(Ray point_light) : detail::LambertianImpl(point_light) {}
 
     virtual Vector3DF GetColor(const HitStruct& rec) override {
         return detail::LambertianImpl::GetColor(rec);

@@ -1,6 +1,6 @@
 #pragma once
 #include <engine/eng_ICamera.h>
-#include <engine/eng_vec.h>
+#include <engine/eng_Vector3D.h>
 
 namespace eng {
 
@@ -36,7 +36,7 @@ public:
 
     virtual ~PerspectiveCamera() = default;
 
-    [[nodiscard]] virtual ray GenerateRay(int i, int j) override;
+    [[nodiscard]] virtual Ray GenerateRay(int i, int j) override;
 private:
     Vector3DF m_position;
     Vector3DF m_U, m_V, m_W;

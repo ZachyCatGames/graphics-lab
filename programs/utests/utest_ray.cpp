@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-#include <engine/eng_ray.h>
+#include <engine/eng_Ray.h>
 
 using namespace eng; // lazy
 
@@ -10,7 +10,7 @@ TEST_CASE( "Origin Test" )
     static constexpr Vector3DF origin    {4.2, 6.9, 9001};
     static constexpr Vector3DF direction {3.14, 15.0, 11.1};
 
-    static constexpr ray r {origin, direction};
+    static constexpr Ray r {origin, direction};
 
     // these really should be exactly equal but _shrug_
     static constexpr auto orig_eq = equal_exact(origin, r.origin());
@@ -24,7 +24,7 @@ TEST_CASE( "Direction Test" )
     static constexpr Vector3DF origin    {4.2, 6.9, 9001};
     static constexpr Vector3DF direction {3.14, 15.0, 11.1};
 
-    static constexpr ray r {origin, direction};
+    static constexpr Ray r {origin, direction};
 
     // these really should be exactly equal but _shrug_
     static constexpr auto dir_eq = equal_exact(direction, r.direction());
@@ -55,19 +55,19 @@ TEST_CASE( "Immutable Test" )
     static constexpr Vector3DF origin    {4.2, 6.9, 9001};
     static constexpr Vector3DF direction {3.14, 15.0, 11.1};
 
-    static constexpr ray r {origin, direction};
+    static constexpr Ray r {origin, direction};
 
-    static constexpr bool r3 = !OM<ray, Vector3DF>();
+    static constexpr bool r3 = !OM<Ray, Vector3DF>();
     static_assert(r3);
 
     /* Test that references to origin and direction are immutable. */
-    static_assert(!OriginMutable<ray, Vector3DF>,    "Origin Reference Mutable");
-    static_assert(!DirectionMutable<ray, Vector3DF>, "Direction Reference Mutable");
+    static_assert(!OriginMutable<Ray, Vector3DF>,    "Origin Reference Mutable");
+    static_assert(!DirectionMutable<Ray, Vector3DF>, "Direction Reference Mutable");
 
     /* Test that the at function doesn't modify anything. */
     static_assert([]() {
         Vector3DF v;
-        ray r1 = r;
+        Ray r1 = r;
         for (float i = 0.0; i < 4000; i += 0.32352958) {
             v += r.at(i);
         }
@@ -84,7 +84,7 @@ TEST_CASE( "at(0)" )
     static constexpr Vector3DF origin    {4.2, 6.9, 9001};
     static constexpr Vector3DF direction {3.14, 15.0, 11.1};
 
-    static constexpr ray r {origin, direction};
+    static constexpr Ray r {origin, direction};
 
     static constexpr auto v = r.at(0);
 
@@ -99,7 +99,7 @@ TEST_CASE( "at(31.415)" )
     static constexpr Vector3DF origin    {4.2, 6.9, 9001};
     static constexpr Vector3DF direction {3.14, 15.0, 11.1};
 
-    static constexpr ray r {origin, direction};
+    static constexpr Ray r {origin, direction};
 
     static constexpr auto v = r.at(31.415);
 
@@ -116,7 +116,7 @@ TEST_CASE( "at(-14.36)" )
     static constexpr Vector3DF origin    {4.2, 6.9, 9001};
     static constexpr Vector3DF direction {3.14, 15.0, 11.1};
 
-    static constexpr ray r {origin, direction};
+    static constexpr Ray r {origin, direction};
 
     static constexpr auto v = r.at(-14.36);
 

@@ -3,7 +3,7 @@
 
 namespace eng {
 
-ray PerspectiveCamera::GenerateRay(int i, int j) {
+Ray PerspectiveCamera::GenerateRay(int i, int j) {
     const auto right_bound  = static_cast<float>(m_img_plane_width) / 2.0;
     const auto left_bound   = -right_bound;
     const auto top_bound    = static_cast<float>(m_img_plane_width) / 2.0;

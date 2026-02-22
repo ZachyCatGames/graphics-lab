@@ -15,7 +15,7 @@ using namespace eng; // lazy
 TEST_CASE( "Basic Hit" )
 {
     shape::Sphere sphere({0, 0, -15}, 5);
-    constexpr ray r({0, 0, 0}, {0.1, 0.1, 0.5});
+    constexpr Ray r({0, 0, 0}, {0.1, 0.1, 0.5});
 
     float vmax = std::numeric_limits<float>::max();
     REQUIRE(sphere.Intersect(r, Interval<float>(0, std::numeric_limits<float>::max()), nullptr) == true);
@@ -24,7 +24,7 @@ TEST_CASE( "Basic Hit" )
 TEST_CASE( "Basic Miss" )
 {
     shape::Sphere sphere({0, 0, -15}, 5);
-    constexpr ray r({0, 0, 0}, {0.5, 0.5, 0.5});
+    constexpr Ray r({0, 0, 0}, {0.5, 0.5, 0.5});
 
     float vmax = std::numeric_limits<float>::max();
     REQUIRE(sphere.Intersect(r, Interval<float>(0, std::numeric_limits<float>::max()), nullptr) == false);

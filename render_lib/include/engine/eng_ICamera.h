@@ -1,5 +1,5 @@
 #pragma once
-#include <engine/eng_ray.h>
+#include <engine/eng_Ray.h>
 
 namespace eng {
 
@@ -8,7 +8,7 @@ public:
     constexpr ICamera() = default;
     virtual ~ICamera() = default;
 
-    virtual ray GenerateRay(int i, int j) = 0;
+    virtual Ray GenerateRay(int i, int j) = 0;
 private:
     /* ... */
 }; // class ICamera

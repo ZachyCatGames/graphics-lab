@@ -8,7 +8,7 @@ namespace eng::shdr {
 
 class BlinnPhong : public IShader, public ObjectBase<BlinnPhong>, private detail::LambertianImpl {
 public:
-    constexpr BlinnPhong(ray pt_light, float exp) : detail::LambertianImpl(pt_light), m_exp(exp) {}
+    constexpr BlinnPhong(Ray pt_light, float exp) : detail::LambertianImpl(pt_light), m_exp(exp) {}
 
     virtual Vector3DF GetColor(const HitStruct& rec) override;
 private:

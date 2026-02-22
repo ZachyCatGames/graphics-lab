@@ -1,13 +1,13 @@
 #pragma once
-#include <engine/eng_vec.h>
+#include <engine/eng_Vector3D.h>
 
 namespace eng {
 
-class ray {
+class Ray {
 public:
-    constexpr ray() : m_origin{}, m_direction{} {}
+    constexpr Ray() : m_origin{}, m_direction{} {}
 
-    constexpr ray(const Vector3DF& orig, const Vector3DF& dir) : m_origin(orig), m_direction(dir) {}
+    constexpr Ray(const Vector3DF& orig, const Vector3DF& dir) : m_origin(orig), m_direction(dir) {}
 
     [[nodiscard]] constexpr const Vector3DF& origin() const { return m_origin; }
     [[nodiscard]] constexpr const Vector3DF& direction() const { return m_direction; }
@@ -19,6 +19,6 @@ public:
 private:
     Vector3DF m_origin;
     Vector3DF m_direction;
-}; // class ray
+}; // class Ray
 
 } // namespace eng
