@@ -8,7 +8,7 @@ public:
     constexpr ICamera() = default;
     virtual ~ICamera() = default;
 
-    virtual Ray GenerateRay(int i, int j) = 0;
+    virtual Ray GenerateRay(float i, float j) = 0;
 private:
     /* ... */
 }; // class ICamera
