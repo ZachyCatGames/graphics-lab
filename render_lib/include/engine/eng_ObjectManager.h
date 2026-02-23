@@ -4,6 +4,8 @@
 #include <type_traits>
 #include <vector>
 
+#include <print>
+
 #include <engine/detail/ObjectPoolImpl.h>
 #include <engine/detail/ControlBlock.h>
 
@@ -36,7 +38,7 @@ public:
 protected:
     constexpr ObjectManagerImpl() = default;
 private:
-    constexpr void Free(control_blk* p_ctrl) {
+    virtual constexpr void Free(control_blk* p_ctrl) override {
         auto p_impl = static_cast<control_blk_impl*>(p_ctrl);
 
         /* Free the object. */
@@ -88,11 +90,22 @@ public:
 
     constexpr Handle() : m_ctlr_blk_ptr(nullptr) {}
 
-    template<std::derived_from<value_type> OtherType>
-    constexpr Handle(const Handle<OtherType>& other) : m_ctlr_blk_ptr(nullptr) { this->CopyFrom(other); }
+    constexpr Handle(const Handle<T>& other) : m_ctlr_blk_ptr(nullptr) {
+        this->CopyFrom(other);
+    }
+
+    constexpr Handle(Handle<T>&& other) : m_ctlr_blk_ptr(nullptr) {
+        this->MoveFrom(std::move(other));
+    }
 
     template<std::derived_from<value_type> OtherType>
-    constexpr Handle(Handle<OtherType>&& other) : m_ctlr_blk_ptr(nullptr) { this->MoveFrom(std::move(other)); }
+    constexpr Handle(const Handle<OtherType>& other) : m_ctlr_blk_ptr(nullptr) {
+        this->CopyFrom(other);
+    }
+    template<std::derived_from<value_type> OtherType>
+    constexpr Handle(Handle<OtherType>&& other) : m_ctlr_blk_ptr(nullptr) {
+        this->MoveFrom(std::move(other));
+    }
 
     constexpr ~Handle() { this->Free(); }
 
@@ -124,6 +137,16 @@ public:
     [[nodiscard]] constexpr bool IsValid() const noexcept { return m_ctlr_blk_ptr != nullptr; }
 
     constexpr operator bool() const noexcept { return this->IsValid(); }
+
+    constexpr Handle<T>& operator=(const Handle<T>& rhs) {
+        this->CopyFrom(rhs);
+        return *this;
+    }
+
+    constexpr Handle<T>& operator=(Handle<T>&& rhs) {
+        this->MoveFrom(std::move(rhs));
+        return *this;
+    }
 
     template<std::derived_from<value_type> OtherType>
     constexpr Handle<T>& operator=(const Handle<OtherType>& rhs) {
