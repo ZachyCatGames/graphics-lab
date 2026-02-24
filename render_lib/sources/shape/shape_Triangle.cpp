@@ -7,21 +7,21 @@ bool Triangle::Intersect(const Ray& r, Interval<float> t_range, HitStruct* p_hit
     const auto& dir  = r.direction();
     const auto& orig = r.origin();
 
-    double a = m_a[0] - m_b[0];
-  double b = m_a[1] - m_b[1];
-  double c = m_a[2] - m_b[2];
+    const auto a = m_a[0] - m_b[0];
+    const auto b = m_a[1] - m_b[1];
+    const auto c = m_a[2] - m_b[2];
 
-  double d = m_a[0] - m_c[0];
-  double e = m_a[1] - m_c[1];
-  double f = m_a[2] - m_c[2];
+    const auto d = m_a[0] - m_c[0];
+    const auto e = m_a[1] - m_c[1];
+    const auto f = m_a[2] - m_c[2];
   
-  double g = r.direction()[0];
-  double h = r.direction()[1];
-  double i = r.direction()[2];
+    const auto g = r.direction()[0];
+    const auto h = r.direction()[1];
+    const auto i = r.direction()[2];
 
-  double j = m_a[0] - r.origin()[0]; // correct
-  double k = m_a[1] - r.origin()[1];
-  double l = m_a[2] - r.origin()[2];
+    const auto j = m_a[0] - r.origin()[0]; // correct
+    const auto k = m_a[1] - r.origin()[1];
+    const auto l = m_a[2] - r.origin()[2];
 
     const auto ei_minus_hf = e*i - h*f;
     const auto gf_minus_di = g*f - d*i;
@@ -54,8 +54,8 @@ bool Triangle::Intersect(const Ray& r, Interval<float> t_range, HitStruct* p_hit
     const auto u = m_b - m_a;
     const auto v = m_c - m_a;
 
-    p_hit_info_out->normal   = cross(u, v).normalize();
-    p_hit_info_out->position = r.direction() * float(t);
+    p_hit_info_out->normal   = cross(v,u).normalize();
+    p_hit_info_out->position = r.at(t);
     p_hit_info_out->t        = t;
 
     return true;
