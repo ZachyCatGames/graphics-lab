@@ -6,13 +6,16 @@
 
 namespace eng::shdr {
 
-class Lambertian : public IShader, public ObjectBase<Lambertian>, private detail::LambertianImpl {
+class Lambertian : public IShader, public ObjectBase<Lambertian> {
 public:
-    constexpr Lambertian(Ray point_light) : detail::LambertianImpl(point_light) {}
+    constexpr Lambertian(Handle<IShader> base_shader, Vector3DF light_position, Vector3DF light_intensity) :
+        m_base(base_shader, light_position, light_intensity) {}
 
     virtual Vector3DF GetColor(Scene* p_scene, const HitStruct& rec) override {
-        return detail::LambertianImpl::GetColor(rec);
+        return m_base.GetColor(p_scene, rec);
     }
+public:
+    detail::LambertianImpl m_base;
 }; // class Lambertian
 
 } // namespace eng::shdr

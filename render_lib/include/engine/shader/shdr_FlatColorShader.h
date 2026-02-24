@@ -4,7 +4,7 @@
 
 namespace eng::shdr {
 
-class FlatColor : public IShader, ObjectBase<FlatColor> {
+class FlatColor : public IShader, public ObjectBase<FlatColor> {
 public:
     constexpr FlatColor(const Vector3DF& color) : m_color(color) {}
 
