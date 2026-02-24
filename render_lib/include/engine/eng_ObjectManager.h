@@ -90,6 +90,8 @@ public:
 
     constexpr Handle() : m_ctlr_blk_ptr(nullptr) {}
 
+    constexpr Handle(std::nullptr_t) : m_ctlr_blk_ptr(nullptr) {}
+
     constexpr Handle(const Handle<T>& other) : m_ctlr_blk_ptr(nullptr) {
         this->CopyFrom(other);
     }
@@ -179,7 +181,8 @@ private:
 
         m_ctlr_blk_ptr = other.m_ctlr_blk_ptr;
 
-        m_ctlr_blk_ptr->AddOne();
+        if (m_ctlr_blk_ptr != nullptr)
+            m_ctlr_blk_ptr->AddOne();
         if (old != nullptr)
             old->ReleaseOne();
     }
