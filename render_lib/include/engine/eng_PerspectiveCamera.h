@@ -11,7 +11,7 @@ public:
         m_focal_length(1.0), m_img_plane_width(2), m_img_plane_height(2) {}
 
     constexpr PerspectiveCamera(const Vector3DF& pos, const Vector3DF& dir, float focal_length, int img_width, int img_height, float img_plane_height) :
-        m_position(pos), m_U(), m_V(), m_W(), m_img_width(img_width), m_img_height(img_height), m_focal_length(focal_length), m_img_plane_width(0), m_img_plane_height(img_plane_height)
+        m_position(pos), m_img_width(img_width), m_img_height(img_height), m_focal_length(focal_length), m_img_plane_height(img_plane_height)
     {
         /* Calculate plane width. */
         const auto aspect_ratio = static_cast<float>(m_img_width) / static_cast<float>(m_img_height);
@@ -29,9 +29,16 @@ public:
         /* U points up, take a cross product with our forward and right to get up. */
         m_V = cross(m_W, m_U).normalize();
 
-        std::cout << m_W << '\n';
-        std::cout << m_U << '\n';
-        std::cout << m_V << '\n';
+        if not consteval {
+            std::cout << m_W << '\n';
+            std::cout << m_U << '\n';
+            std::cout << m_V << '\n';
+        }
+
+        m_right_bound  = static_cast<float>(m_img_plane_width) / 2.0;
+        m_left_bound   = -m_right_bound;
+        m_top_bound    = static_cast<float>(m_img_plane_width) / 2.0;
+        m_bottom_bound = -m_top_bound;
     }
 
     virtual ~PerspectiveCamera() = default;
@@ -43,6 +50,7 @@ private:
     int m_img_width, m_img_height;
     float m_focal_length;
     float m_img_plane_width, m_img_plane_height;
+    float m_right_bound, m_left_bound, m_top_bound, m_bottom_bound;
 }; // class PerspectiveCamera
 
 } // namespace eng

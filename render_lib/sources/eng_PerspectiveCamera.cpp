@@ -9,13 +9,12 @@ Ray PerspectiveCamera::GenerateRay(float i, float j) {
     const auto top_bound    = static_cast<float>(m_img_plane_width) / 2.0;
     const auto bottom_bound = -top_bound;
 
-    const float u = left_bound + (right_bound - left_bound) * static_cast<float>(i) / static_cast<float>(m_img_width);
-    const float v = bottom_bound + (top_bound - bottom_bound) * static_cast<float>(j) / static_cast<float>(m_img_height);
+    const float u = m_left_bound + (m_right_bound - m_left_bound) * i / static_cast<float>(m_img_width);
+    const float v = m_bottom_bound + (m_top_bound - m_bottom_bound) * j / static_cast<float>(m_img_height);
 
     const Vector3DF direction = -m_focal_length * m_W + u * m_U + v * m_V;
-    const Vector3DF origin    = m_position;
 
-    return {origin, direction};
+    return {m_position, direction.normalize()};
 }
 
 } // namespace eng
