@@ -92,47 +92,47 @@ inline std::ostream& operator<<(std::ostream &out, const Vector3D<ValueT> &vec) 
 }
 
 template<typename ValueT, typename ValueS>
-[[nodiscard]] constexpr auto operator+(const Vector3D<ValueT> &lhs, const Vector3D<ValueS> &rhs) {
+[[nodiscard]] constexpr auto operator+(const Vector3D<ValueT> &lhs, const Vector3D<ValueS> &rhs) noexcept {
     return Vector3D{lhs.x() + rhs.x(), lhs.y() + rhs.y(), lhs.z() + rhs.z()};
 }
 
 template<typename ValueT, typename ValueS>
-[[nodiscard]] constexpr auto operator+(const Vector3D<ValueT> &lhs, const ValueS& rhs) {
+[[nodiscard]] constexpr auto operator+(const Vector3D<ValueT> &lhs, const ValueS& rhs) noexcept {
     return Vector3D{lhs.x() + rhs, lhs.y() + rhs, lhs.z() + rhs};
 }
 
 template<typename ValueT, typename ValueS>
-[[nodiscard]] constexpr auto operator-(const Vector3D<ValueT> &lhs, const Vector3D<ValueS> &rhs) {
+[[nodiscard]] constexpr auto operator-(const Vector3D<ValueT> &lhs, const Vector3D<ValueS> &rhs) noexcept {
     return Vector3D{lhs.x() - rhs.x(), lhs.y() - rhs.y(), lhs.z() - rhs.z()};
 }
 
 template<typename ValueT, typename ValueS>
-[[nodiscard]] constexpr auto operator-(const Vector3D<ValueT> &lhs, const ValueS& rhs) {
+[[nodiscard]] constexpr auto operator-(const Vector3D<ValueT> &lhs, const ValueS& rhs) noexcept {
     return Vector3D{lhs.x() - rhs, lhs.y() - rhs, lhs.z() - rhs};
 }
 
 template<typename ValueT, typename ValueS>
-[[nodiscard]] constexpr auto operator*(const Vector3D<ValueT> &lhs, const Vector3D<ValueS> &rhs) {
+[[nodiscard]] constexpr auto operator*(const Vector3D<ValueT> &lhs, const Vector3D<ValueS> &rhs) noexcept {
     return Vector3D{lhs.x() * rhs.x(), lhs.y() * rhs.y(), lhs.z() * rhs.z()};
 }
 
 template<typename ValueT, typename ValueS>
-[[nodiscard]] constexpr auto operator*(const Vector3D<ValueT> &lhs, ValueS rhs) {
+[[nodiscard]] constexpr auto operator*(const Vector3D<ValueT> &lhs, ValueS rhs) noexcept {
     return Vector3D { lhs.x() * rhs, lhs.y() * rhs, lhs.z() * rhs };
 }
 
 template<typename ValueT, typename ValueS>
-[[nodiscard]] constexpr auto operator*(ValueT lhs, const Vector3D<ValueS> &rhs) {
+[[nodiscard]] constexpr auto operator*(ValueT lhs, const Vector3D<ValueS> &rhs) noexcept {
     return rhs * lhs;
 }
 
 template<typename ValueT, typename ValueS>
-[[nodiscard]] constexpr auto operator/(const Vector3D<ValueT> &lhs, ValueS rhs) {
+[[nodiscard]] constexpr auto operator/(const Vector3D<ValueT> &lhs, ValueS rhs) noexcept {
     return (1 / rhs) * lhs;
 }
 
 template<typename ValueT, typename WithinT>
-[[nodiscard]] constexpr bool equal_within(const Vector3D<ValueT>& lhs, const Vector3D<ValueT>& rhs, const WithinT& within) {
+[[nodiscard]] constexpr bool equal_within(const Vector3D<ValueT>& lhs, const Vector3D<ValueT>& rhs, const WithinT& within) noexcept {
     const auto withint = static_cast<std::remove_reference_t<ValueT>>(within);
     if (lhs.x() > rhs.x() + withint || lhs.x() < rhs.x() - withint)
         return false;
@@ -145,19 +145,19 @@ template<typename ValueT, typename WithinT>
 
 // DO NOT use this for comparing math results
 template<typename ValueT>
-[[nodiscard]] constexpr bool equal_exact(const Vector3D<ValueT>& lhs, const Vector3D<ValueT>& rhs) {
+[[nodiscard]] constexpr bool equal_exact(const Vector3D<ValueT>& lhs, const Vector3D<ValueT>& rhs) noexcept {
     return lhs.x() == rhs.x() && lhs.y() == rhs.y() && lhs.z() == rhs.z();
 }
 
 template<typename ValueT>
-[[nodiscard]] constexpr double dot(const Vector3D<ValueT> &u, const Vector3D<ValueT> &v) {
+[[nodiscard]] constexpr double dot(const Vector3D<ValueT> &u, const Vector3D<ValueT> &v) noexcept {
     return u.x() * v.x() +
            u.y() * v.y() +
            u.z() * v.z();
 }
 
 template<typename ValueT>
-[[nodiscard]] constexpr Vector3D<ValueT> cross(const Vector3D<ValueT> &u, const Vector3D<ValueT> &v) {
+[[nodiscard]] constexpr Vector3D<ValueT> cross(const Vector3D<ValueT> &u, const Vector3D<ValueT> &v) noexcept {
     return Vector3D { u.y() * v.z() - u.z() * v.y(),
                   u.z() * v.x() - u.x() * v.z(),
                   u.x() * v.y() - u.y() * v.x() };
