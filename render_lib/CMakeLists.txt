@@ -12,6 +12,7 @@ add_library (render_lib
   # Shader Library.
   sources/shader/detail/shdr_LambertianImpl.cpp
   sources/shader/shdr_BlinnPhong.cpp
+  sources/shader/shdr_Mirror.cpp
   sources/shader/shdr_NormalShader.cpp
 
   # Shape Library
