@@ -4,11 +4,6 @@
 namespace eng {
 
 Ray PerspectiveCamera::GenerateRay(float i, float j) {
-    const auto right_bound  = static_cast<float>(m_img_plane_width) / 2.0;
-    const auto left_bound   = -right_bound;
-    const auto top_bound    = static_cast<float>(m_img_plane_width) / 2.0;
-    const auto bottom_bound = -top_bound;
-
     const float u = m_left_bound + (m_right_bound - m_left_bound) * i / static_cast<float>(m_img_width);
     const float v = m_bottom_bound + (m_top_bound - m_bottom_bound) * j / static_cast<float>(m_img_height);
 
