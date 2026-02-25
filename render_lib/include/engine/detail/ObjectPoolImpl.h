@@ -38,10 +38,13 @@ public:
         }
     }
 
-    constexpr bool IsInitialized() const { return m_cur_pool_block != nullptr; }
+    constexpr bool IsInitialized() const noexcept { return m_cur_pool_block != nullptr; }
 protected:
-    constexpr ObjectPoolImplBase(const Allocator& alloc = {}) :
-        m_header_alloc(alloc), m_block_alloc(alloc), m_cur_pool_block(nullptr), m_first_free(nullptr) {}
+    constexpr ObjectPoolImplBase(const Allocator& alloc = {})
+        : m_header_alloc(alloc),
+          m_block_alloc(alloc),
+          m_cur_pool_block(nullptr),
+          m_first_free(nullptr) {}
 
     constexpr void Initialize(const Allocator& alloc = {}) {
         assert(!this->IsInitialized());
@@ -162,8 +165,8 @@ protected:
 protected:
     using ObjectPoolImplBase<T, AllocatorType>::ObjectPoolImplBase;
 private:
-    constexpr auto GetDerived() { return static_cast<ManagerType*>(this); }
-    constexpr auto GetDerived() const { return static_cast<const ManagerType*>(this); }
+    constexpr auto GetDerived() noexcept { return static_cast<ManagerType*>(this); }
+    constexpr auto GetDerived() const noexcept { return static_cast<const ManagerType*>(this); }
 }; // class ObjectPoolImpl
 
 } // namespace eng

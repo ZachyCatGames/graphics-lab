@@ -13,14 +13,17 @@ private:
 }; // class IControlBlockDeallocator
 
 struct ControlBlock {
-    constexpr ControlBlock(IControlBlockDeallocator* man, void* p_val) : ref_cnt(), manager(man), p_val(p_val) {};
+    constexpr ControlBlock(IControlBlockDeallocator* man, void* p_val) noexcept
+        : ref_cnt(),
+          manager(man),
+          p_val(p_val) {};
     ControlBlock(const ControlBlock& other) = delete;
     ControlBlock(ControlBlock&& other) = delete;
 
     template<typename T>
-    [[nodiscard]] constexpr auto Get() const { return static_cast<T*>(p_val); }
+    [[nodiscard]] constexpr auto Get() const noexcept { return static_cast<T*>(p_val); }
 
-    constexpr void AddOne() { ref_cnt.Increment(); }
+    constexpr void AddOne() noexcept { ref_cnt.Increment(); }
 
     constexpr void ReleaseOne() {
         if (ref_cnt.Decrement())

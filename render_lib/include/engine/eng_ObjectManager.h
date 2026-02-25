@@ -88,9 +88,9 @@ public:
     using pointer_type   = value_type*;
     using reference_type = value_type&;
 
-    constexpr Handle() : m_ctlr_blk_ptr(nullptr) {}
+    constexpr Handle() noexcept : m_ctlr_blk_ptr(nullptr) {}
 
-    constexpr Handle(std::nullptr_t) : m_ctlr_blk_ptr(nullptr) {}
+    constexpr Handle(std::nullptr_t) noexcept : m_ctlr_blk_ptr(nullptr) {}
 
     constexpr Handle(const Handle<T>& other) : m_ctlr_blk_ptr(nullptr) {
         this->CopyFrom(other);
@@ -112,17 +112,17 @@ public:
     constexpr ~Handle() { this->Free(); }
 
     template<typename Self>
-    [[nodiscard]] constexpr auto& operator*(this Self&& self) {
+    [[nodiscard]] constexpr auto& operator*(this Self&& self) noexcept {
         return *self.m_ctlr_blk_ptr->template Get<value_type>();
     } 
 
     template<typename Self>
-    [[nodiscard]] constexpr auto operator->(this Self&& self) {
+    [[nodiscard]] constexpr auto operator->(this Self&& self) noexcept {
         return self.Get();
     }
 
     template<typename Self>
-    [[nodiscard]] constexpr auto Get(this Self&& self) {
+    [[nodiscard]] constexpr auto Get(this Self&& self) noexcept {
         return self.m_ctlr_blk_ptr->template Get<value_type>();
     }
 
@@ -130,7 +130,7 @@ public:
         return Handle<T>(*this);
     }
 
-    [[nodiscard]] constexpr auto GetRefCount() const {
+    [[nodiscard]] constexpr auto GetRefCount() const noexcept {
         return m_ctlr_blk_ptr->ref_cnt.GetCount();
     }
 
@@ -196,7 +196,7 @@ private:
         other.m_ctlr_blk_ptr = nullptr;
     }
 
-    constexpr Handle(control_blk* ctlr_blk) : m_ctlr_blk_ptr(ctlr_blk) {
+    constexpr Handle(control_blk* ctlr_blk) noexcept : m_ctlr_blk_ptr(ctlr_blk) {
         /* Increment ref count. */
         m_ctlr_blk_ptr->ref_cnt.Increment();
     }
