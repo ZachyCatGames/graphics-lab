@@ -70,8 +70,8 @@ public:
 private:
 
 public:
-    bool m_randomize_pixel_samples = true;
-    int m_samples_per_pixel = 2;
+    bool m_randomize_pixel_samples = false;
+    int m_samples_per_pixel = 1;
 private:
     std::vector<Handle<IShape>> m_shapes;
     MapType m_attribs;
