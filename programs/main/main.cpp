@@ -11,7 +11,8 @@
 #include <engine/shader/shdr_NormalShader.h>
 #include <engine/shader/shdr_Lambertian.h>
 #include <engine/shader/shdr_BlinnPhong.h>
-
+#include <engine/shader/shdr_Mirror.h>
+#include <engine/shader/shdr_FlatColorShader.h>
 
 #include <print>
 #include <cstdio>
@@ -21,6 +22,8 @@
 #ifdef __SWITCH__
 #include "framebuffer/nx/NativeWindowWriter.plat-nx.h"
 #endif
+
+using namespace eng;
 
 #define VECTOR_COLOR_IMG
 
@@ -34,20 +37,54 @@ int main(int argc, char** argv) {
     float vp_height = 2.0;
     float vp_width  = 0.5;
 
-    eng::Vector3DF pos{0, 0, 0.0};
-    eng::Vector3DF dir{0, 0, -1};
-    float foc_len = 0.25;
-    
+    eng::Vector3DF pos{0, 0, 0};
+    eng::Vector3DF dir{0.0, 0, -1.0};
+    dir = dir.normalize();
+    float foc_len = 0.2;
+
     eng::PerspectiveCamera cam(pos, dir, foc_len, img_width, img_height, vp_width);
     eng::fb::Framebuffer fb(img_width, img_height);
 
     //auto shader = eng::BlinnPhongShader::Create(eng::ray{ eng::Vector3DF{ 0,0,0 }, eng::Vector3DF(3, 4,5)}, 20.0);
-    auto shader = eng::shdr::Lambertian::Create(eng::Ray{ eng::Vector3DF{ 0,0,0 }, eng::Vector3DF(3, 4,5)});
+    //auto shader = eng::shdr::Lambertian::Create(eng::Ray{ eng::Vector3DF{ 0,0,0 }, eng::Vector3DF(3, 4,5)});
 
     eng::Scene scene;
-    scene.EmplaceShape<eng::shape::Sphere>(eng::Vector3DF{0, 0, -15}, 5)
-        .BindShader(shader);
+    /*
     scene.EmplaceShape<eng::shape::Triangle>(eng::Vector3DF{-4.426795, 1.13923, -7}, eng::Vector3DF{-4.833013, -0.44282, -5}, eng::Vector3DF{-4.45, -0.779423, -5});
+    scene.EmplaceShape<shape::Sphere>(Vector3DF(-5, -5, -10), 2)
+        .BindShader(shdr::Mirror::Create());
+    */
+    /* Create ground plane. */
+    scene.EmplaceShape<shape::Triangle>(eng::Vector3DF{-4.426795, 1.13923, -7}, eng::Vector3DF{-4.833013, -0.44282, -5}, eng::Vector3DF{-4.45, -0.779423, -5});
+
+    /*
+    scene.EmplaceShape<shape::Triangle>(
+        Vector3DF(200, 0, 50), Vector3DF(-200, 0, 50), Vector3DF(0, 0, -2000)
+    )
+   .BindShader(shdr::Lambertian::Create(nullptr, Vector3DF(0, 20, 0), Vector3DF(0.5, 0.5, 0.5)));
+    */ 
+
+    /* Make a sphere. */
+    scene.EmplaceShape<eng::shape::Sphere>(eng::Vector3DF{0, 6, -10}, 5)
+        .BindShader(shdr::Lambertian::Create(
+            shdr::FlatColor::Create(Vector3DF(1,0,0)),
+            Vector3DF(10, 0, 0),
+            Vector3DF(1,1,1))
+    );
+
+    /* And another one. */
+    scene.EmplaceShape<eng::shape::Sphere>(eng::Vector3DF{-9, 6, -14}, 4)
+        .BindShader(shdr::Lambertian::Create(
+            shdr::FlatColor::Create(Vector3DF(1,0,0)),
+            Vector3DF(10, 0, 0),
+            Vector3DF(1,1,1))
+    );
+    //scene.EmplaceShape<eng::shape::Sphere>(eng::Vector3DF{0, 0, -14}, 4)
+    //    .BindShader(shdr::Normal::Create()
+    //);
+    scene.EmplaceShape<eng::shape::Sphere>(eng::Vector3DF{-9, 6, -14}, 5)
+        .BindShader(shdr::Mirror::Create()
+    );
 
     //eng::Sphere sphere({0, 0, -4}, 4.955);
     for (int y = 0; y < img_height; y++) {
