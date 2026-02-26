@@ -8,7 +8,7 @@ bool Sphere::Intersect(const Ray& r, Interval<float> t_range, HitStruct* p_hit_i
     auto a = dot(r.direction(), r.direction());
     auto b = 2.0f * dot(oc, r.direction());
     auto c = dot(oc, oc) - m_radius * m_radius;
-    auto disc = b*b - 4*a*c;
+    auto disc = b*b - 4.0*a*c;
 
     /* Return if we didn't hit. */
     if (disc < 0)
