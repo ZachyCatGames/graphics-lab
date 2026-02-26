@@ -42,7 +42,7 @@ namespace eng {
 
     void process(int argc, char *argv[]);
 
-      const int default_WindowSize = 200;
+      static constexpr int default_WindowSize = 200;
 
     bool verbose;
     int windowWidth, windowHeight;
@@ -57,6 +57,7 @@ namespace eng {
 
     int numCpus;
 
+    bool randpix;
     int rpp;
 
     int recursionDepth;

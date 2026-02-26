@@ -31,7 +31,7 @@ GraphicsArgs::GraphicsArgs()
     aspectRatio(1.0), useShadow(true), bgColor(0.0, 0.0, 0.0),
     useDepthOfField(false),
     depthOfFieldDistance(0),
-    numCpus(1), rpp(1), 
+    numCpus(1), rpp(1), randpix(false),
     recursionDepth(4),
     splitMethod("objectMedian")
 {
@@ -45,6 +45,7 @@ GraphicsArgs::GraphicsArgs()
   reg("aspect", "aspect ratio in width/height of image (default is 1)", ArgumentParsing::FLOAT, 'a');
   reg("depth", "depth of field focus distance (default is 0.0 or OFF)", ArgumentParsing::FLOAT, 'd');
   reg("rpp", "rays per pixel (default is 1)", ArgumentParsing::INT, 'r');
+  reg("randpix", "randomize pixel sample locations", ArgumentParsing::NONE, 'p');
   reg("recursionDepth", "recursion depth (default is 4)", ArgumentParsing::INT, 'k');
   reg("split", "split method for bvh construction (default is objectMedian)", ArgumentParsing::STRING, 's');
   reg("winwidth", "width of window (if using preview)", ArgumentParsing::INT, 'x');
@@ -90,6 +91,9 @@ void GraphicsArgs::process(int argc, char *argv[])
 
   isSet("numcpus", numCpus);
   if (verbose) { std::cout << "Setting num cpus to " << numCpus << std::endl; }
+
+  randpix = isSet("randpix");
+  if (verbose) { std::cout << "Setting random pixel sampling to " << randpix << std::endl; }
 
   isSet("rpp", rpp);
   if (verbose) { std::cout << "Setting rays per pixel to " << rpp << std::endl; }
