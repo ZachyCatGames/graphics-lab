@@ -17,7 +17,7 @@ bool Sphere::Intersect(const Ray& r, Interval<float> t_range, HitStruct* p_hit_i
     auto disc_sqrt = std::sqrt(disc);
     float t        = (-b - disc_sqrt) / (2.0f * a);
     if (!t_range.Surrounds(t)) {
-        t = (b + disc_sqrt) / (2.0f * a);
+        t = (-b + disc_sqrt) / (2.0f * a);
         if (!t_range.Surrounds(t))
             return false;
     }
