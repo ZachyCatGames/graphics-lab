@@ -43,6 +43,10 @@ void Scene::Remove(Handle<IShape> shape) {
 }
 
 Vector3DF Scene::GetRayColor(const Ray& r, Interval<float> t_range, int depth) {
+    /* Return black if we've reached the max recursion depth. */
+    if (depth > m_max_depth)
+        return Vector3DF{0, 0, 0}; 
+   
     float closest_found = t_range.Max();
     Handle<IShape> closest_shape;
     HitStruct closest_rec;
