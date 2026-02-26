@@ -1,6 +1,8 @@
 # Add our main program subdirectory
 add_subdirectory(main)
 
+add_subdirectory(TriChallenge)
+
 #
 # OpenGL Example
 #
