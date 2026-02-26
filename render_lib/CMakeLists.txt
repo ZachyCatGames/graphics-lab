@@ -28,7 +28,7 @@ add_library (render_lib
   ${UTIL_PLAT_SRC}
 )
 target_compile_definitions(render_lib PUBLIC HAS_GLM)
-#target_link_libraries(cs4212-util PRIVATE Boost::program_options)
+target_link_libraries(render_lib PUBLIC Boost::program_options)
 #target_link_libraries(cs4212-util PUBLIC glm::glm)
 
 target_include_directories(render_lib PUBLIC include)
