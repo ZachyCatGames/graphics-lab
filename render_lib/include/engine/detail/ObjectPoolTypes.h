@@ -22,6 +22,9 @@ union PoolEntry {
     explicit constexpr PoolEntry(PoolEntry<T>* next_free) noexcept
         : next_free(next_free) {}
 
+    explicit constexpr PoolEntry(std::nullptr_t) noexcept
+        : next_free(nullptr) {}
+
     T obj;
     PoolEntry<T>* next_free;
 };

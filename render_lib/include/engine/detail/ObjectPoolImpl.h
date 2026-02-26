@@ -117,6 +117,9 @@ private:
         std::construct_at(&new_blk[n-1], m_first_free);
         m_first_free = &new_blk[1];
 
+        /* Terminate end. */
+        std::construct_at(&new_blk[n-1], nullptr);
+
         /* Point the current pool block at the new block. */
         m_first_free = new_blk;
 
