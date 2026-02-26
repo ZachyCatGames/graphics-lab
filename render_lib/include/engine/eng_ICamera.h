@@ -9,6 +9,8 @@ public:
     virtual ~ICamera() = default;
 
     virtual Ray GenerateRay(float i, float j) = 0;
+
+    constexpr virtual float GetMinT() const = 0;
 private:
     /* ... */
 }; // class ICamera

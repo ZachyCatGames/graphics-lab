@@ -64,9 +64,7 @@ int main(int argc, char** argv) {
     //auto shader = eng::BlinnPhongShader::Create(eng::ray{ eng::Vector3DF{ 0,0,0 }, eng::Vector3DF(3, 4,5)}, 20.0);
     //auto shader = eng::shdr::Lambertian::Create(eng::Ray{ eng::Vector3DF{ 0,0,0 }, eng::Vector3DF(3, 4,5)});
 
-    eng::Scene scene;
-    scene.m_randomize_pixel_samples = args.randpix;
-    scene.m_samples_per_pixel       = args.rpp;
+    eng::Scene scene(args.recursionDepth, args.rpp, args.randpix);
     /*
     scene.EmplaceShape<eng::shape::Triangle>(eng::Vector3DF{-4.426795, 1.13923, -7}, eng::Vector3DF{-4.833013, -0.44282, -5}, eng::Vector3DF{-4.45, -0.779423, -5});
     scene.EmplaceShape<shape::Sphere>(Vector3DF(-5, -5, -10), 2)

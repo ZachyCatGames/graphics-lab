@@ -11,7 +11,7 @@ public:
     constexpr BlinnPhong(Handle<IShader> base_shader, Vector3DF light_position, Vector3DF light_color, float exp) :
         m_lambertian(base_shader, light_position, light_color), m_exp(exp) {}
 
-    virtual Vector3DF GetColor(Scene* p_scene, const HitStruct& rec) override;
+    virtual Vector3DF GetColor(Scene* p_scene, int depth, const HitStruct& rec) override;
 private:
     detail::LambertianImpl m_lambertian;
     float m_exp;

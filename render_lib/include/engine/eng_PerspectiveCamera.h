@@ -44,6 +44,8 @@ public:
     virtual ~PerspectiveCamera() = default;
 
     [[nodiscard]] virtual Ray GenerateRay(float i, float j) override;
+
+    [[nodiscard]] constexpr virtual float GetMinT() const override { return m_focal_length; }
 private:
     Vector3DF m_position;
     Vector3DF m_U, m_V, m_W;

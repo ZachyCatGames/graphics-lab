@@ -6,7 +6,7 @@ namespace eng::shdr {
 
 class Mirror : public IShader, public ObjectBase<Mirror> {
 public:
-    virtual Vector3DF GetColor(Scene* p_scene, const HitStruct& rec) override;
+    virtual Vector3DF GetColor(Scene* p_scene, int depth, const HitStruct& rec) override;
 }; // class Mirror
 
 } // namespace eng::shdr

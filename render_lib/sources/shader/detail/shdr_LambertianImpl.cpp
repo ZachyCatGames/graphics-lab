@@ -3,9 +3,9 @@
 
 namespace eng::shdr::detail {
 
-Vector3DF LambertianImpl::GetColor(Scene* p_scene, const HitStruct& rec) {
+Vector3DF LambertianImpl::GetColor(Scene* p_scene, int depth, const HitStruct& rec) {
     /* Request color from base shader. */
-    const auto base_color = m_base ? m_base->GetColor(p_scene, rec) : Vector3DF(1,1,1);
+    const auto base_color = m_base ? m_base->GetColor(p_scene, depth, rec) : Vector3DF(1,1,1);
 
     const auto dir = this->GetDirection(rec.position).normalize();
 

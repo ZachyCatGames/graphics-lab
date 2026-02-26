@@ -13,7 +13,7 @@ public:
     constexpr LambertianImpl(Handle<IShader> base_shader, Vector3DF light_position, Vector3DF light_intensity) : 
         m_light_position(light_position), m_light_intensity(light_intensity) {}
 
-    [[nodiscard]] Vector3DF GetColor(Scene* p_scene, const HitStruct& rec);
+    [[nodiscard]] Vector3DF GetColor(Scene* p_scene, int depth, const HitStruct& rec);
 
     constexpr auto GetDirection(Vector3DF dst_pos) {
         return (m_light_position - dst_pos).normalize();

@@ -2,6 +2,16 @@
 
 namespace eng {
 
+Scene::Scene()
+    : m_max_depth(4),
+      m_samples_per_pixel(1),
+      m_randomize_pixel_samples(false) {}
+
+Scene::Scene(int max_depth, int samples_per_pixel, bool random_samples)
+    : m_max_depth(max_depth),
+      m_samples_per_pixel(samples_per_pixel),
+      m_randomize_pixel_samples(random_samples) {}
+
 Scene::ObjectContext Scene::InsertShape(Handle<IShape> handle) {
     m_shapes.push_back(handle);
     auto [iter, inserted] = m_attribs.insert_or_assign(handle, ShapeAttributes());
@@ -32,13 +42,13 @@ void Scene::Remove(Handle<IShape> shape) {
     m_attribs.erase(shape);
 }
 
-Vector3DF Scene::GetRayColor(const Ray& r) {
-    float closest_found = std::numeric_limits<float>::infinity();
+Vector3DF Scene::GetRayColor(const Ray& r, Interval<float> t_range, int depth) {
+    float closest_found = t_range.Max();
     Handle<IShape> closest_shape;
     HitStruct closest_rec;
     eng::HitStruct rec;
     for (auto& shape : m_shapes) {
-        if (shape->Intersect(r, eng::Interval<float>(0.25, closest_found), &rec)) {
+        if (shape->Intersect(r, eng::Interval<float>(t_range.Min(), closest_found), &rec)) {
             closest_found = rec.t;
             closest_shape = shape;
             closest_rec   = rec;
@@ -53,7 +63,7 @@ Vector3DF Scene::GetRayColor(const Ray& r) {
         /* Run the shape's shader if available. */
         auto shader = m_attribs[closest_shape].shader;
         if (shader) {
-            auto c = shader->GetColor(this, closest_rec);
+            auto c = shader->GetColor(this, depth, closest_rec);
             return c;
         }
 
@@ -67,6 +77,7 @@ Vector3DF Scene::GetRayColor(const Ray& r) {
 
 Vector3DF Scene::GetPixelColor(ICamera* p_cam, int x, int y) {
     const auto subpix_stride = 1.0 / m_samples_per_pixel;
+    const auto tmin          = p_cam->GetMinT();
     Rng<float> rng(0.0, subpix_stride);
     Vector3DF color_sum(0, 0, 0);
     for (int i = 0; i < m_samples_per_pixel; i++) {
@@ -88,8 +99,8 @@ Vector3DF Scene::GetPixelColor(ICamera* p_cam, int x, int y) {
             /* Generate a ray. */
             auto r = p_cam->GenerateRay(pos_x, pos_y);
 
-            /* Call GetRayColor. */
-            color_sum += this->GetRayColor(r);
+            /* Call GetRayColor starting at a depth of zero. */
+            color_sum += this->GetRayColor(r, {tmin, std::numeric_limits<float>::infinity()}, 0);
         }
     }
 
