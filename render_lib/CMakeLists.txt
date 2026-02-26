@@ -20,6 +20,8 @@ add_library (render_lib
   sources/shape/shape_Triangle.cpp
 
   # Core Library.
+  sources/eng_ArgumentParsing.cpp
+  sources/eng_HandleGraphicsArgs.cpp
   sources/eng_PerspectiveCamera.cpp
   sources/eng_Scene.cpp
 
