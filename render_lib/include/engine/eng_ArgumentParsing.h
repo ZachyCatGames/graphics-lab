@@ -31,7 +31,8 @@
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 
-namespace sivelab {
+// namespace sivelab
+namespace eng {
 class ArgumentParsing
 {
 public:
@@ -64,4 +65,4 @@ private:
   po::options_description m_optDesc;
   po::variables_map m_varMap;
 };
-}// namespace sivelab
+}// namespace eng
