@@ -52,21 +52,23 @@ Vector3DF Scene::GetRayColor(const Ray& r) {
     if (closest_shape.IsValid()) {
         /* Run the shape's shader if available. */
         auto shader = m_attribs[closest_shape].shader;
-        if (shader) 
-            return shader->GetColor(this, closest_rec) * Vector3DF(1.0, 0.60, 0.12);
+        if (shader) {
+            auto c = shader->GetColor(this, closest_rec);
+            return c;
+        }
 
         /* If no shader is available, fallback to returning white. */
         return Vector3DF{1.0, 1.0, 1.0};
     }
 
     /* Return black if no shape was found. */
-    return Vector3DF{0.43, 1.0, 0.29};
+    return Vector3DF{0, 0, 0};
 }
 
 Vector3DF Scene::GetPixelColor(ICamera* p_cam, int x, int y) {
     const auto subpix_stride = 1.0 / m_samples_per_pixel;
     Rng<float> rng(0.0, subpix_stride);
-    Vector3DF color_sum;
+    Vector3DF color_sum(0, 0, 0);
     for (int i = 0; i < m_samples_per_pixel; i++) {
         for (int j = 0; j < m_samples_per_pixel; j++) {
             /* Sample at a random point if random sampling is enabled, otherwise
