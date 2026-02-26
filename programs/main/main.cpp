@@ -2,6 +2,8 @@
 #include <engine/eng_PerspectiveCamera.h>
 #include <engine/eng_Scene.h>
 
+#include <engine/eng_HandleGraphicsArgs.h>
+
 #include <engine/framebuffer/fb_Framebuffer.h>
 #include <engine/framebuffer/fb_PngWriter.h>
 
@@ -17,6 +19,7 @@
 #include <print>
 #include <cstdio>
 #include <memory>
+#include <thread>
 #include <vector>
 
 #ifdef __SWITCH__
@@ -28,19 +31,32 @@ using namespace eng;
 #define VECTOR_COLOR_IMG
 
 int main(int argc, char** argv) {
-    int img_width  = 200;
-    int img_height = 200;
-
-    auto aspect_ratio = static_cast<float>(img_width) / img_height;
+    GraphicsArgs args;
+#ifdef __SWITCH__
+    /* Use hardcoded args on NX. */
+    const char* argstr[] {
+        "winwidth", "1280",
+        "winHeight", "720",
+        "width", "1280",
+        "height", "720",
+        "numcpus", "3",
+        "rpp", "10",            // change me
+        "recursionDepth", "4"   // change me
+    };
+    args.process(sizeof(argstr) / sizeof(argstr[0]), argstr);
+#else
+    /* Process args. */
+    args.process(argc, argv);
+#endif
+    const int img_width  = args.width;
+    const int img_height = args.height;
 
 #if 1
-    float vp_height = 2.0;
-    float vp_width  = 0.5;
+    static constexpr float vp_width  = 0.5;
 
-    eng::Vector3DF pos{0, 0, 0};
-    eng::Vector3DF dir{0.0, 0, -1.0};
-    dir = dir.normalize();
-    float foc_len = 0.2;
+    static constexpr auto pos = Vector3DF(0, 5, 0);
+    static const auto dir = Vector3DF(0, 0, -1.0).normalize();
+    static constexpr float foc_len = 0.2;
 
     eng::PerspectiveCamera cam(pos, dir, foc_len, img_width, img_height, vp_width);
     eng::fb::Framebuffer fb(img_width, img_height);
@@ -49,36 +65,37 @@ int main(int argc, char** argv) {
     //auto shader = eng::shdr::Lambertian::Create(eng::Ray{ eng::Vector3DF{ 0,0,0 }, eng::Vector3DF(3, 4,5)});
 
     eng::Scene scene;
+    scene.m_randomize_pixel_samples = args.randpix;
+    scene.m_samples_per_pixel       = args.rpp;
     /*
     scene.EmplaceShape<eng::shape::Triangle>(eng::Vector3DF{-4.426795, 1.13923, -7}, eng::Vector3DF{-4.833013, -0.44282, -5}, eng::Vector3DF{-4.45, -0.779423, -5});
     scene.EmplaceShape<shape::Sphere>(Vector3DF(-5, -5, -10), 2)
         .BindShader(shdr::Mirror::Create());
     */
     /* Create ground plane. */
-    scene.EmplaceShape<shape::Triangle>(eng::Vector3DF{-4.426795, 1.13923, -7}, eng::Vector3DF{-4.833013, -0.44282, -5}, eng::Vector3DF{-4.45, -0.779423, -5});
+    //scene.EmplaceShape<shape::Triangle>(eng::Vector3DF{-4.426795, 1.13923, -7}, eng::Vector3DF{-4.833013, -0.44282, -5}, eng::Vector3DF{-4.45, -0.779423, -5});
 
-    /*
     scene.EmplaceShape<shape::Triangle>(
         Vector3DF(200, 0, 50), Vector3DF(-200, 0, 50), Vector3DF(0, 0, -2000)
     )
    .BindShader(shdr::Lambertian::Create(nullptr, Vector3DF(0, 20, 0), Vector3DF(0.5, 0.5, 0.5)));
-    */ 
 
     /* Make a sphere. */
-    scene.EmplaceShape<eng::shape::Sphere>(eng::Vector3DF{0, 6, -10}, 5)
+    scene.EmplaceShape<eng::shape::Sphere>(eng::Vector3DF{3, 6, -10}, 5)
         .BindShader(shdr::Lambertian::Create(
             shdr::FlatColor::Create(Vector3DF(1,0,0)),
-            Vector3DF(10, 0, 0),
+            Vector3DF(-10, 0, 0),
             Vector3DF(1,1,1))
     );
 
     /* And another one. */
+    /*
     scene.EmplaceShape<eng::shape::Sphere>(eng::Vector3DF{-9, 6, -14}, 4)
         .BindShader(shdr::Lambertian::Create(
             shdr::FlatColor::Create(Vector3DF(1,0,0)),
             Vector3DF(10, 0, 0),
             Vector3DF(1,1,1))
-    );
+    ); */
     //scene.EmplaceShape<eng::shape::Sphere>(eng::Vector3DF{0, 0, -14}, 4)
     //    .BindShader(shdr::Normal::Create()
     //);
@@ -86,13 +103,22 @@ int main(int argc, char** argv) {
         .BindShader(shdr::Mirror::Create()
     );
 
-    //eng::Sphere sphere({0, 0, -4}, 4.955);
-    for (int y = 0; y < img_height; y++) {
-        for (int x = 0; x < img_width; x++) {
-            auto color = scene.GetPixelColor(&cam, x, y);
+    std::atomic<int> cur_line = 0;
+    const auto worker_func = [&]() {
+        int line;
+        while (line = cur_line++, line < img_height) {
+            for (int x = 0; x < img_width; x++) {
+                auto color = scene.GetPixelColor(&cam, x, line);
 
-            fb.SetPixelColor(x, y, color);
+                fb.SetPixelColor(x, line, color);
+            }
         }
+    };
+
+    {
+        std::vector<std::jthread> threads(args.numCpus);
+        for (auto& thread : threads)
+            thread = std::jthread(worker_func);
     }
 #endif
 
@@ -106,7 +132,7 @@ int main(int argc, char** argv) {
     float foc_len = 0.001;
 
     eng::PerspectiveCamera cam(pos, dir, foc_len, img_width, img_height, vp_width);
-    eng::Framebuffer fb(img_width, img_height);
+    eng::fb::Framebuffer fb(img_width, img_height);
 
     for (int y = 0; y < img_height; y++) {
         for (int x = 0; x < img_width; x++) {
