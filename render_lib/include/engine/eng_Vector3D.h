@@ -28,33 +28,30 @@ public:
         return std::forward<Self>(self).e[index];
     }
 
-    constexpr Vector3D& operator+=(const Vector3D<ValueT> &rhs) noexcept {
-        this->e[0] += rhs.e[0];
-        this->e[1] += rhs.e[1];
-        this->e[2] += rhs.e[2];
-        return *this;
-    }
+    template<typename T, typename S>
+    friend constexpr auto& operator+=(Vector3D<T>& vec, const S& rhs) noexcept;
 
-    constexpr Vector3D& operator-=(const Vector3D<ValueT> &rhs) noexcept {
-        this->e[0] -= rhs.e[0];
-        this->e[1] -= rhs.e[1];
-        this->e[2] -= rhs.e[2];
-        return *this;
-    }
+    template<typename T, typename S>
+    friend constexpr auto& operator+=(Vector3D<T>& vec, const Vector3D<S> &rhs) noexcept;
 
-    constexpr Vector3D& operator*=(const Vector3D<ValueT> &rhs) noexcept {
-        this->e[0] *= rhs.e[0];
-        this->e[1] *= rhs.e[1];
-        this->e[2] *= rhs.e[2];
-        return *this;
-    }
+    template<typename T, typename S>
+    friend constexpr auto& operator-=(Vector3D<T>& vec, S rhs) noexcept;
 
-    constexpr Vector3D& operator/=(const Vector3D<ValueT> &rhs) noexcept {
-        this->e[0] /= rhs.e[0];
-        this->e[1] /= rhs.e[1];
-        this->e[2] /= rhs.e[2];
-        return *this;
-    }
+    template<typename T, typename S>
+    friend constexpr auto& operator-=(Vector3D<T>& vec, const Vector3D<S> &rhs) noexcept;
+
+    template<typename T, typename S>
+    friend constexpr auto& operator*=(Vector3D<T>& vec, S rhs) noexcept;
+
+    template<typename T, typename S>
+    friend constexpr auto& operator*=(Vector3D<T>& vec, const Vector3D<S> &rhs) noexcept;
+
+    template<typename T, typename S>
+    friend constexpr auto& operator/=(Vector3D<T>& vec, S rhs) noexcept;
+
+    template<typename T, typename S>
+    friend constexpr auto& operator/=(Vector3D<T>& vec, const Vector3D<S> &rhs) noexcept;
+
 
     [[nodiscard]] constexpr ValueType length() const noexcept { // cxx26 constexpr
         return std::sqrt(this->length_squared());
@@ -85,6 +82,74 @@ private:
 }; // class Vector3D
 
 using Vector3DF = Vector3D<float>;
+
+template<typename T, typename S>
+constexpr auto& operator+=(Vector3D<T>& vec, const S& rhs) noexcept {
+    auto f = static_cast<Vector3D<T>::ValueType>(rhs);
+    vec.e[0] += f;
+    vec.e[1] += f;
+    vec.e[2] += f;
+    return vec;
+}
+
+template<typename T, typename S>
+constexpr auto& operator+=(Vector3D<T>& vec, const Vector3D<S> &rhs) noexcept {
+    vec.e[0] += rhs.e[0];
+    vec.e[1] += rhs.e[1];
+    vec.e[2] += rhs.e[2];
+    return vec;
+}
+
+template<typename T, typename S>
+constexpr auto& operator-=(Vector3D<T>& vec, const Vector3D<S> &rhs) noexcept {
+    vec.e[0] -= rhs.x();
+    vec.e[1] -= rhs.y();
+    vec.e[2] -= rhs.z();
+    return vec;
+}
+
+template<typename T, typename S>
+constexpr auto& operator-=(Vector3D<T>& vec, S rhs) noexcept {
+    auto f = static_cast<Vector3D<T>::ValueType>(rhs);
+    vec.e[0] -= f;
+    vec.e[1] -= f;
+    vec.e[2] -= f;
+    return vec;
+}
+
+template<typename T, typename S>
+constexpr auto& operator*=(Vector3D<T>& vec, const Vector3D<S> &rhs) noexcept {
+    vec.e[0] *= rhs.x();
+    vec.e[1] *= rhs.y();
+    vec.e[2] *= rhs.z();
+    return vec;
+}
+
+template<typename T, typename S>
+constexpr auto& operator*=(Vector3D<T>& vec, S rhs) noexcept {
+    auto f = static_cast<Vector3D<T>::ValueType>(rhs);
+    vec.e[0] *= f;
+    vec.e[1] *= f;
+    vec.e[2] *= f;
+    return vec;
+}
+
+template<typename T, typename S>
+constexpr auto& operator/=(Vector3D<T>& vec, const Vector3D<S> &rhs) noexcept {
+    vec.e[0] /= rhs.x();
+    vec.e[1] /= rhs.y();
+    vec.e[2] /= rhs.z();
+    return vec;
+}
+
+template<typename T, typename S>
+constexpr auto& operator/=(Vector3D<T>& vec, S rhs) noexcept {
+    auto f = static_cast<Vector3D<T>::ValueType>(rhs);
+    vec.e[0] /= f;
+    vec.e[1] /= f;
+    vec.e[2] /= f;
+    return vec;
+}
 
 template<typename ValueT>
 inline std::ostream& operator<<(std::ostream &out, const Vector3D<ValueT> &vec) {
