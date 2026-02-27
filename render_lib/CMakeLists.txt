@@ -11,6 +11,7 @@ add_library (render_lib
 
   # Shader Library.
   sources/shader/shdr_BlinnPhong.cpp
+  sources/shader/shdr_Diffuse.cpp
   sources/shader/shdr_Lambertian.cpp
   sources/shader/shdr_Mirror.cpp
   sources/shader/shdr_NormalShader.cpp

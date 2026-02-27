@@ -11,10 +11,12 @@
 #include <engine/shape/shape_Triangle.h>
 
 #include <engine/shader/shdr_NormalShader.h>
+#include <engine/shader/shdr_Diffuse.h>
 #include <engine/shader/shdr_Lambertian.h>
 #include <engine/shader/shdr_BlinnPhong.h>
 #include <engine/shader/shdr_Mirror.h>
 #include <engine/shader/shdr_FlatColorShader.h>
+#include <engine/shader/shdr_Emitter.h>
 
 #include <array>
 #include <print>
@@ -75,19 +77,31 @@ int main(int argc, char** argv) {
     //scene.EmplaceShape<shape::Triangle>(eng::Vector3DF{-4.426795, 1.13923, -7}, eng::Vector3DF{-4.833013, -0.44282, -5}, eng::Vector3DF{-4.45, -0.779423, -5});
 
     scene.EmplaceShape<shape::Triangle>(
-        Vector3DF(200, 0, 50), Vector3DF(-200, 0, 50), Vector3DF(0, 0, -2000)
+        Vector3DF(-200, 0, 50), Vector3DF(200, 0, 50), Vector3DF(0, 0, -2000)
     )
-   .BindShader(shdr::Lambertian::Create(nullptr, std::array{
-        shdr::PointLight(Vector3DF(0, 20, 0), Vector3DF(0.5, 0.5, 0.5))
-    }));
+        .BindShader(shdr::Diffuse::Create(
+            shdr::FlatColor::Create(Vector3DF(0.5, 0.5, 0.5))
+    ));
+   //.BindShader(shdr::Lambertian::Create(nullptr, std::array{
+    //    shdr::PointLight(Vector3DF(0, 20, 0), Vector3DF(0.5, 0.5, 0.5))
+    //}));
+
+    /* Create a light emitter. */
+    scene.EmplaceShape<shape::Sphere>(Vector3DF(0, 30, -10), 5)
+        .BindShader(shdr::Emitter::Create(Vector3DF(20, 20, 20)));
 
     /* Make a sphere. */
+    /*
     scene.EmplaceShape<eng::shape::Sphere>(eng::Vector3DF{3, 6, -10}, 5)
         .BindShader(shdr::Lambertian::Create(
             shdr::FlatColor::Create(Vector3DF(1,1,1)),
             std::array {
                 shdr::PointLight(Vector3DF(-10,0,0), Vector3DF(1,1,1))
             }
+    )); */
+    scene.EmplaceShape<eng::shape::Sphere>(eng::Vector3DF{3, 6, -10}, 5)
+        .BindShader(shdr::Diffuse::Create(
+            shdr::FlatColor::Create(Vector3DF(0.0, 0.75, 0.0))
     ));
 
     /* And another one. */
@@ -109,6 +123,7 @@ int main(int argc, char** argv) {
     const auto worker_func = [&]() {
         int line;
         while (line = cur_line++, line < img_height) {
+            std::print("Line {}\n", line);
             for (int x = 0; x < img_width; x++) {
                 auto color = scene.GetPixelColor(&cam, x, line);
 
