@@ -1,4 +1,5 @@
 #pragma once
+#include <engine/eng_Rng.h>
 #include <cmath>
 #include <iostream>
 
@@ -52,7 +53,6 @@ public:
     template<typename T, typename S>
     friend constexpr auto& operator/=(Vector3D<T>& vec, const Vector3D<S> &rhs) noexcept;
 
-
     [[nodiscard]] constexpr ValueType length() const noexcept { // cxx26 constexpr
         return std::sqrt(this->length_squared());
     }
@@ -76,6 +76,17 @@ public:
         const auto y = std::min(this->y(), max);
         const auto z = std::min(this->z(), max);
         return {x, y, z};
+    }
+
+    [[nodiscard]] static Vector3D<ValueT> random(ValueType min, ValueType max) {
+        Rng<ValueType> gen(min, max);
+        return {gen(), gen(), gen()};
+    }
+
+    [[nodiscard]] static Vector3D<ValueT> random_in_unit_sphere() {
+        Vector3D<ValueT> vec;
+        while (vec = random(-1.0, 1.0), vec.length() > 1) {}
+        return vec;
     }
 private:
     ValueT e[3];
