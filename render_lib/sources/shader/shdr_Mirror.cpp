@@ -11,7 +11,7 @@ Vector3DF Mirror::GetColor(Scene* p_scene, int depth, const HitStruct& rec) {
         (dir - 2 * dot(dir, nor) * nor).normalize(),
     };
 
-    return p_scene->GetRayColor(r, {std::numeric_limits<float>::epsilon(), std::numeric_limits<float>::infinity()}, depth+1);
+    return p_scene->GetRayColor(r, {0.00001, std::numeric_limits<float>::infinity()}, depth+1);
 }
 
 } // namespace eng
