@@ -16,6 +16,7 @@
 #include <engine/shader/shdr_Mirror.h>
 #include <engine/shader/shdr_FlatColorShader.h>
 
+#include <array>
 #include <print>
 #include <cstdio>
 #include <memory>
@@ -76,15 +77,18 @@ int main(int argc, char** argv) {
     scene.EmplaceShape<shape::Triangle>(
         Vector3DF(200, 0, 50), Vector3DF(-200, 0, 50), Vector3DF(0, 0, -2000)
     )
-   .BindShader(shdr::Lambertian::Create(nullptr, Vector3DF(0, 20, 0), Vector3DF(0.5, 0.5, 0.5)));
+   .BindShader(shdr::Lambertian::Create(nullptr, std::array{
+        shdr::PointLight(Vector3DF(0, 20, 0), Vector3DF(0.5, 0.5, 0.5))
+    }));
 
     /* Make a sphere. */
     scene.EmplaceShape<eng::shape::Sphere>(eng::Vector3DF{3, 6, -10}, 5)
         .BindShader(shdr::Lambertian::Create(
-            shdr::FlatColor::Create(Vector3DF(1,0,0)),
-            Vector3DF(-10, 0, 0),
-            Vector3DF(1,1,1))
-    );
+            shdr::FlatColor::Create(Vector3DF(1,1,1)),
+            std::array {
+                shdr::PointLight(Vector3DF(-10,0,0), Vector3DF(1,1,1))
+            }
+    ));
 
     /* And another one. */
     /*

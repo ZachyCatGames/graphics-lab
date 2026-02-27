@@ -1,8 +1,9 @@
-#include <engine/shader/shdr_BlinnPhong.h>
+#include <engine/shader/shdr_Lambertian.h>
+#include <print>
 
 namespace eng::shdr {
 
-Vector3DF BlinnPhong::GetColor(Scene* p_scene, int depth, const HitStruct& rec) {
+Vector3DF Lambertian::GetColor(Scene* p_scene, int depth, const HitStruct& rec) {
     /* Request color from base shader. */
     const auto base_color = m_base ? m_base->GetColor(p_scene, depth, rec) : Vector3DF(1,1,1);
 
@@ -11,9 +12,7 @@ Vector3DF BlinnPhong::GetColor(Scene* p_scene, int depth, const HitStruct& rec) 
         const auto dir = light.GetDirection(rec.position);
         const auto nl  = std::max(0.0, dot(rec.normal, dir));
 
-        const auto half_vector = (rec.r.direction() + light.GetDirection(rec.position)).normalize();
-
-        light_sum += Vector3DF( nl, nl, nl ) * light.intensity + std::pow(std::max(0.0, dot(rec.normal, half_vector)), m_exp);
+        light_sum += Vector3DF( nl, nl, nl ) * light.intensity;
     }
 
     return light_sum * base_color;

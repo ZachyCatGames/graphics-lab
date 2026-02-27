@@ -18,6 +18,7 @@
 #include <engine/shader/shdr_Mirror.h>
 #include <engine/shader/shdr_FlatColorShader.h>
 
+#include <array>
 #include <print>
 #include <cstdio>
 #include <memory>
@@ -27,8 +28,8 @@ using namespace eng;
 
 #include <thread>
 
-constexpr int img_width  = 600;
-constexpr int img_height = 600;
+constexpr int img_width  = 200;
+constexpr int img_height = 200;
 
     constexpr float vp_height = 2.0;
     constexpr float vp_width  = 0.25;
@@ -93,8 +94,9 @@ int main(int argc, char* argv[])
 
     auto shader = shdr::Lambertian::Create(
         nullptr,
-        Vector3DF(0, 0, 2.5),
-        Vector3DF(1,1,1)
+        std::array{
+            shdr::PointLight(Vector3DF(0, 0, 2.5), Vector3DF(1,1,1))
+        }
     );
     for (int i = 0; i < numTriangles; i++) {
         Vector3DF verts[3];

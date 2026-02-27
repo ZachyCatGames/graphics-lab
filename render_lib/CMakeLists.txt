@@ -10,8 +10,8 @@ add_library (render_lib
   sources/framebuffer/fb_PngWriter.cpp
 
   # Shader Library.
-  sources/shader/detail/shdr_LambertianImpl.cpp
   sources/shader/shdr_BlinnPhong.cpp
+  sources/shader/shdr_Lambertian.cpp
   sources/shader/shdr_Mirror.cpp
   sources/shader/shdr_NormalShader.cpp
 

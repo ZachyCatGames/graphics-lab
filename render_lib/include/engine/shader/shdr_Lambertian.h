@@ -1,21 +1,23 @@
 #pragma once
 #include <engine/eng_IShader.h>
 #include <engine/eng_ObjectBase.h>
+#include <ranges>
 
-#include <engine/shader/detail/shdr_LambertianImpl.h>
+#include <engine/shader/shdr_PointLight.h>
 
 namespace eng::shdr {
 
 class Lambertian : public IShader, public ObjectBase<Lambertian> {
 public:
-    constexpr Lambertian(Handle<IShader> base_shader, Vector3DF light_position, Vector3DF light_intensity) :
-        m_base(base_shader, light_position, light_intensity) {}
+    template<std::ranges::input_range R>
+    constexpr Lambertian(Handle<IShader> base_shader, R&& lights)
+        : m_base(base_shader),
+          m_lights(std::from_range, std::forward<R>(lights)) {}
 
-    virtual Vector3DF GetColor(Scene* p_scene, int depth, const HitStruct& rec) override {
-        return m_base.GetColor(p_scene, depth, rec);
-    }
+    virtual Vector3DF GetColor(Scene* p_scene, int depth, const HitStruct& rec) override;
 public:
-    detail::LambertianImpl m_base;
+    Handle<IShader> m_base;
+    std::vector<PointLight> m_lights;
 }; // class Lambertian
 
 } // namespace eng::shdr
