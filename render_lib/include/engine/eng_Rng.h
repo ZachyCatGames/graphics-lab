@@ -16,15 +16,15 @@ public:
     void Reset() { m_dist.reset(); }
 
     auto GetNext() {
-        if (!s_init)
-            s_rng.seed(std::time(nullptr));
+        //if (!s_init)
+        //    s_rng.seed(std::time(nullptr));
         return m_dist(s_rng);
     }
 
     auto operator()() { return this->GetNext(); }
 private:
-    static std::mt19937 s_rng;
-    static constinit bool s_init;
+    static thread_local std::mt19937 s_rng;
+    static thread_local constinit bool s_init;
 private:
     //static_assert(std::is_integral_v<value_type>);
     //using DistType = std::uniform_real_distribution<float>;
@@ -34,10 +34,10 @@ private:
 
 template<typename T>
 requires std::is_arithmetic_v<T>
-std::mt19937 Rng<T>::s_rng;
+thread_local std::mt19937 Rng<T>::s_rng;
 
 template<typename T>
 requires std::is_arithmetic_v<T>
-constinit bool Rng<T>::s_init = false;
+constinit thread_local bool Rng<T>::s_init = false;
 
 } // namespace eng
