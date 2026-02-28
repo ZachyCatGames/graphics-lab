@@ -13,12 +13,6 @@ Vector3DF Diffuse::GetColor(Scene* p_scene, int depth, const HitStruct& rec) {
         if (direction.length_squared() > 0) {
             direction = direction.normalize();
 
-            /* Invert the vector if it's on the wrong side of the unit circle */
-            /* i.e., down relative to our normal. */
-            if (dot(direction, rec.normal) < 0) {
-                direction = -direction;
-            }
-
             break;
         }
     }
@@ -26,7 +20,7 @@ Vector3DF Diffuse::GetColor(Scene* p_scene, int depth, const HitStruct& rec) {
     /* Obtain base color from base shader. */
     const auto base_color = m_shader->GetColor(p_scene, depth, rec);
 
-    const Ray r(rec.position, rec.normal + direction);
+    const Ray r(rec.position, direction + rec.normal);
 
     return base_color * p_scene->GetRayColor(r, {0.001, std::numeric_limits<float>::infinity()}, depth+1);
 }

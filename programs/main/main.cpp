@@ -78,9 +78,8 @@ int main(int argc, char** argv) {
 
     scene.EmplaceShape<shape::Triangle>(
         Vector3DF(-200, 0, 50), Vector3DF(200, 0, 50), Vector3DF(0, 0, -2000)
-    )
-        .BindShader(shdr::Diffuse::Create(
-            shdr::FlatColor::Create(Vector3DF(0.5, 0.5, 0.5))
+    ).BindShader(shdr::Diffuse::Create(
+        shdr::FlatColor::Create(Vector3DF(0.75, 0.75, 0.75))
     ));
    //.BindShader(shdr::Lambertian::Create(nullptr, std::array{
     //    shdr::PointLight(Vector3DF(0, 20, 0), Vector3DF(0.5, 0.5, 0.5))
@@ -88,7 +87,7 @@ int main(int argc, char** argv) {
 
     /* Create a light emitter. */
     scene.EmplaceShape<shape::Sphere>(Vector3DF(0, 30, -10), 5)
-        .BindShader(shdr::Emitter::Create(Vector3DF(20, 20, 20)));
+        .BindShader(shdr::Emitter::Create(Vector3DF(30, 30, 30)));
 
     /* Make a sphere. */
     /*
@@ -116,8 +115,7 @@ int main(int argc, char** argv) {
     //    .BindShader(shdr::Normal::Create()
     //);
     scene.EmplaceShape<eng::shape::Sphere>(eng::Vector3DF{-9, 6, -14}, 5)
-        .BindShader(shdr::Mirror::Create()
-    );
+        .BindShader(shdr::Mirror::Create());
 
     std::atomic<int> cur_line = 0;
     const auto worker_func = [&]() {
