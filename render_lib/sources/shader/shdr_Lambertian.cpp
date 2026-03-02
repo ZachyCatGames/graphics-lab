@@ -1,4 +1,5 @@
 #include <engine/shader/shdr_Lambertian.h>
+#include <engine/eng_Scene.h>
 #include <print>
 
 namespace eng::shdr {
@@ -9,10 +10,18 @@ Vector3DF Lambertian::GetColor(Scene* p_scene, int depth, const HitStruct& rec) 
 
     Vector3DF light_sum;
     for (const auto& light : m_lights) {
-        const auto dir = light.GetDirection(rec.position);
-        const auto nl  = std::max(0.0, dot(rec.normal, dir));
+        /* Calculate ray from position to the light. */
+        const Ray r {
+            rec.position,
+            light.position - rec.position
+        };
 
-        light_sum += Vector3DF( nl, nl, nl ) * light.intensity;
+        if (!p_scene->IsObjectInPath(r, {0.001, 1.0})) {
+            const auto dir = light.GetDirection(rec.position);
+            const auto nl  = std::max(0.0, dot(rec.normal, dir));
+
+            light_sum += Vector3DF( nl, nl, nl ) * light.intensity;
+        }
     }
 
     return light_sum * base_color;
