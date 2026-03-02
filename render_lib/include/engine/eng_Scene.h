@@ -106,6 +106,8 @@ public:
 
     Vector3DF GetRayColor(const Ray& r, Interval<float> t_range, int depth);
     Vector3DF GetPixelColor(ICamera* p_cam, int x, int y);
+
+    bool ObjectInPath(const Ray& r, Interval<float> t_range); 
 private:
     std::vector<Handle<IShape>> m_shapes;
     MapType m_attribs;

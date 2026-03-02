@@ -111,4 +111,15 @@ Vector3DF Scene::GetPixelColor(ICamera* p_cam, int x, int y) {
     return color_sum / float(m_samples_per_pixel * m_samples_per_pixel);
 }
 
+bool Scene::IsObjectInPath(const Ray& r, Interval<float> t_range) {
+    HitStruct rec;
+    for (auto& shape : m_shapes) {
+        if (shape->Intersect(r, t_range, rec)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 } // namespace eng
