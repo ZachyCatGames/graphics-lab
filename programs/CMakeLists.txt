@@ -1,5 +1,7 @@
 # Add our main program subdirectory
-add_subdirectory(main)
+add_subdirectory(DiffuseDemo)
+add_subdirectory(LambertianDemo)
+add_subdirectory(PerspectiveDirectionDemo)
 
 add_subdirectory(TriChallenge)
 
