@@ -53,6 +53,11 @@ int main(int argc, char** argv) {
         shdr::FlatColor::Create(Vector3DF(1, 0, 1)), lights
     );
 
+    /* Another one. */
+    auto ball_shader2 = shdr::BlinnPhong::Create(
+        shdr::FlatColor::Create(Vector3DF(0, 1, 1)), lights, 5
+    );
+
     /* Create color shaders. */
     auto red_shader = shdr::Lambertian::Create(
         shdr::FlatColor::Create(Vector3DF(1, 0, 0)), lights
@@ -91,6 +96,10 @@ int main(int argc, char** argv) {
     /* And another one. */
     p_scene->EmplaceShape<eng::shape::Sphere>(eng::Vector3DF{-9, 6, -14}, 5)
         .BindShader(shdr::Mirror::Create());
+
+    /* And another one. */
+    p_scene->EmplaceShape<eng::shape::Sphere>(Vector3DF(-3, 3, -8), 2)
+        .BindShader(ball_shader2);
 
     /* Render the scene. */
     helper.RenderScene();
