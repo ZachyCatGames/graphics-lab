@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
     Scene* p_scene = helper.GetScene();
 
     /* Create our light. */
-    shdr::PointLight light(Vector3DF(0, 20, 0), Vector3DF(1,1,1));
+    shdr::PointLight light(Vector3DF(-10, 20, 0), Vector3DF(1,1,1));
 
     /* Create color shader. */
     auto color_shader = shdr::FlatColor::Create(Vector3DF(0.75, 0.75, 0.75));
