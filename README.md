@@ -20,7 +20,35 @@ cmake --build .
 
 Your executables will then be in the build folder. They may be in sub-folders depending on the environment.
 
+## Running Demo Programs
+Demo programs for the Lambertian and Diffuse shaders are provided under the `programs` directory and are named `LambertianDemo` and `DiffuseDemo`.
+Executing them with `--help` passed as an argument will display their help text:
+```
+zachary@fedora:~/Projects/UMD/CS5212/project/buildRelease/programs/LambertianDemo$ ./LambertianDemo  --help
+Allowed options:
+  -? [ --help ]               help/usage information
+  -v [ --verbose ]            turn on verbose output
+  -i [ --inputfile ] arg      input file name to use
+  -o [ --outputfile ] arg     output file name to use
+  -n [ --numcpus ] arg        num of cores to use
+  -w [ --width ] arg          width of output image (default is 100)
+  -h [ --height ] arg         height of output image (default is 100)
+  -a [ --aspect ] arg         aspect ratio in width/height of image (default is
+                              1)
+  -d [ --depth ] arg          depth of field focus distance (default is 0.0 or 
+                              OFF)
+  -r [ --rpp ] arg            rays per pixel (default is 1)
+  -p [ --randpix ]            randomize pixel sample locations
+  -k [ --recursionDepth ] arg recursion depth (default is 4)
+  -s [ --split ] arg          split method for bvh construction (default is 
+                              objectMedian)
+  -x [ --winwidth ] arg       width of window (if using preview)
+  -y [ --winheight ] arg      height of window (if using preview)
+```
 
+Not all options have an effect on both programs (e.g., `--rpp` has no effect on `LambertianDemo`).
+I would _strongly_ recommend passing `--numcpus` for the diffuse shader demo, otherwise it'll take an eternity to finish.
+ 
 
 ## Development Environment Setup
 
