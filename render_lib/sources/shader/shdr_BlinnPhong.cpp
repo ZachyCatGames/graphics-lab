@@ -19,7 +19,7 @@ Vector3DF BlinnPhong::GetColor(Scene* p_scene, int depth, const HitStruct& rec) 
             const auto dir = light.GetDirection(rec.position);
             const auto nl  = std::max(0.0, dot(rec.normal, dir));
 
-            const auto half_vector = (rec.r.direction() + light.GetDirection(rec.position)).normalize();
+            const auto half_vector = (-rec.r.direction() + light.GetDirection(rec.position)).normalize();
 
             light_sum += Vector3DF( nl, nl, nl ) * light.intensity + std::pow(std::max(0.0, dot(rec.normal, half_vector)), m_exp);
         }

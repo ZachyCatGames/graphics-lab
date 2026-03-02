@@ -12,7 +12,7 @@ public:
     template<typename R>
     constexpr BlinnPhong(Handle<IShader> base_shader, R&& lights, float exp)
         : m_base(base_shader),
-          m_lights(std::forward<R>(lights)),
+          m_lights(std::from_range, std::forward<R>(lights)),
           m_exp(exp) {}
 
     virtual Vector3DF GetColor(Scene* p_scene, int depth, const HitStruct& rec) override;
