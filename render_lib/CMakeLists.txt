@@ -20,6 +20,10 @@ add_library (render_lib
   sources/shape/shape_Sphere.cpp
   sources/shape/shape_Triangle.cpp
 
+  # Demo Library
+  sources/demo/demo_DrawFramebuffer.cpp
+  sources/demo/demo_SceneRenderHelper.cpp
+
   # Core Library.
   sources/eng_ArgumentParsing.cpp
   sources/eng_HandleGraphicsArgs.cpp
