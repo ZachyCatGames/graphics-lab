@@ -6,7 +6,6 @@ endif()
 
 add_library (render_lib
   # Framebuffer Library.
-  sources/framebuffer/fb_Framebuffer.cpp
   sources/framebuffer/fb_PngWriter.cpp
 
   # Shader Library.
