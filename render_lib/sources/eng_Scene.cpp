@@ -42,6 +42,15 @@ void Scene::Remove(Handle<IShape> shape) {
     m_attribs.erase(shape);
 }
 
+shdr::PointLight& Scene::EmplacePointLight(const Vector3DF& pos, const Vector3DF& intensity) {
+    return m_lights.emplace_back(pos, intensity);
+}
+
+shdr::PointLight& Scene::InsertPointLight(const shdr::PointLight& light) {
+    m_lights.push_back(light);
+    return m_lights.back();
+}
+
 Vector3DF Scene::GetRayColor(const Ray& r, Interval<float> t_range, int depth) {
     /* Return black if we've reached the max recursion depth. */
     if (depth > m_max_depth)
@@ -120,6 +129,10 @@ bool Scene::IsObjectInPath(const Ray& r, Interval<float> t_range) {
     }
 
     return false;
+}
+
+void Scene::ReserveShapes(size_t count) {
+    m_shapes.reserve(count);
 }
 
 } // namespace eng

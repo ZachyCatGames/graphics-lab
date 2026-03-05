@@ -11,6 +11,8 @@
 #include <engine/eng_ObjectManager.h>
 #include <engine/eng_Rng.h>
 
+#include <engine/shader/shdr_PointLight.h>
+
 namespace eng {
 
 class Scene {
@@ -104,12 +106,38 @@ public:
 
     void Remove(Handle<IShape> shape);
 
+    shdr::PointLight& EmplacePointLight(const Vector3DF& pos, const Vector3DF& intensity);
+
+    shdr::PointLight& InsertPointLight(const shdr::PointLight& light);
+    //void InsertPointLight(shdr::PointLight&& light);
+
+    const std::vector<shdr::PointLight>& GetPointLights() const noexcept { return m_lights; }
+
     Vector3DF GetRayColor(const Ray& r, Interval<float> t_range, int depth);
     Vector3DF GetPixelColor(ICamera* p_cam, int x, int y);
 
     bool IsObjectInPath(const Ray& r, Interval<float> t_range); 
+
+    /**
+     * Reserve / preallocate shape handles.
+     * 
+     * This can be used when the number of shapes being used is known ahead
+     * of time to reduce the number of allocations / copies required from
+     * vector resizes.
+     * 
+     * @param count  Number of shape handles to preallocate.
+     */
+    void ReserveShapes(size_t count);
+
+    /** 
+     * Reserve / preallocate point light objects.
+     * 
+     * @param count  Number of point lights to preallocate.
+     */
+    void ReservePointLights(size_t count);
 private:
     std::vector<Handle<IShape>> m_shapes;
+    std::vector<shdr::PointLight> m_lights;
     MapType m_attribs;
 
     int m_max_depth;
