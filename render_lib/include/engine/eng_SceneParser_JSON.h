@@ -7,6 +7,8 @@ using json = nlohmann::json;
 
 #include <engine/eng_ISceneLoader.h>
 
+namespace eng {
+
 class SceneParser_JSON {
 public:
   SceneParser_JSON(std::shared_ptr<ISceneLoader> sceneLoader)
@@ -31,3 +33,5 @@ private:
                         const std::string propertyName);
   glm::mat4 parseTransformData(const json &xformData);
 };
+
+} // namespace eng

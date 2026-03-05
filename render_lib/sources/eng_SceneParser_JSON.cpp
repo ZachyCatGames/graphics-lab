@@ -6,6 +6,7 @@
 
 #include <engine/eng_SceneParser_JSON.h>
 
+namespace eng {
 //
 // function that the json parser will pick up to load vecs
 //
@@ -395,3 +396,5 @@ void SceneParser_JSON::parseTexture(const json &texture) {
 
   loader->addTexture(type, name, sourceFile);
 }
+
+} // namespace eng

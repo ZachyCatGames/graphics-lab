@@ -28,6 +28,8 @@ add_library (render_lib
   sources/eng_HandleGraphicsArgs.cpp
   sources/eng_PerspectiveCamera.cpp
   sources/eng_Scene.cpp
+  sources/eng_SceneLoader.cpp
+  sources/eng_SceneParser_JSON.cpp
 
   ${UTIL_PLAT_SRC}
 )

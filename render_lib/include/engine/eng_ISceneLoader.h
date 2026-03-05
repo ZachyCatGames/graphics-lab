@@ -5,6 +5,8 @@
 
 #include <string>
 
+namespace eng {
+
 class ISceneLoader {
 public:
   virtual ~ISceneLoader() = default;
@@ -84,3 +86,5 @@ public:
   virtual void addTexture(const std::string &type, const std::string &name,
                           const std::string &sourceFile) = 0;
 };
+
+} // namespace eng
