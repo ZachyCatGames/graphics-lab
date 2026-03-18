@@ -7,12 +7,12 @@ class ThreadedRenderer : public RendererBase {
 public:
     ThreadedRenderer() : m_thread_count(1) {}
 
-    ThreadedRenderer(Scene* p_scene, size_t samples_per_pixel, bool random_samples, size_t thread_count)
-        : RendererBase(p_scene, samples_per_pixel, random_samples),
+    ThreadedRenderer(Scene* p_scene, size_t default_img_width, size_t default_img_height, size_t samples_per_pixel, bool random_samples, size_t thread_count)
+        : RendererBase(p_scene, default_img_width, default_img_height, samples_per_pixel, random_samples),
           m_thread_count(thread_count) {}
 
-    void Initialize(Scene* p_scene, size_t samples_per_pixel, bool random_samples, size_t thread_count) {
-        RendererBase::Initialize(p_scene, samples_per_pixel, random_samples);
+    void Initialize(Scene* p_scene, size_t default_img_width, size_t default_img_height, size_t samples_per_pixel, bool random_samples, size_t thread_count) {
+        RendererBase::Initialize(p_scene, default_img_width, default_img_height, samples_per_pixel, random_samples);
         m_thread_count = thread_count;
     }
 

@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
     eng::Scene scene;
 
     /* Setup renderer. */
-    eng::ThreadedRenderer renderer(&scene, 1, false, std::thread::hardware_concurrency());
+    eng::ThreadedRenderer renderer(&scene, img_width, img_height, 1, false, std::thread::hardware_concurrency());
 
     /* Setup camera. */
     renderer.EmplaceCamera<PerspectiveCamera>(pos, dir, foc_len, img_width, img_height, vp_width);

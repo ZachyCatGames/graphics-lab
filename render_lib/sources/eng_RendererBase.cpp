@@ -2,10 +2,15 @@
 
 namespace eng {
 
-void RendererBase::Initialize(Scene* p_scene, size_t samples_per_pixel, bool random_samples) {
+void RendererBase::Initialize(Scene* p_scene, size_t default_img_width, size_t default_img_height, size_t samples_per_pixel, bool random_samples) {
     m_p_scene = p_scene;
+
+    m_default_img_width  = default_img_width;
+    m_default_img_height = default_img_height;
+
     m_samples_per_pixel = samples_per_pixel;
     m_randomize_samples = random_samples;
+
     m_current_camera_id = 0;
 }
 

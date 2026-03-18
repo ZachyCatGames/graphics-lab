@@ -13,13 +13,13 @@ public:
     RendererBase()
         : m_p_scene(nullptr) {}
 
-    RendererBase(Scene* p_scene, size_t samples_per_pixel, bool random_samples) {
-        this->Initialize(p_scene, samples_per_pixel, random_samples);
+    RendererBase(Scene* p_scene, size_t default_img_width, size_t default_img_height, size_t samples_per_pixel, bool random_samples) {
+        this->Initialize(p_scene, default_img_width, default_img_height, samples_per_pixel, random_samples);
     }
 
     virtual ~RendererBase();
 
-    void Initialize(Scene* p_scene, size_t samples_per_pixel, bool random_samples);
+    void Initialize(Scene* p_scene, size_t default_img_width, size_t default_img_height, size_t samples_per_pixel, bool random_samples);
 
     void Finalize();
 
@@ -64,6 +64,13 @@ public:
     void RemoveCamera(int id);
 
     /**
+     * Returns the default image plane width and height values.
+     * 
+     * @return  std::pair containing the default image plane width and height.
+     */
+    std::pair<size_t, size_t> GetDefaultImageDimensions() const noexcept { return { m_default_img_width, m_default_img_height }; }
+
+    /**
      * Render the held scene to a framebuffer through a specified
      * camera.
      * 
@@ -81,6 +88,8 @@ protected:
 
     size_t m_samples_per_pixel;
     bool m_randomize_samples;
+
+    size_t m_default_img_width, m_default_img_height;
 }; // class RendererBase
 
 } // namespace eng

@@ -26,7 +26,7 @@ SceneRenderHelper::SceneRenderHelper(int argc, char** argv) {
     m_scene = Scene(m_args.recursionDepth);
 
     /* Initialize our renderer. */
-    m_renderer.Initialize(&m_scene, m_args.rpp, m_args.randpix, m_args.numCpus);
+    m_renderer.Initialize(&m_scene, m_args.width, m_args.height, m_args.rpp, m_args.randpix, m_args.numCpus);
 
     /* Add a camera to our renderer. */
     m_renderer.EmplaceCamera<PerspectiveCamera>(pos, dir, foc_len, m_img_width, m_img_height, vp_width);

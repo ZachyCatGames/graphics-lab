@@ -46,10 +46,12 @@ void SceneLoader::addCamera(const std::string &name, const std::string &type,
     const Vector3DF pos_v3(pos.x, pos.y, pos.z);
     const Vector3DF view_dir_v3(viewDir.x, viewDir.y, viewDir.z);
 
+    /* Get default image dimensions from the renderer. */
+    auto [img_width, img_height] = m_p_renderer->GetDefaultImageDimensions();
+
     /* Construct the new camera. */
-    // TODO: Don't hardcode dims
     m_p_renderer->EmplaceCamera<PerspectiveCamera>(
-        pos_v3, view_dir_v3, focalLength, 500, 500, imagePlaneWidth
+        pos_v3, view_dir_v3, focalLength, img_width, img_height, imagePlaneWidth
     );
   }
 
