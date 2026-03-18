@@ -12,6 +12,9 @@
 #include <engine/shader/shdr_Mirror.h>
 #include <engine/shader/shdr_NormalShader.h>
 
+/* Builtin Cameras. */
+#include <engine/eng_PerspectiveCamera.h>
+
 /* Builtin lights. */
 #include <engine/shader/shdr_PointLight.h>
 
@@ -27,6 +30,28 @@ void SceneLoader::addPointLight(const ISceneLoader::vec &pos,
         Vector3DF(intensity.x, intensity.y, intensity.z)
     );
 }
+
+void SceneLoader::addCamera(const std::string &name, const std::string &type,
+               const ISceneLoader::vec &pos, const ISceneLoader::vec &viewDir,
+               float focalLength, float imagePlaneWidth) {
+    std::cout << "Creating camera: " << name << ", type:" << type << std::endl;
+    
+    /* We only support perspective cameras. */
+    if (type != "perspective") {
+        std::cout << "Invalid camera type\n";
+        return;
+    }
+
+    /* Convert vectors to our native type.  */
+    const Vector3DF pos_v3(pos.x, pos.y, pos.z);
+    const Vector3DF view_dir_v3(viewDir.x, viewDir.y, viewDir.z);
+
+    /* Construct the new camera. */
+    // TODO: Don't hardcode dims
+    m_p_renderer->EmplaceCamera<PerspectiveCamera>(
+        pos_v3, view_dir_v3, focalLength, 500, 500, imagePlaneWidth
+    );
+  }
 
 void SceneLoader::addShader(const ISceneLoader::ShaderDesc &shaderDesc) {
     std::cout << "Creating shader: type=" << shaderDesc.type << std::endl;

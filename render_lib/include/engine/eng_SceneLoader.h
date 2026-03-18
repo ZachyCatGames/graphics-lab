@@ -2,21 +2,22 @@
 
 #include <engine/eng_ISceneLoader.h>
 #include <engine/eng_Scene.h>
+#include <engine/eng_RendererBase.h>
 
 namespace eng {
 
 class SceneLoader : public ISceneLoader {
 private:
+  RendererBase* m_p_renderer;
   Scene* m_p_scene; // Reference to the external scene
 
 public:
   // The caller provides the scene to be filled
-  SceneLoader(Scene* sceneToPopulate)
-      : m_p_scene(sceneToPopulate), numShaders(0), numTextures(0) {}
+  SceneLoader(RendererBase* renderer, Scene* sceneToPopulate)
+      : m_p_renderer(renderer), m_p_scene(sceneToPopulate), numShaders(0), numTextures(0) {}
 
   void reserveCameras(size_t count) override {
-    // makes sure the vector has enough space
-    //m_p_scene->cameras.reserve(count);
+    /* ... */
   }
 
   void reserveLights(size_t count) override {
@@ -36,12 +37,7 @@ public:
 
   void addCamera(const std::string &name, const std::string &type,
                  const ISceneLoader::vec &pos, const ISceneLoader::vec &viewDir,
-                 float focalLength, float imagePlaneWidth) override {
-    std::cout << "Creating camera: " << name << ", type:" << type << std::endl;
-    //auto cam = std::make_shared<Camera>();
-    //cam->type = type;
-    //m_p_scene->cameras.push_back(cam);
-  }
+                 float focalLength, float imagePlaneWidth) override;
 
   void addPointLight(const ISceneLoader::vec &pos,
                      const ISceneLoader::vec &intensity) override;
