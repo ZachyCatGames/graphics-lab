@@ -346,7 +346,7 @@ void SceneParser_JSON::parseShape(const json &shape) {
     const auto &shaderObj = shape["shader"];
 
     if (shaderObj.contains("ref") || shaderObj.contains("_ref")) {
-      std::string shaderRef =
+      shapeDesc.shaderNameReference =
           shaderObj.value("ref", shaderObj.value("_ref", ""));
     }
   }

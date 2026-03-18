@@ -59,7 +59,7 @@ void SceneLoader::addShader(const ISceneLoader::ShaderDesc &shaderDesc) {
     std::cout << "Creating shader: type=" << shaderDesc.type << std::endl;
 
     /* Check if this shader already exists. */
-    if (m_ShaderMap.find(shaderDesc.name) == m_ShaderMap.cend()) {
+    if (m_ShaderMap.find(shaderDesc.name) != m_ShaderMap.cend()) {
         std::cout << "shader with name " << shaderDesc.name << " already exists" << std::endl;
         return;
     }
@@ -103,6 +103,8 @@ void SceneLoader::addShader(const ISceneLoader::ShaderDesc &shaderDesc) {
 
 void SceneLoader::addShape(const ISceneLoader::ShapeDesc &shapeDesc) {
     std::cout << "Creating shape: type=" << shapeDesc.type << std::endl;
+
+    std::print("{}\n", shapeDesc.shaderNameReference);
 
     /* Create a shape of type. */
     /* TODO: Move to a factory? */
