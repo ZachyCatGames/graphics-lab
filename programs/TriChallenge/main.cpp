@@ -18,6 +18,8 @@
 #include <engine/shader/shdr_Mirror.h>
 #include <engine/shader/shdr_FlatColorShader.h>
 
+#include <engine/eng_ThreadedRenderer.h>
+
 #include <array>
 #include <print>
 #include <cstdio>
@@ -28,8 +30,8 @@ using namespace eng;
 
 #include <thread>
 
-constexpr int img_width  = 200;
-constexpr int img_height = 200;
+constexpr int img_width  = 600;
+constexpr int img_height = 600;
 
     constexpr float vp_height = 2.0;
     constexpr float vp_width  = 0.25;
@@ -42,20 +44,6 @@ constexpr int img_height = 200;
 
 
 fb::Framebuffer fbb(img_width, img_height);
-
-PerspectiveCamera cam(pos, dir, foc_len, img_width, img_height, vp_width);
-
-void RenderWorker(Scene* scene, int num) {
-    for (int y = num; y < img_height; y += std::thread::hardware_concurrency()) {
-        std::print("Line {}\n", y);
-        for (int x = 0; x < img_width; x++) {
-            //auto color = Vector3DF(0, 0, 0);
-            auto color = scene->GetPixelColor(&cam, x, y);
-
-            fbb.SetPixelColor(x, y, color);
-        }
-    }
-}
 
 void readFloatsFromFile(const std::string& filename, std::vector<float> &allFloats)
 {
@@ -90,7 +78,14 @@ int main(int argc, char* argv[])
     //auto shader = eng::BlinnPhongShader::Create(eng::ray{ eng::Vector3DF{ 0,0,0 }, eng::Vector3DF(3, 4,5)}, 20.0);
     //auto shader = eng::shdr::Lambertian::Create(eng::Ray{ eng::Vector3DF{ 0,0,0 }, eng::Vector3DF(3, 4,5)});
 
+    /* Init scene with default parameters. */
     eng::Scene scene;
+
+    /* Setup renderer. */
+    eng::ThreadedRenderer renderer(&scene, 1, false, std::thread::hardware_concurrency());
+
+    /* Setup camera. */
+    renderer.EmplaceCamera<PerspectiveCamera>(pos, dir, foc_len, img_width, img_height, vp_width);
 
     auto shader = shdr::Lambertian::Create(
         nullptr,
@@ -116,15 +111,8 @@ int main(int argc, char* argv[])
         .BindShader(shader);
     }
 
-    {
-        const auto thread_count = std::thread::hardware_concurrency();
-        std::print("Rendering with {} threads.\n", thread_count);
-
-        std::vector<std::jthread> threads(thread_count);
-        for (int i = 0; i < thread_count; i++) {
-            threads[i] = std::jthread(RenderWorker, &scene, i);
-        }
-    }
+    /* Render through camera 0. */
+    renderer.Render(0, &fbb);
 
     std::print("Done\n");
 
