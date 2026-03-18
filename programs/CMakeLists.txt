@@ -1,5 +1,6 @@
 # Add our main program subdirectory
 add_subdirectory(DiffuseDemo)
+add_subdirectory(JsonSceneLoader)
 add_subdirectory(LambertianDemo)
 add_subdirectory(PerspectiveDirectionDemo)
 
