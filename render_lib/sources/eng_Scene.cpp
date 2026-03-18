@@ -3,14 +3,10 @@
 namespace eng {
 
 Scene::Scene()
-    : m_max_depth(4),
-      m_samples_per_pixel(1),
-      m_randomize_pixel_samples(false) {}
+    : m_max_depth(4) {}
 
-Scene::Scene(int max_depth, int samples_per_pixel, bool random_samples)
-    : m_max_depth(max_depth),
-      m_samples_per_pixel(samples_per_pixel),
-      m_randomize_pixel_samples(random_samples) {}
+Scene::Scene(int max_depth)
+    : m_max_depth(max_depth) {}
 
 Scene::ObjectContext Scene::InsertShape(Handle<IShape> handle) {
     m_shapes.push_back(handle);
@@ -18,18 +14,18 @@ Scene::ObjectContext Scene::InsertShape(Handle<IShape> handle) {
     return ObjectContext(iter);
 }
 
-bool Scene::Contains(Handle<IShape> shape) {
+bool Scene::ContainsShape(Handle<IShape> shape) {
     return m_attribs.contains(shape);
 }
 
-Scene::ObjectContext Scene::GetContext(Handle<IShape> shape) {
+Scene::ObjectContext Scene::GetShapeContext(Handle<IShape> shape) {
     auto it = m_attribs.find(shape);
     if (it == m_attribs.end())
         return ObjectContext(it, false);
     return ObjectContext(it);
 }
 
-void Scene::Remove(Handle<IShape> shape) {
+void Scene::RemoveShape(Handle<IShape> shape) {
     /* Find where the shape is in the shape list. */
     auto it = std::ranges::find(m_shapes, shape);
     if (it == m_shapes.end())
@@ -88,38 +84,6 @@ Vector3DF Scene::GetRayColor(const Ray& r, Interval<float> t_range, int depth) {
     return Vector3DF{0, 0, 0};
 }
 
-Vector3DF Scene::GetPixelColor(ICamera* p_cam, int x, int y) {
-    const auto subpix_stride = 1.0 / m_samples_per_pixel;
-    const auto tmin          = p_cam->GetMinT();
-    Rng<float> rng(0.0, subpix_stride);
-    Vector3DF color_sum(0, 0, 0);
-    for (int i = 0; i < m_samples_per_pixel; i++) {
-        for (int j = 0; j < m_samples_per_pixel; j++) {
-            /* Sample at a random point if random sampling is enabled, otherwise
-               sample at the middle. */
-            float x_offs, y_offs;
-            if (m_randomize_pixel_samples) {
-                x_offs = rng();
-                y_offs = rng();
-            } else {
-                x_offs = subpix_stride / 2;
-                y_offs = x_offs;
-            }
-
-            auto pos_x = x + j * subpix_stride + x_offs;
-            auto pos_y = y + i * subpix_stride + y_offs;
-
-            /* Generate a ray. */
-            auto r = p_cam->GenerateRay(pos_x, pos_y);
-
-            /* Call GetRayColor starting at a depth of zero. */
-            color_sum += this->GetRayColor(r, {tmin, std::numeric_limits<float>::infinity()}, 0);
-        }
-    }
-
-    return color_sum / float(m_samples_per_pixel * m_samples_per_pixel);
-}
-
 bool Scene::IsObjectInPath(const Ray& r, Interval<float> t_range) {
     HitStruct rec;
     for (auto& shape : m_shapes) {
@@ -131,8 +95,7 @@ bool Scene::IsObjectInPath(const Ray& r, Interval<float> t_range) {
     return false;
 }
 
-void Scene::ReserveShapes(size_t count) {
-    m_shapes.reserve(count);
-}
+void Scene::ReserveShapes(size_t count) { m_shapes.reserve(count); }
+void Scene::ReservePointLights(size_t count) { m_lights.reserve(count); }
 
 } // namespace eng

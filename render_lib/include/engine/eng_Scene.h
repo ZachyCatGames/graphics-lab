@@ -71,7 +71,7 @@ public:
      * @param samples_per_pixel  number of color samples taken per-pixel (for AA)
      * @param random_samples  enable randomized sample locations
      */
-    Scene(int max_depth, int samples_per_pixel, bool random_samples);
+    Scene(int max_depth);
 
     /**
      * Initializes a shape of type T with the provided args and
@@ -100,11 +100,11 @@ public:
      */
     ObjectContext InsertShape(Handle<IShape> handle);
 
-    [[nodiscard]] bool Contains(Handle<IShape> shape);
+    [[nodiscard]] bool ContainsShape(Handle<IShape> shape);
 
-    ObjectContext GetContext(Handle<IShape> shape);
+    ObjectContext GetShapeContext(Handle<IShape> shape);
 
-    void Remove(Handle<IShape> shape);
+    void RemoveShape(Handle<IShape> shape);
 
     shdr::PointLight& EmplacePointLight(const Vector3DF& pos, const Vector3DF& intensity);
 
@@ -114,7 +114,6 @@ public:
     const std::vector<shdr::PointLight>& GetPointLights() const noexcept { return m_lights; }
 
     Vector3DF GetRayColor(const Ray& r, Interval<float> t_range, int depth);
-    Vector3DF GetPixelColor(ICamera* p_cam, int x, int y);
 
     bool IsObjectInPath(const Ray& r, Interval<float> t_range); 
 
@@ -137,12 +136,11 @@ public:
     void ReservePointLights(size_t count);
 private:
     std::vector<Handle<IShape>> m_shapes;
-    std::vector<shdr::PointLight> m_lights;
     MapType m_attribs;
 
+    std::vector<shdr::PointLight> m_lights;
+
     int m_max_depth;
-    int m_samples_per_pixel = 4;
-    bool m_randomize_pixel_samples = true;
 }; // class Scene
 
 } // namespace eng

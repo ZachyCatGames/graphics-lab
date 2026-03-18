@@ -27,9 +27,11 @@ add_library (render_lib
   sources/eng_ArgumentParsing.cpp
   sources/eng_HandleGraphicsArgs.cpp
   sources/eng_PerspectiveCamera.cpp
+  sources/eng_RendererBase.cpp
   sources/eng_Scene.cpp
   sources/eng_SceneLoader.cpp
   sources/eng_SceneParser_JSON.cpp
+  sources/eng_ThreadedRenderer.cpp
 
   ${UTIL_PLAT_SRC}
 )
