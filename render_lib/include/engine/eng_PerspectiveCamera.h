@@ -1,10 +1,11 @@
 #pragma once
 #include <engine/eng_ICamera.h>
 #include <engine/eng_Vector3D.h>
+#include <engine/eng_ObjectBase.h>
 
 namespace eng {
 
-class PerspectiveCamera : public ICamera {
+class PerspectiveCamera : public ICamera, public ObjectBase<PerspectiveCamera> {
 public:
     constexpr PerspectiveCamera() : 
         m_position(), m_U(1,0,0), m_V(0,1,0), m_W(0,0,1),
@@ -44,6 +45,10 @@ public:
     virtual ~PerspectiveCamera() = default;
 
     [[nodiscard]] virtual Ray GenerateRay(float i, float j) override;
+
+    [[nodiscard]] constexpr virtual std::pair<float, float> GetImageDimensions() override {
+        return { m_img_width, m_img_height };
+    }
 
     [[nodiscard]] constexpr virtual float GetMinT() const override { return m_focal_length; }
 private:

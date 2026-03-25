@@ -1,5 +1,6 @@
 # Add our main program subdirectory
 add_subdirectory(DiffuseDemo)
+add_subdirectory(JsonSceneLoader)
 add_subdirectory(LambertianDemo)
 add_subdirectory(PerspectiveDirectionDemo)
 
@@ -15,6 +16,7 @@ add_subdirectory(TriChallenge)
 
 if (NOT ${CMAKE_SYSTEM_NAME} STREQUAL "NintendoSwitch")
   # Some examples
+  add_subdirectory(OpenGL)
   #add_subdirectory(examples)
 endif()
 

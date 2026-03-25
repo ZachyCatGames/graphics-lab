@@ -61,7 +61,8 @@ int main(void)
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
-    glClearColor(0.0, 0.7, 1.0, 1.0);
+    //glClearColor(0.0, 0.7, 1.0, 1.0);
+    glClearColor(7.0 / 255.0, 35.0 / 255.0, 220.0 / 255.0, 1.0);
 
     int fb_width, fb_height;
     glfwGetFramebufferSize(window, &fb_width, &fb_height);
@@ -73,14 +74,75 @@ int main(void)
     // The ortho parameters, in order: left, right, bottom, top, zNear, zFar
     float halfWidth = 15.0 / 2.0;
     float halfHeight = halfWidth / aspectRatio;
-    glm::mat4 projectionMatrix = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, -10.0f, 10.0f);
+    constexpr float near = 5.0f;
+    constexpr float far  = -5.0f;
+
+    glm::mat4 projectionMatrix = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, near, far);
 
     GLint major_version;
     glGetIntegerv(GL_MAJOR_VERSION, &major_version);
     std::cout << "GL_MAJOR_VERSION: " << major_version << std::endl;
 
+
+
     double timeDiff = 0.0, startFrameTime = 0.0, endFrameTime = 0.0;
     
+    /* Generate and bind a buffer on the GPU. */
+    GLuint m_triangleVBO[1];
+    glGenBuffers(1, m_triangleVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_triangleVBO[0]);
+
+    std::vector<float> host_vertexBuffer {
+        -3.0f, -3.0f, 0.0f,     1.0f, 0.0f, 0.0f,     // V0
+         3.0f, -3.0f, 0.0f,     0.0f, 1.0f, 0.0f,     // V1
+         0.0f,  5.0f, 0.0f,     0.0f, 0.0f, 1.0f      // V2
+    };
+    /*
+    std::vector<float> host_vertexBuffer {
+        -0.5f, -0.5f, 0.0f,      // V0
+        0.5f, -0.5f, 0.0f,       // V1
+        0.5f, 0.5f, 0.0f,        // V2
+        -0.5, 0.5f, 0.0f,        // V3
+    }; */
+
+    const size_t vertexBufferSizeBytes = host_vertexBuffer.size() * sizeof(float);
+
+    /* Copy VBO from the host to the GPU. */
+    glBufferData(GL_ARRAY_BUFFER, vertexBufferSizeBytes, host_vertexBuffer.data(), GL_STATIC_DRAW);
+    
+    /* Unbind the buffer. */
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    /* Clear host-side vertex buffer since it's not needed anymore. */
+    host_vertexBuffer.clear();
+
+    GLuint m_VAO;
+    glGenVertexArrays(1, &m_VAO);
+    glBindVertexArray(m_VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, m_triangleVBO[0]);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), reinterpret_cast<void*>(3 * sizeof(GLfloat)));
+
+    glBindVertexArray(0);
+
+    // Create a shader using my GLSLObject class                                                            
+    sivelab::GLSLObject shader;
+    shader.addShader( "vertexShader_withMatrixTransformation.glsl", sivelab::GLSLObject::VERTEX_SHADER );
+    shader.addShader( "fragmentShader_passthrough.glsl", sivelab::GLSLObject::FRAGMENT_SHADER );
+    shader.createProgram();
+
+    GLuint projMatrixId, viewMatrixId;
+    projMatrixId = shader.createUniform("projMatrix");
+    viewMatrixId = shader.createUniform("viewMatrix");
+
+    glm::vec3 m_pos(0, 0, 0), m_viewDir(0, 0, -1);
+    glm::vec3 m_U(1, 0, 0), m_V(0, 1, 0), m_W(0, 0, 1);
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
@@ -92,13 +154,40 @@ int main(void)
         // background color)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        /* Create the view matrix from our camera data. */
+        glm::mat4 m_view = glm::lookAt(m_pos, m_pos - m_W, m_V);
+
         /* Render your objects here */
+        /* (my amazing triangle) */
+        shader.activate();
+
+        /* Copy the view and project matrices to the device. */
+        glUniformMatrix4fv(projMatrixId, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+        glUniformMatrix4fv(viewMatrixId, 1, GL_FALSE, glm::value_ptr(m_view));
+
+        glBindVertexArray(m_VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindVertexArray(0);
+
+        shader.deactivate();
 
         // Swap the front and back buffers
         glfwSwapBuffers(window);
 
         /* Poll for and process events */
         glfwPollEvents();
+
+        /* Check for movement inputs. */
+        constexpr float moveRatePerFrame = 0.05;
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+            m_pos = m_pos - m_W * moveRatePerFrame;
+        } else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+            m_pos = m_pos - m_U * moveRatePerFrame;
+        } else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+            m_pos = m_pos + m_W * moveRatePerFrame;
+        } else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+            m_pos = m_pos + m_U * moveRatePerFrame;
+        }
 
         if (glfwGetKey( window, GLFW_KEY_T ) == GLFW_PRESS) {
             std::cout << "fps: " << 1.0/timeDiff << std::endl;

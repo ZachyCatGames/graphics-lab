@@ -11,6 +11,8 @@
 #include <engine/eng_ObjectManager.h>
 #include <engine/eng_Rng.h>
 
+#include <engine/shader/shdr_PointLight.h>
+
 namespace eng {
 
 class Scene {
@@ -69,7 +71,7 @@ public:
      * @param samples_per_pixel  number of color samples taken per-pixel (for AA)
      * @param random_samples  enable randomized sample locations
      */
-    Scene(int max_depth, int samples_per_pixel, bool random_samples);
+    Scene(int max_depth);
 
     /**
      * Initializes a shape of type T with the provided args and
@@ -98,23 +100,47 @@ public:
      */
     ObjectContext InsertShape(Handle<IShape> handle);
 
-    [[nodiscard]] bool Contains(Handle<IShape> shape);
+    [[nodiscard]] bool ContainsShape(Handle<IShape> shape);
 
-    ObjectContext GetContext(Handle<IShape> shape);
+    ObjectContext GetShapeContext(Handle<IShape> shape);
 
-    void Remove(Handle<IShape> shape);
+    void RemoveShape(Handle<IShape> shape);
+
+    shdr::PointLight& EmplacePointLight(const Vector3DF& pos, const Vector3DF& intensity);
+
+    shdr::PointLight& InsertPointLight(const shdr::PointLight& light);
+    //void InsertPointLight(shdr::PointLight&& light);
+
+    const std::vector<shdr::PointLight>& GetPointLights() const noexcept { return m_lights; }
 
     Vector3DF GetRayColor(const Ray& r, Interval<float> t_range, int depth);
-    Vector3DF GetPixelColor(ICamera* p_cam, int x, int y);
 
     bool IsObjectInPath(const Ray& r, Interval<float> t_range); 
+
+    /**
+     * Reserve / preallocate shape handles.
+     * 
+     * This can be used when the number of shapes being used is known ahead
+     * of time to reduce the number of allocations / copies required from
+     * vector resizes.
+     * 
+     * @param count  Number of shape handles to preallocate.
+     */
+    void ReserveShapes(size_t count);
+
+    /** 
+     * Reserve / preallocate point light objects.
+     * 
+     * @param count  Number of point lights to preallocate.
+     */
+    void ReservePointLights(size_t count);
 private:
     std::vector<Handle<IShape>> m_shapes;
     MapType m_attribs;
 
+    std::vector<shdr::PointLight> m_lights;
+
     int m_max_depth;
-    int m_samples_per_pixel = 4;
-    bool m_randomize_pixel_samples = true;
 }; // class Scene
 
 } // namespace eng
