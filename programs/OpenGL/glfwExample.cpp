@@ -177,6 +177,18 @@ int main(void)
         /* Poll for and process events */
         glfwPollEvents();
 
+        /* Check for movement inputs. */
+        constexpr float moveRatePerFrame = 0.05;
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+            m_pos = m_pos - m_W * moveRatePerFrame;
+        } else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+            m_pos = m_pos - m_U * moveRatePerFrame;
+        } else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+            m_pos = m_pos + m_W * moveRatePerFrame;
+        } else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+            m_pos = m_pos + m_U * moveRatePerFrame;
+        }
+
         if (glfwGetKey( window, GLFW_KEY_T ) == GLFW_PRESS) {
             std::cout << "fps: " << 1.0/timeDiff << std::endl;
         }
