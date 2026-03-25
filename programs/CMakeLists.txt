@@ -16,6 +16,7 @@ add_subdirectory(TriChallenge)
 
 if (NOT ${CMAKE_SYSTEM_NAME} STREQUAL "NintendoSwitch")
   # Some examples
+  add_subdirectory(OpenGL)
   #add_subdirectory(examples)
 endif()
 
