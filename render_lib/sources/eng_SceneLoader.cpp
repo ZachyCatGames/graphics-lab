@@ -18,6 +18,8 @@
 /* Builtin lights. */
 #include <engine/shader/shdr_PointLight.h>
 
+#include <cassert>
+
 namespace eng {
 
 void SceneLoader::addPointLight(const ISceneLoader::vec &pos,
@@ -96,8 +98,10 @@ void SceneLoader::addShader(const ISceneLoader::ShaderDesc &shaderDesc) {
         shader = shdr::Emitter::Create(Vector3DF(color.x, color.y, color.z));
     } else {
         std::cout << "Invalid shader type" << std::endl;
+        return;
     }
     
+    assert(shader.IsValid());
     m_ShaderMap[shaderDesc.name] = shader;
 }
 
@@ -122,7 +126,11 @@ void SceneLoader::addShape(const ISceneLoader::ShapeDesc &shapeDesc) {
         );
     } else {
         std::cout << "Unsupported shape type" << std::endl;
+        return;
     }
+
+    /* We must have a valid shape now. */
+    assert(new_shape.IsValid());
 
     /* Find the appropriate shader. */
     Handle<IShader> shader;
@@ -132,6 +140,9 @@ void SceneLoader::addShape(const ISceneLoader::ShapeDesc &shapeDesc) {
     } else /* if (shader_iter == m_ShaderMap.end()) */ {
         std::cout << "Shader " << shapeDesc.shaderNameReference << " does not exist" << std::endl;
     }
+
+    /* Strictly speaking, this can be caused by an incorrect json. */
+    // assert(shader.IsValid());
 
     /* Insert the new shape and bind our shader to it. */
     m_p_scene->InsertShape(new_shape)
