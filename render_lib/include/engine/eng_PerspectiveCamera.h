@@ -3,6 +3,10 @@
 #include <engine/eng_Vector3D.h>
 #include <engine/eng_ObjectBase.h>
 
+#ifdef ENGINE_BUILD_GL_RENDER
+#include "glm/glm.hpp"
+#endif // ENGINE_BUILD_GL_RENDER
+
 namespace eng {
 
 class PerspectiveCamera : public ICamera, public ObjectBase<PerspectiveCamera> {
@@ -15,8 +19,8 @@ public:
         m_position(pos), m_img_width(img_width), m_img_height(img_height), m_focal_length(focal_length), m_img_plane_height(img_plane_height)
     {
         /* Calculate plane width. */
-        const auto aspect_ratio = static_cast<float>(m_img_width) / static_cast<float>(m_img_height);
-        m_img_plane_width = m_img_plane_height * aspect_ratio;
+        m_aspect_ratio = static_cast<float>(m_img_width) / static_cast<float>(m_img_height);
+        m_img_plane_width = m_img_plane_height * m_aspect_ratio;
 
         /* W is just the direction normalized, since W _is_ the direction we're facing. */
         m_W = -dir.normalize();
@@ -50,11 +54,21 @@ public:
         return { m_img_width, m_img_height };
     }
 
+    constexpr void MoveByW(float dist) noexcept { m_position += m_W * dist; }
+    constexpr void MoveByU(float dist) noexcept { m_position += m_U * dist;}
+
     [[nodiscard]] constexpr virtual float GetMinT() const override { return m_focal_length; }
+
+#ifdef ENGINE_BUILD_GL_RENDER
+    [[nodiscard]] virtual glm::mat4 GetProjectionMatrix(float angleDegrees) const;
+
+    [[nodiscard]] virtual glm::mat4 GetViewMatrix() const;
+#endif // ENGINE_BUILD_GL_RENDER
 private:
     Vector3DF m_position;
     Vector3DF m_U, m_V, m_W;
     int m_img_width, m_img_height;
+    float m_aspect_ratio;
     float m_focal_length;
     float m_img_plane_width, m_img_plane_height;
     float m_right_bound, m_left_bound, m_top_bound, m_bottom_bound;
