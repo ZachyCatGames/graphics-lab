@@ -9,9 +9,13 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
 option(ENABLE_CPPCHECK "Enable static analysis with cppcheck" OFF)
 option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 
+add_compile_definitions(ENGINE_BUILD_GL_RENDER)
+
 #add_compile_options(-fsanitize=address)
 #add_link_options(-fsanitize=address)
 
+add_compile_options(-flto -march=native)
+add_link_options(-flto -march=native)
 if(ENABLE_CPPCHECK)
   find_program(CPPCHECK cppcheck)
   if(CPPCHECK)
