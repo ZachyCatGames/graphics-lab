@@ -12,6 +12,8 @@
 
 #include "GLSL.h"
 
+#include <engine/eng_PerspectiveCamera.h>
+
 int CheckGLErrors(const char *s)
 {
     int errCount = 0;
@@ -77,13 +79,9 @@ int main(void)
     constexpr float near = 5.0f;
     constexpr float far  = -5.0f;
 
-    glm::mat4 projectionMatrix = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, near, far);
-
     GLint major_version;
     glGetIntegerv(GL_MAJOR_VERSION, &major_version);
     std::cout << "GL_MAJOR_VERSION: " << major_version << std::endl;
-
-
 
     double timeDiff = 0.0, startFrameTime = 0.0, endFrameTime = 0.0;
     
@@ -136,14 +134,18 @@ int main(void)
     shader.addShader( "fragmentShader_passthrough.glsl", sivelab::GLSLObject::FRAGMENT_SHADER );
     shader.createProgram();
 
-    GLuint projMatrixId, viewMatrixId;
-    projMatrixId = shader.createUniform("projMatrix");
-    viewMatrixId = shader.createUniform("viewMatrix");
+    GLuint projMatrixId, viewMatrixId, modelMatrixId;
+    projMatrixId  = shader.createUniform("projMatrix");
+    viewMatrixId  = shader.createUniform("viewMatrix");
+    modelMatrixId = shader.createUniform("modelMatrix");
 
-    glm::vec3 m_pos(0, 0, 0), m_viewDir(0, 0, -1);
-    glm::vec3 m_U(1, 0, 0), m_V(0, 1, 0), m_W(0, 0, 1);
+    constexpr eng::Vector3DF pos(0, 0, 0), viewDir(0, 0, -1);
+
+    eng::PerspectiveCamera cam(pos, viewDir, 0.5, winWidth, winHeight, 1.0);
 
     /* Loop until the user closes the window */
+    glm::mat4 modelMatrix;
+    float rotationAngle = 0;
     while (!glfwWindowShouldClose(window))
     {
         endFrameTime = glfwGetTime();
@@ -155,15 +157,27 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         /* Create the view matrix from our camera data. */
-        glm::mat4 m_view = glm::lookAt(m_pos, m_pos - m_W, m_V);
+        glm::mat4 projectionMatrix = cam.GetProjectionMatrix(45.0f);
+        glm::mat4 m_view = cam.GetViewMatrix();
+        //glm::mat4 m_view = glm::lookAt(m_pos, m_pos - m_W, m_V);
 
         /* Render your objects here */
         /* (my amazing triangle) */
         shader.activate();
 
+        /* Setup model matrix. */
+        modelMatrix = glm::mat4(1.0);
+        modelMatrix = glm::rotate(modelMatrix, rotationAngle, glm::vec3(0, 1, 0));
+
+        /* Increment rotation angle. */
+        rotationAngle += 0.05;
+        if(rotationAngle > M_PI * 2)
+            rotationAngle = 0;
+
         /* Copy the view and project matrices to the device. */
-        glUniformMatrix4fv(projMatrixId, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-        glUniformMatrix4fv(viewMatrixId, 1, GL_FALSE, glm::value_ptr(m_view));
+        glUniformMatrix4fv(projMatrixId,  1, GL_FALSE, glm::value_ptr(projectionMatrix));
+        glUniformMatrix4fv(viewMatrixId,  1, GL_FALSE, glm::value_ptr(m_view));
+        glUniformMatrix4fv(modelMatrixId, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
         glBindVertexArray(m_VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -180,13 +194,16 @@ int main(void)
         /* Check for movement inputs. */
         constexpr float moveRatePerFrame = 0.05;
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            m_pos = m_pos - m_W * moveRatePerFrame;
-        } else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            m_pos = m_pos - m_U * moveRatePerFrame;
-        } else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            m_pos = m_pos + m_W * moveRatePerFrame;
-        } else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            m_pos = m_pos + m_U * moveRatePerFrame;
+            cam.MoveByW(-moveRatePerFrame);
+        }
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+            cam.MoveByU(-moveRatePerFrame);
+        }
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+            cam.MoveByW(moveRatePerFrame);
+        }
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+            cam.MoveByU(moveRatePerFrame);
         }
 
         if (glfwGetKey( window, GLFW_KEY_T ) == GLFW_PRESS) {

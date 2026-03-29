@@ -22,3 +22,5 @@ endif()
 target_link_libraries (glfwExample PRIVATE PNG::PNG)
 target_link_libraries (glfwExample PRIVATE ZLIB::ZLIB)
 
+target_link_libraries(glfwExample PRIVATE render_lib)
+
