@@ -3,6 +3,10 @@
 #include <cmath>
 #include <iostream>
 
+#ifdef ENGINE_BUILD_GL_RENDER
+#include "glm/glm.hpp"
+#endif // ENGINE_BUILD_GL_RENDER
+
 namespace eng {
 
 template<typename ValueT = float>
@@ -88,11 +92,23 @@ public:
         while (vec = random(-1.0, 1.0), vec.length() > 1) {}
         return vec;
     }
+#ifdef ENGINE_BUILD_GL_RENDER
+    // TODO: template me
+    [[nodiscard]] glm::vec3 ToGlmVector() const noexcept {
+        return glm::vec3(e[0], e[1], e[2]);
+    } 
+
+    // TODO: and me
+    [[nodiscard]] static Vector3D<ValueT> FromGlmVector(const glm::vec3& glmVec) noexcept {
+        return Vector3D<ValueT>(glmVec.x, glmVec.y, glmVec.z);
+    }
+#endif // ENGINE_BUILD_GL_RENDER
 private:
     ValueT e[3];
 }; // class Vector3D
 
 using Vector3DF = Vector3D<float>;
+static_assert(std::is_standard_layout_v<Vector3DF>);
 
 template<typename T, typename S>
 constexpr auto& operator+=(Vector3D<T>& vec, const S& rhs) noexcept {
