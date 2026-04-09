@@ -61,4 +61,23 @@ bool Triangle::Intersect(const Ray& r, Interval<float> t_range, HitStruct* p_hit
     return true;
 }
 
+Vector3DF Triangle::GetPosition() const {
+    return (m_a + m_b + m_c) / 3;
+}
+
+Bounds Triangle::GetBounds() const {
+    auto minx = std::min(m_a.x(), std::min(m_b.x(), m_c.x()));
+    auto miny = std::min(m_a.y(), std::min(m_b.y(), m_c.y()));
+    auto minz = std::min(m_a.z(), std::min(m_b.z(), m_c.z()));
+    auto maxx = std::max(m_a.x(), std::max(m_b.x(), m_c.x()));
+    auto maxy = std::max(m_a.y(), std::max(m_b.y(), m_c.y()));
+    auto maxz = std::max(m_a.z(), std::max(m_b.z(), m_c.z()));
+
+    return Bounds {
+        {minx, maxx},
+        {miny, maxy},
+        {minz, maxz}
+    };
+}
+
 } // namespace eng::shape

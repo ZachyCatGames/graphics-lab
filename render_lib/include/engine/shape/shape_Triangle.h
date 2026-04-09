@@ -10,6 +10,9 @@ public:
         m_a(a), m_b(b), m_c(c) {}
 
     virtual bool Intersect(const Ray& r, Interval<float> t_range, HitStruct* p_hit_info_out) const override;
+
+    virtual Vector3DF GetPosition() const;
+    virtual Bounds GetBounds() const;
 private:
     Vector3DF m_a, m_b, m_c;
 }; // class Triangle

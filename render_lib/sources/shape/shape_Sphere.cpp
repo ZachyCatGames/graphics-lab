@@ -29,4 +29,14 @@ bool Sphere::Intersect(const Ray& r, Interval<float> t_range, HitStruct* p_hit_i
     return true;
 }
 
+Vector3DF Sphere::GetPosition() const { return m_position; }
+
+Bounds Sphere::GetBounds() const {
+    return Bounds {
+        { m_position.x() - m_radius, m_position.x() + m_radius },
+        { m_position.y() - m_radius, m_position.y() + m_radius },
+        { m_position.z() - m_radius, m_position.z() + m_radius },
+    };
+}
+
 } // namespace eng::shape
