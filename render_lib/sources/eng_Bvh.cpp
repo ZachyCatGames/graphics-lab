@@ -9,7 +9,9 @@ bool BvhNode::Intersect(const Ray& r, Interval<float> t_range, HitStruct* p_hit_
     /* Check left half. */
     HitStruct left_hit_info, right_hit_info;
     bool left_hit  = m_left_child->Intersect(r, t_range, &left_hit_info);
-    bool right_hit = m_right_child->Intersect(r, t_range, &right_hit_info);
+    bool right_hit = false;
+    if(m_right_child.IsValid())
+        right_hit = m_right_child->Intersect(r, t_range, &right_hit_info);
 
     /* Determine which hitstruct we should return, if any. */
     if (left_hit && right_hit) {
