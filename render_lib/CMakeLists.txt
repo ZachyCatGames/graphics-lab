@@ -25,6 +25,7 @@ add_library (render_lib
 
   # Core Library.
   sources/eng_ArgumentParsing.cpp
+  sources/eng_Bvh.cpp
   sources/eng_HandleGraphicsArgs.cpp
   sources/eng_PerspectiveCamera.cpp
   sources/eng_RendererBase.cpp
