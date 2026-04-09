@@ -11,8 +11,8 @@ public:
 
     virtual bool Intersect(const Ray& r, Interval<float> t_range, HitStruct* p_hit_info_out) const override;
 
-    virtual Vector3DF GetPosition() const;
-    virtual Bounds GetBounds() const;
+    virtual Vector3DF GetPosition() const override;
+    virtual Bounds GetBounds() const override;
 private:
     Vector3DF m_a, m_b, m_c;
 }; // class Triangle

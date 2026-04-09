@@ -10,6 +10,7 @@ public:
 
     virtual bool Intersect(const Ray& r, Interval<float> t_range, HitStruct* p_hit_info_out) const override;
 
+    virtual Vector3DF GetPosition() const;
     virtual Bounds GetBounds() const;
 private:
     Vector3DF m_position;
