@@ -1,7 +1,9 @@
 #pragma once
 #include <engine/eng_Bounds.h>
 #include <engine/eng_HitStruct.h>
+#include <engine/eng_IShader.h>
 #include <engine/eng_Interval.h>
+#include <engine/eng_ObjectManager.h>
 #include <engine/eng_Ray.h>
 
 namespace eng {
@@ -9,6 +11,8 @@ namespace eng {
 class IShape {
 public:
     virtual bool Intersect(const Ray& r, Interval<float> t_range, HitStruct* p_hit_info_out) const = 0;
+
+    virtual Handle<IShader> GetShader() const = 0;
 
     virtual Vector3DF GetPosition() const = 0;
     virtual Bounds GetBounds() const = 0;

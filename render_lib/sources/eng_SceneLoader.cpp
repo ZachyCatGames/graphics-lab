@@ -110,28 +110,6 @@ void SceneLoader::addShape(const ISceneLoader::ShapeDesc &shapeDesc) {
 
     std::print("{}\n", shapeDesc.shaderNameReference);
 
-    /* Create a shape of type. */
-    /* TODO: Move to a factory? */
-    Handle<IShape> new_shape;
-    if (shapeDesc.type == "sphere") {
-        const auto& center = shapeDesc.center;
-        new_shape = shape::Sphere::Create(Vector3DF(center.x, center.y, center.z), shapeDesc.radius);
-    } else if (shapeDesc.type == "triangle") {
-        const auto& v0 = shapeDesc.v0, v1 = shapeDesc.v1, v2 = shapeDesc.v2;
-
-        new_shape = shape::Triangle::Create(
-            Vector3DF(v0.x, v0.y, v0.z),
-            Vector3DF(v1.x, v1.y, v1.z),
-            Vector3DF(v2.x, v2.y, v2.z)
-        );
-    } else {
-        std::cout << "Unsupported shape type" << std::endl;
-        return;
-    }
-
-    /* We must have a valid shape now. */
-    assert(new_shape.IsValid());
-
     /* Find the appropriate shader. */
     Handle<IShader> shader;
     auto shader_iter = m_ShaderMap.find(shapeDesc.shaderNameReference);
@@ -141,12 +119,34 @@ void SceneLoader::addShape(const ISceneLoader::ShapeDesc &shapeDesc) {
         std::cout << "Shader " << shapeDesc.shaderNameReference << " does not exist" << std::endl;
     }
 
+    /* Create a shape of type. */
+    /* TODO: Move to a factory? */
+    Handle<IShape> new_shape;
+    if (shapeDesc.type == "sphere") {
+        const auto& center = shapeDesc.center;
+        new_shape = shape::Sphere::Create(Vector3DF(center.x, center.y, center.z), shapeDesc.radius, shader);
+    } else if (shapeDesc.type == "triangle") {
+        const auto& v0 = shapeDesc.v0, v1 = shapeDesc.v1, v2 = shapeDesc.v2;
+
+        new_shape = shape::Triangle::Create(
+            Vector3DF(v0.x, v0.y, v0.z),
+            Vector3DF(v1.x, v1.y, v1.z),
+            Vector3DF(v2.x, v2.y, v2.z),
+            shader
+        );
+    } else {
+        std::cout << "Unsupported shape type" << std::endl;
+        return;
+    }
+
+    /* We must have a valid shape now. */
+    assert(new_shape.IsValid());
+
     /* Strictly speaking, this can be caused by an incorrect json. */
     // assert(shader.IsValid());
 
     /* Insert the new shape and bind our shader to it. */
-    m_p_scene->InsertShape(new_shape)
-        .BindShader(shader);
+    m_p_scene->InsertShape(new_shape);
 }
 
 } // namespace eng

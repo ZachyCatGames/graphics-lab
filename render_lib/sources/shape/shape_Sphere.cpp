@@ -25,6 +25,7 @@ bool Sphere::Intersect(const Ray& r, Interval<float> t_range, HitStruct* p_hit_i
     p_hit_info_out->t        = t;
     p_hit_info_out->position = r.at(t);
     p_hit_info_out->normal   = (p_hit_info_out->position - m_position).normalize();
+    p_hit_info_out->shader   = m_shader;
 
     return true;
 }

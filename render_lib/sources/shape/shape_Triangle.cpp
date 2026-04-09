@@ -57,6 +57,7 @@ bool Triangle::Intersect(const Ray& r, Interval<float> t_range, HitStruct* p_hit
     p_hit_info_out->normal   = cross(u,v).normalize();
     p_hit_info_out->position = r.at(t);
     p_hit_info_out->t        = t;
+    p_hit_info_out->shader   = m_shader;
 
     return true;
 }

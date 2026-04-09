@@ -23,7 +23,7 @@ SceneRenderHelper::SceneRenderHelper(int argc, char** argv) {
     m_fb = fb::Framebuffer(m_img_width, m_img_height);
 
     /* Initialize our scene. */
-    m_scene = Scene(m_args.recursionDepth);
+    m_scene.Initialize(m_args.recursionDepth);
 
     /* Initialize our renderer. */
     m_renderer.Initialize(&m_scene, m_args.width, m_args.height, m_args.rpp, m_args.randpix, m_args.numCpus);

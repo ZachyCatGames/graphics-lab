@@ -8,7 +8,18 @@ Scene::Scene()
 Scene::Scene(int max_depth)
     : m_max_depth(max_depth) {}
 
+void Scene::Initialize() {
+    m_max_depth = 4;
+}
+
+void Scene::Initialize(int max_depth) {
+    m_max_depth = max_depth;
+}
+
 Scene::ObjectContext Scene::InsertShape(Handle<IShape> handle) {
+    /* Mark the BVH as requiring an update. */
+    m_bvhNeedsUpdate = true;
+
     m_shapes.push_back(handle);
     auto [iter, inserted] = m_attribs.insert_or_assign(handle, ShapeAttributes());
     return ObjectContext(iter);
@@ -26,6 +37,9 @@ Scene::ObjectContext Scene::GetShapeContext(Handle<IShape> shape) {
 }
 
 void Scene::RemoveShape(Handle<IShape> shape) {
+    /* Mark the BVH as requiring an update. */
+    m_bvhNeedsUpdate = true;
+
     /* Find where the shape is in the shape list. */
     auto it = std::ranges::find(m_shapes, shape);
     if (it == m_shapes.end())
@@ -51,37 +65,27 @@ Vector3DF Scene::GetRayColor(const Ray& r, Interval<float> t_range, int depth) {
     /* Return black if we've reached the max recursion depth. */
     if (depth > m_max_depth)
         return Vector3DF{0, 0, 0}; 
-   
-    float closest_found = t_range.Max();
-    Handle<IShape> closest_shape;
+
+    /* Update the BVH if required. */
+    if(m_bvhNeedsUpdate && m_bvhAutoUpdate)
+        this->PrepareBvhTree();
+
+    /* Request the closest shape from our BVH. */
     HitStruct closest_rec;
-    eng::HitStruct rec;
-    for (auto& shape : m_shapes) {
-        if (shape->Intersect(r, eng::Interval<float>(t_range.Min(), closest_found), &rec)) {
-            closest_found = rec.t;
-            closest_shape = shape;
-            closest_rec   = rec;
-
-            /* Populate ray field of hitstruct. */
-            closest_rec.r = r;
-        }
+    if(!m_shapeBvh.Intersect(r, t_range, &closest_rec)) {
+        /* Return black if no shape was found. */
+        return Vector3DF{0, 0, 0};
     }
 
-    /* Check if a shape was found. */
-    if (closest_shape.IsValid()) {
-        /* Run the shape's shader if available. */
-        auto shader = m_attribs[closest_shape].shader;
-        if (shader) {
-            auto c = shader->GetColor(this, depth, closest_rec);
-            return c;
-        }
-
-        /* If no shader is available, fallback to returning white. */
-        return Vector3DF{1.0, 1.0, 1.0};
+    /* Run the shape's shader if available. */
+    auto& shader = closest_rec.shader;
+    if (shader) {
+        auto c = shader->GetColor(this, depth, closest_rec);
+        return c;
     }
 
-    /* Return black if no shape was found. */
-    return Vector3DF{0, 0, 0};
+    /* If no shader is available, fallback to returning white. */
+    return Vector3DF{1.0, 1.0, 1.0};
 }
 
 bool Scene::IsObjectInPath(const Ray& r, Interval<float> t_range) {
@@ -97,5 +101,13 @@ bool Scene::IsObjectInPath(const Ray& r, Interval<float> t_range) {
 
 void Scene::ReserveShapes(size_t count) { m_shapes.reserve(count); }
 void Scene::ReservePointLights(size_t count) { m_lights.reserve(count); }
+
+void Scene::PrepareBvhTree() {
+    if(!m_bvhNeedsUpdate)
+        return;
+    
+    m_bvhNeedsUpdate = false;
+    m_shapeBvh.Initialize(m_shapes);
+}
 
 } // namespace eng

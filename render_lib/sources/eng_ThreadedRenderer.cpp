@@ -10,6 +10,9 @@ void ThreadedRenderer::Render(int camera_id, fb::Framebuffer* p_fb) {
     /* Retrieve it's img dimensions. */
     auto [width, height] = camera->GetImageDimensions();
     
+    /* Update the scene's bvh. */
+    m_p_scene->PrepareBvhTree();
+
     std::atomic<int> cur_line = 0;
     const auto worker_func = [&]() {
         int line;

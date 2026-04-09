@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <vector>
 
+#include <engine/eng_Bvh.h>
 #include <engine/eng_ICamera.h>
 #include <engine/eng_Interval.h>
 #include <engine/eng_IShader.h>
@@ -54,6 +55,9 @@ public:
         bool valid;
     }; // class ObjectContext
 
+    /**************************************************
+     * Init functions.
+     **************************************************/
     /**
      * Initialize a scene with default parameters.
      * 
@@ -73,6 +77,13 @@ public:
      */
     Scene(int max_depth);
 
+    void Initialize();
+
+    void Initialize(int max_depth);
+
+    /**************************************************
+     * Shape functions.
+     **************************************************/
     /**
      * Initializes a shape of type T with the provided args and
      * adds it to the scene.
@@ -106,6 +117,11 @@ public:
 
     void RemoveShape(Handle<IShape> shape);
 
+    void PrepareBvhTree();
+
+    /**************************************************
+     * Point light functions.
+     **************************************************/
     shdr::PointLight& EmplacePointLight(const Vector3DF& pos, const Vector3DF& intensity);
 
     shdr::PointLight& InsertPointLight(const shdr::PointLight& light);
@@ -135,12 +151,17 @@ public:
      */
     void ReservePointLights(size_t count);
 private:
+private:
     std::vector<Handle<IShape>> m_shapes;
     MapType m_attribs;
+    Bvh m_shapeBvh;
 
     std::vector<shdr::PointLight> m_lights;
 
     int m_max_depth;
+
+    bool m_bvhAutoUpdate = false;
+    bool m_bvhNeedsUpdate;
 }; // class Scene
 
 } // namespace eng
