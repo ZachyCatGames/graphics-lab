@@ -57,6 +57,8 @@ public:
     constexpr void MoveByW(float dist) noexcept { m_position += m_W * dist; }
     constexpr void MoveByU(float dist) noexcept { m_position += m_U * dist;}
 
+    [[nodiscard]] constexpr const auto& GetPosition() const { return m_position; }
+
     [[nodiscard]] constexpr virtual float GetMinT() const override { return m_focal_length; }
 
 #ifdef ENGINE_BUILD_GL_RENDER
