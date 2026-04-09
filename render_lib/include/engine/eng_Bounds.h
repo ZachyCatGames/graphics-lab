@@ -64,6 +64,14 @@ struct Bounds {
         
         return true;
     }
+
+    constexpr Vector3DF GetCenter() const {
+        return Vector3DF{
+            (x.Min() + x.Max()) / 2,
+            (y.Min() + y.Max()) / 2,
+            (z.Min() + z.Max()) / 2,
+        };
+    }
 }; // class Bounds
 
 } // namespace eng
