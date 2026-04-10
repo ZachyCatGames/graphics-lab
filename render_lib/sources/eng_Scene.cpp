@@ -90,13 +90,7 @@ Vector3DF Scene::GetRayColor(const Ray& r, Interval<float> t_range, int depth) {
 
 bool Scene::IsObjectInPath(const Ray& r, Interval<float> t_range) {
     HitStruct rec;
-    for (auto& shape : m_shapes) {
-        if (shape->Intersect(r, t_range, &rec)) {
-            return true;
-        }
-    }
-
-    return false;
+    return m_shapeBvh.Intersect(r, t_range, &rec);
 }
 
 void Scene::ReserveShapes(size_t count) { m_shapes.reserve(count); }

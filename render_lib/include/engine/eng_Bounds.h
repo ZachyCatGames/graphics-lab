@@ -5,26 +5,6 @@
 
 namespace eng {
 
-namespace detail {
-
-constexpr float CalculateTime(float pos, float origin, float direction) noexcept {
-    return (pos - origin) / direction;
-}
-
-constexpr std::pair<float, float> CalculateTimeRange(Interval<float> range, float origin, float direction) {
-    float tmin, tmax;
-    if (direction >= 0) {
-        tmin = CalculateTime(range.Min(), origin, direction);
-        tmax = CalculateTime(range.Max(), origin, direction);
-    } else {
-        tmin = CalculateTime(range.Max(), origin, direction);
-        tmax = CalculateTime(range.Min(), origin, direction);
-    }
-    return {tmin, tmax};
-}
-
-} // namespace detail
-
 struct Bounds {
     Interval<float> x;
     Interval<float> y;
@@ -48,13 +28,24 @@ struct Bounds {
 
     constexpr bool Collides(const Ray& ray) const {
         const auto& origin = ray.origin();
-        const auto& dir    = ray.direction();
+        const auto& dir    = ray.inverse_direction();
         
-        /* Calculate time ranges on each axis. */
-        auto [tx_min, tx_max] = detail::CalculateTimeRange(x, origin.x(), dir.x());
-        auto [ty_min, ty_max] = detail::CalculateTimeRange(y, origin.y(), dir.y());
-        auto [tz_min, tz_max] = detail::CalculateTimeRange(z, origin.z(), dir.z());
+        constexpr auto calc_interval = [](Interval<float> range, float origin, float direction) constexpr -> std::pair<float, float> {
+            float t1 = (range.Min() - origin) * direction;
+            float t2 = (range.Max() - origin) * direction;
+        
+            float tmin = std::min(t1, t2);
+            float tmax = std::max(t1, t2);
+        
+            return {tmin, tmax};
+        };
 
+        /* Calculate time ranges on each axis. */
+        auto [tx_min, tx_max] = calc_interval(x, origin.x(), dir.x());
+        auto [ty_min, ty_max] = calc_interval(y, origin.y(), dir.y());
+        auto [tz_min, tz_max] = calc_interval(z, origin.z(), dir.z());
+
+        // TODO: CUDA; adopt a branch-less approach
         if (tx_min > ty_max || ty_min > tx_max)
             return false;
         if (tz_min > ty_max || ty_min > tz_max)

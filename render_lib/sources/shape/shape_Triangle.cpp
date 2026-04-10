@@ -31,8 +31,9 @@ bool Triangle::Intersect(const Ray& r, Interval<float> t_range, HitStruct* p_hit
     const auto bl_minus_kc = b*l - k*c;
 
     const auto M = a * ei_minus_hf + b * gf_minus_di + c * (dh_minus_eg);
+    const auto MI = 1.0 / M;
 
-    const auto t = -(f * ak_minus_jb + e * jc_minus_al + d * bl_minus_kc) / M;
+    const auto t = -(f * ak_minus_jb + e * jc_minus_al + d * bl_minus_kc) * MI;
     //std::cout << m_a << '\n' << m_b << '\n' << m_c << '\n';
     //std::cout << orig << '\n';
     //std::print("{} {} {}\n", j, k, l);
@@ -41,12 +42,12 @@ bool Triangle::Intersect(const Ray& r, Interval<float> t_range, HitStruct* p_hit
     if (!t_range.Surrounds(t))
         return false;
 
-    const auto gamma = (i * ak_minus_jb + h * jc_minus_al + g * bl_minus_kc) / M;
+    const auto gamma = (i * ak_minus_jb + h * jc_minus_al + g * bl_minus_kc) * MI;
 
     if (!Interval<float>(0, 1).Surrounds(gamma))
         return false;
 
-    const auto beta = (j * ei_minus_hf + k * gf_minus_di + l * dh_minus_eg) / M;
+    const auto beta = (j * ei_minus_hf + k * gf_minus_di + l * dh_minus_eg) * MI;
 
     if (beta < 0 || beta > (1 - gamma))
         return false;
@@ -57,7 +58,7 @@ bool Triangle::Intersect(const Ray& r, Interval<float> t_range, HitStruct* p_hit
     p_hit_info_out->normal   = cross(u,v).normalize();
     p_hit_info_out->position = r.at(t);
     p_hit_info_out->t        = t;
-    p_hit_info_out->shader   = m_shader;
+    p_hit_info_out->shader   = m_shader.Get();
 
     return true;
 }

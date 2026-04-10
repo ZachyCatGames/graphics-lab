@@ -39,7 +39,7 @@ private:
             }
         }
 
-        constexpr size_t Get() const {
+        constexpr size_t Get() const noexcept {
             if consteval {
                 return non_atomic;
             } else {

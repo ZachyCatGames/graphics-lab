@@ -3,6 +3,8 @@
 #include <cmath>
 #include <iostream>
 
+#include <smmintrin.h>
+
 #ifdef ENGINE_BUILD_GL_RENDER
 #include "glm/glm.hpp"
 #endif // ENGINE_BUILD_GL_RENDER
@@ -57,6 +59,9 @@ public:
     template<typename T, typename S>
     friend constexpr auto& operator/=(Vector3D<T>& vec, const Vector3D<S> &rhs) noexcept;
 
+    template<typename T>
+    friend constexpr double dot(const Vector3D<T> &u, const Vector3D<T> &v) noexcept;
+
     [[nodiscard]] constexpr ValueType length() const noexcept { // cxx26 constexpr
         return std::sqrt(this->length_squared());
     }
@@ -104,7 +109,10 @@ public:
     }
 #endif // ENGINE_BUILD_GL_RENDER
 private:
-    ValueT e[3];
+    union {
+        ValueT e[3];
+        __m128 v;
+    };
 }; // class Vector3D
 
 using Vector3DF = Vector3D<float>;
@@ -223,6 +231,11 @@ template<typename ValueT, typename ValueS>
     return (1 / rhs) * lhs;
 }
 
+template<typename ValueT, typename ValueS>
+[[nodiscard]] constexpr auto operator/(ValueT lhs, const Vector3D<ValueS> &rhs) noexcept {
+    return Vector3D{ lhs / rhs.x(), lhs / rhs.y(), lhs / rhs.z() };
+}
+
 template<typename ValueT, typename WithinT>
 [[nodiscard]] constexpr bool equal_within(const Vector3D<ValueT>& lhs, const Vector3D<ValueT>& rhs, const WithinT& within) noexcept {
     const auto withint = static_cast<std::remove_reference_t<ValueT>>(within);
@@ -243,6 +256,7 @@ template<typename ValueT>
 
 template<typename ValueT>
 [[nodiscard]] constexpr double dot(const Vector3D<ValueT> &u, const Vector3D<ValueT> &v) noexcept {
+    return std::bit_cast<float>(_mm_extract_ps(_mm_dp_ps(u.v, v.v, 0x71), 0));
     return u.x() * v.x() +
            u.y() * v.y() +
            u.z() * v.z();

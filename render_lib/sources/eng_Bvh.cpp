@@ -17,14 +17,14 @@ bool BvhNode::Intersect(const Ray& r, Interval<float> t_range, HitStruct* p_hit_
     if (left_hit && right_hit) {
         /* Prioritize whichever has the lower t (i.e., is closer). */
         if (left_hit_info.t > right_hit_info.t) {
-            *p_hit_info_out = right_hit_info;
+            *p_hit_info_out = std::move(right_hit_info);
         } else {
-            *p_hit_info_out = left_hit_info;
+            *p_hit_info_out = std::move(left_hit_info);
         }
     } else if (left_hit) {
-        *p_hit_info_out = left_hit_info;
+        *p_hit_info_out = std::move(left_hit_info);
     } else if (right_hit) {
-        *p_hit_info_out = right_hit_info;
+        *p_hit_info_out = std::move(right_hit_info);
     } else {
         return false;
     }

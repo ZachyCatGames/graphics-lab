@@ -11,7 +11,7 @@ struct HitStruct {
     Ray r;
     Vector3DF normal;
     Vector3DF position;
-    Handle<IShader> shader;
+    IShader* shader;
     float t;
 }; // struct HitStruct
 
