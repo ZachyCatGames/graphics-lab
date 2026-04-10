@@ -2,6 +2,8 @@
 
 namespace eng {
 
-class IShader {};
+class IShader {
+    virtual ~IShader() = default;
+};
 
 } // namespace eng

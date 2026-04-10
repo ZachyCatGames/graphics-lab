@@ -25,7 +25,9 @@ add_library (render_lib
 
   # Core Library.
   sources/eng_ArgumentParsing.cpp
+  sources/eng_CreateObject.cpp
   sources/eng_HandleGraphicsArgs.cpp
+  sources/eng_Init.cpp
   sources/eng_PerspectiveCamera.cpp
   sources/eng_Scene.cpp
   sources/eng_SceneParser_JSON.cpp
@@ -36,6 +38,7 @@ add_library (render_lib
   sources/raytracer/eng_RendererBase.cpp
   sources/raytracer/eng_Scene.cpp
   sources/raytracer/eng_SceneLoader.cpp
+  sources/raytracer/eng_ObjectFactory.cpp
 
 
   ${UTIL_PLAT_SRC}
