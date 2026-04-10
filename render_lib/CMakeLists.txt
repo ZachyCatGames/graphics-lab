@@ -9,30 +9,34 @@ add_library (render_lib
   sources/framebuffer/fb_PngWriter.cpp
 
   # Shader Library.
-  sources/shader/shdr_BlinnPhong.cpp
-  sources/shader/shdr_Diffuse.cpp
-  sources/shader/shdr_Lambertian.cpp
-  sources/shader/shdr_Mirror.cpp
-  sources/shader/shdr_NormalShader.cpp
+  sources/raytracer/shader/shdr_BlinnPhong.cpp
+  sources/raytracer/shader/shdr_Diffuse.cpp
+  sources/raytracer/shader/shdr_Lambertian.cpp
+  sources/raytracer/shader/shdr_Mirror.cpp
+  sources/raytracer/shader/shdr_NormalShader.cpp
 
   # Shape Library
-  sources/shape/shape_Sphere.cpp
-  sources/shape/shape_Triangle.cpp
+  sources/raytracer/shape/shape_Sphere.cpp
+  sources/raytracer/shape/shape_Triangle.cpp
 
   # Demo Library
-  sources/demo/demo_DrawFramebuffer.cpp
-  sources/demo/demo_SceneRenderHelper.cpp
+  #sources/demo/demo_DrawFramebuffer.cpp
+  #sources/demo/demo_SceneRenderHelper.cpp
 
   # Core Library.
   sources/eng_ArgumentParsing.cpp
-  sources/eng_Bvh.cpp
   sources/eng_HandleGraphicsArgs.cpp
   sources/eng_PerspectiveCamera.cpp
-  sources/eng_RendererBase.cpp
   sources/eng_Scene.cpp
-  sources/eng_SceneLoader.cpp
   sources/eng_SceneParser_JSON.cpp
-  sources/eng_ThreadedRenderer.cpp
+  sources/raytracer/eng_ThreadedRenderer.cpp
+
+  # RT Core Library
+  sources/raytracer/eng_Bvh.cpp
+  sources/raytracer/eng_RendererBase.cpp
+  sources/raytracer/eng_Scene.cpp
+  sources/raytracer/eng_SceneLoader.cpp
+
 
   ${UTIL_PLAT_SRC}
 )

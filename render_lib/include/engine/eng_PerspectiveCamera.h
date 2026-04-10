@@ -1,5 +1,6 @@
 #pragma once
 #include <engine/eng_ICamera.h>
+#include <engine/eng_Ray.h>
 #include <engine/eng_Vector3D.h>
 #include <engine/eng_ObjectBase.h>
 

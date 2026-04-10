@@ -4,7 +4,6 @@
 #include <type_traits>
 #include <vector>
 
-#include <engine/eng_Bvh.h>
 #include <engine/eng_ICamera.h>
 #include <engine/eng_Interval.h>
 #include <engine/eng_IShader.h>
@@ -117,8 +116,6 @@ public:
 
     void RemoveShape(Handle<IShape> shape);
 
-    void PrepareBvhTree();
-
     /**************************************************
      * Point light functions.
      **************************************************/
@@ -128,10 +125,6 @@ public:
     //void InsertPointLight(shdr::PointLight&& light);
 
     const std::vector<shdr::PointLight>& GetPointLights() const noexcept { return m_lights; }
-
-    Vector3DF GetRayColor(const Ray& r, Interval<float> t_range, int depth);
-
-    bool IsObjectInPath(const Ray& r, Interval<float> t_range); 
 
     /**
      * Reserve / preallocate shape handles.
@@ -151,17 +144,15 @@ public:
      */
     void ReservePointLights(size_t count);
 private:
-private:
+protected:
     std::vector<Handle<IShape>> m_shapes;
     MapType m_attribs;
-    Bvh m_shapeBvh;
 
     std::vector<shdr::PointLight> m_lights;
 
     int m_max_depth;
 
-    bool m_bvhAutoUpdate = false;
-    bool m_bvhNeedsUpdate;
+    bool m_objectsUpdated;
 }; // class Scene
 
 } // namespace eng

@@ -100,11 +100,13 @@ public:
         this->MoveFrom(std::move(other));
     }
 
-    template<std::derived_from<value_type> OtherType>
+    //template<std::derived_from<value_type> OtherType>
+    template<typename OtherType>
     constexpr Handle(const Handle<OtherType>& other) : m_ctlr_blk_ptr(nullptr) {
         this->CopyFrom(other);
     }
-    template<std::derived_from<value_type> OtherType>
+    //template<std::derived_from<value_type> OtherType>
+    template<typename OtherType>
     constexpr Handle(Handle<OtherType>&& other) : m_ctlr_blk_ptr(nullptr) {
         this->MoveFrom(std::move(other));
     }
@@ -150,13 +152,15 @@ public:
         return *this;
     }
 
-    template<std::derived_from<value_type> OtherType>
+    //template<std::derived_from<value_type> OtherType>
+    template<typename OtherType>
     constexpr Handle<T>& operator=(const Handle<OtherType>& rhs) {
         this->CopyFrom(rhs);
         return *this;
     }
 
-    template<std::derived_from<value_type> OtherType>
+    //template<std::derived_from<value_type> OtherType>
+    template<typename OtherType>
     constexpr Handle<T>& operator=(Handle<OtherType>&& rhs) {
         this->MoveFrom(std::move(rhs));
         return *this;
