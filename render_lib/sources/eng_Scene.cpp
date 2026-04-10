@@ -2,19 +2,8 @@
 
 namespace eng {
 
-Scene::Scene()
-    : m_max_depth(4) {}
-
-Scene::Scene(int max_depth)
-    : m_max_depth(max_depth) {}
-
-void Scene::Initialize() {
-    m_max_depth = 4;
-}
-
-void Scene::Initialize(int max_depth) {
-    m_max_depth = max_depth;
-}
+Scene::Scene() :
+    m_objectsUpdated(false) {}
 
 Scene::ObjectContext Scene::InsertShape(Handle<IShape> handle) {
     /* Mark the BVH as requiring an update. */

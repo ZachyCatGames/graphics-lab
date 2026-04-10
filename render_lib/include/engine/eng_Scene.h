@@ -15,6 +15,21 @@
 
 namespace eng {
 
+struct RtSceneConfig {
+    int recursionDepth;
+
+    constexpr RtSceneConfig& SetRecusionDepth(int depth) noexcept {
+        recursionDepth = depth;
+        return *this;
+    }
+};
+
+struct SceneConfig {
+    union {
+        RtSceneConfig rtConfig;
+    };
+};
+
 class Scene {
 private:
     struct ShapeAttributes {
@@ -53,32 +68,6 @@ public:
         IterType m_iter;
         bool valid;
     }; // class ObjectContext
-
-    /**************************************************
-     * Init functions.
-     **************************************************/
-    /**
-     * Initialize a scene with default parameters.
-     * 
-     * The defaults are as follows:
-     *  - max depth of 4
-     *  - 1 sample per pixel
-     *  - no sample randomization
-     */
-    Scene();
-
-    /**
-     * Initializes a scene with the provided parameters.
-     * 
-     * @param max_depth  max number of ray reflections
-     * @param samples_per_pixel  number of color samples taken per-pixel (for AA)
-     * @param random_samples  enable randomized sample locations
-     */
-    Scene(int max_depth);
-
-    void Initialize();
-
-    void Initialize(int max_depth);
 
     /**************************************************
      * Shape functions.
@@ -143,14 +132,17 @@ public:
      * @param count  Number of point lights to preallocate.
      */
     void ReservePointLights(size_t count);
+protected:
+    /**************************************************
+     * Init functions.
+     **************************************************/
+    Scene();
 private:
 protected:
     std::vector<Handle<IShape>> m_shapes;
     MapType m_attribs;
 
     std::vector<shdr::PointLight> m_lights;
-
-    int m_max_depth;
 
     bool m_objectsUpdated;
 }; // class Scene

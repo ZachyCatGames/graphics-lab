@@ -2,6 +2,24 @@
 
 namespace eng::rt {
 
+Scene::Scene() :
+    m_max_depth(4),
+    m_bvhAutoUpdate(false) {}
+
+Scene::Scene(int maxDepth) : 
+    m_max_depth(maxDepth),
+    m_bvhAutoUpdate(false) {}
+
+void Scene::Initialize() {
+    m_max_depth = 4;
+    m_bvhAutoUpdate = false;
+}
+
+void Scene::Initialize(int maxDepth) {
+    m_max_depth = maxDepth;
+    m_bvhAutoUpdate = false;
+}
+
 Vector3DF Scene::GetRayColor(const Ray& r, Interval<float> t_range, int depth) {
     /* Return black if we've reached the max recursion depth. */
     if (depth > m_max_depth)
