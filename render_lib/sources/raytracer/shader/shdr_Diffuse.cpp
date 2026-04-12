@@ -1,9 +1,10 @@
 #include <engine/raytracer/shader/shdr_Diffuse.h>
-#include <engine/raytracer/eng_Scene.h>
+#include <engine/raytracer/eng_RayCaster.h>
+#include <engine/eng_Scene.h>
 
 namespace eng::rt::shdr {
 
-Vector3DF Diffuse::GetColor(Scene* p_scene, int depth, const HitStruct& rec) {
+Vector3DF Diffuse::GetColor(RayCaster* pRc, int depth, const HitStruct& rec) {
     Vector3DF direction;
     while (true) {
         /* Sample a random point in the unit circle. */
@@ -18,11 +19,11 @@ Vector3DF Diffuse::GetColor(Scene* p_scene, int depth, const HitStruct& rec) {
     }
 
     /* Obtain base color from base shader. */
-    const auto base_color = m_shader->GetColor(p_scene, depth, rec);
+    const auto base_color = m_shader->GetColor(pRc, depth, rec);
 
     const Ray r(rec.position, direction + rec.normal);
 
-    return base_color * p_scene->GetRayColor(r, {0.001, std::numeric_limits<float>::infinity()}, depth+1);
+    return base_color * pRc->CastRayIntoScene(r, {0.001, std::numeric_limits<float>::infinity()}, depth+1);
 }
 
 } // namespace eng::shdr

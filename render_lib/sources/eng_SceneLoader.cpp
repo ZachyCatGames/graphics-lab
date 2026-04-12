@@ -1,33 +1,18 @@
-#include <engine/raytracer/eng_SceneLoader.h>
-
-/* Builtin Shapes. */
-#include <engine/raytracer/shape/shape_Sphere.h>
-#include <engine/raytracer/shape/shape_Triangle.h>
-
-/* Builtin Shaders. */
-#include <engine/raytracer/shader/shdr_BlinnPhong.h>
-#include <engine/raytracer/shader/shdr_Diffuse.h>
-#include <engine/raytracer/shader/shdr_Emitter.h>
-#include <engine/raytracer/shader/shdr_Lambertian.h>
-#include <engine/raytracer/shader/shdr_Mirror.h>
-#include <engine/raytracer/shader/shdr_NormalShader.h>
-
-/* Builtin Cameras. */
-#include <engine/eng_PerspectiveCamera.h>
+#include <engine/eng_SceneLoader.h>
 
 /* Builtin lights. */
 #include <engine/shader/shdr_PointLight.h>
 
 #include <cassert>
 
-namespace eng::rt {
+namespace eng {
 
 void SceneLoader::addPointLight(const ISceneLoader::vec &pos,
                                 const ISceneLoader::vec &intensity) {
     std::cout << "Creating point light." << std::endl;
     
     /* Add the new point light to our scene. */
-    m_p_scene->EmplacePointLight(
+    m_pScene->EmplacePointLight(
         Vector3DF(pos.x, pos.y, pos.z),
         Vector3DF(intensity.x, intensity.y, intensity.z)
     );
@@ -49,12 +34,13 @@ void SceneLoader::addCamera(const std::string &name, const std::string &type,
     const Vector3DF view_dir_v3(viewDir.x, viewDir.y, viewDir.z);
 
     /* Get default image dimensions from the renderer. */
-    auto [img_width, img_height] = m_p_renderer->GetDefaultImageDimensions();
+    //auto [img_width, img_height] = m_p_renderer->GetDefaultImageDimensions();
 
-    /* Construct the new camera. */
-    m_p_renderer->EmplaceCamera<PerspectiveCamera>(
-        pos_v3, view_dir_v3, focalLength, img_width, img_height, imagePlaneWidth
-    );
+    /* Construct a new camera. */ // TODO fix dims
+    auto camera = m_pObjFactory->CreatePerspectiveCamera(pos_v3, view_dir_v3, focalLength, m_defaultImgWidth, m_defaultImgHeight, imagePlaneWidth);
+
+    /* Add it to the scene. */
+    m_pScene->cameras.Insert(name, camera);
   }
 
 void SceneLoader::addShader(const ISceneLoader::ShaderDesc &shaderDesc) {
@@ -70,32 +56,30 @@ void SceneLoader::addShader(const ISceneLoader::ShaderDesc &shaderDesc) {
     /* TODO: Move to a factory? */
     Handle<IShader> shader;
     if (shaderDesc.type == "Lambertian" || shaderDesc.type == "BlinnPhong" || shaderDesc.type == "Phong") {
-        const auto& lights    = m_p_scene->GetPointLights();
+        const auto& lights    = m_pScene->GetPointLights();
         const auto& diffuse = shaderDesc.diffuse.data;
 
-        /* Create base color shader. */
-        auto base_color = shdr::FlatColor::Create(
-            Vector3DF(diffuse.x, diffuse.y, diffuse.z)
-        );
+        /* Create base color. */
+        auto base_color = Vector3DF(diffuse.x, diffuse.y, diffuse.z);
 
         if (shaderDesc.type == "Lambertian")
-            shader = shdr::Lambertian::Create(base_color, lights);
+            shader = m_pObjFactory->CreateLambertian(base_color, lights);
         else /* if (shaderDesc.type == "BlinnPhong" || shaderDesc.type == "Phong") */
-            shader = shdr::BlinnPhong::Create(base_color, lights, shaderDesc.phongExp);
+            shader = m_pObjFactory->CreatePhong(base_color, lights, shaderDesc.phongExp);
 
     } else if (shaderDesc.type == "Mirror") {
-        shader = shdr::Mirror::Create();
+        //shader = shdr::Mirror::Create();
     } else if (shaderDesc.type == "Diffuse") {
         /* Create diffuse shader + its base color shader. */
         const auto& diffuse = shaderDesc.diffuse.data;
-        shader = shdr::Diffuse::Create(
-            shdr::FlatColor::Create(
-                Vector3DF(diffuse.x, diffuse.y, diffuse.z)
-            )
-        );
+        //shader = shdr::Diffuse::Create(
+        //    shdr::FlatColor::Create(
+        //        Vector3DF(diffuse.x, diffuse.y, diffuse.z)
+        //    )
+        //);
     } else if (shaderDesc.type == "Emitter") {
         const auto& color = shaderDesc.emission.data;
-        shader = shdr::Emitter::Create(Vector3DF(color.x, color.y, color.z));
+        //shader = shdr::Emitter::Create(Vector3DF(color.x, color.y, color.z));
     } else {
         std::cout << "Invalid shader type" << std::endl;
         return;
@@ -120,15 +104,14 @@ void SceneLoader::addShape(const ISceneLoader::ShapeDesc &shapeDesc) {
     }
 
     /* Create a shape of type. */
-    /* TODO: Move to a factory? */
     Handle<IShape> new_shape;
     if (shapeDesc.type == "sphere") {
         const auto& center = shapeDesc.center;
-        new_shape = shape::Sphere::Create(Vector3DF(center.x, center.y, center.z), shapeDesc.radius, shader);
+        new_shape = m_pObjFactory->CreateSphere(Vector3DF(center.x, center.y, center.z), shapeDesc.radius, shader);
     } else if (shapeDesc.type == "triangle") {
         const auto& v0 = shapeDesc.v0, v1 = shapeDesc.v1, v2 = shapeDesc.v2;
 
-        new_shape = shape::Triangle::Create(
+        new_shape = m_pObjFactory->CreateTriangle(
             Vector3DF(v0.x, v0.y, v0.z),
             Vector3DF(v1.x, v1.y, v1.z),
             Vector3DF(v2.x, v2.y, v2.z),
@@ -146,7 +129,7 @@ void SceneLoader::addShape(const ISceneLoader::ShapeDesc &shapeDesc) {
     // assert(shader.IsValid());
 
     /* Insert the new shape and bind our shader to it. */
-    m_p_scene->InsertShape(new_shape);
+    m_pScene->shapes.Insert(shapeDesc.name, new_shape);
 }
 
 } // namespace eng

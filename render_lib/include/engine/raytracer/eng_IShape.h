@@ -1,12 +1,13 @@
 #pragma once
 #include <engine/raytracer/eng_HitStruct.h>
-#include <engine/raytracer/eng_IShader.h>
 #include <engine/eng_IShape.h>
 #include <engine/eng_Interval.h>
 #include <engine/eng_ObjectManager.h>
 #include <engine/eng_Ray.h>
 
 namespace eng::rt {
+
+class IShader;
 
 class IShape : public eng::IShape {
 public:

@@ -1,11 +1,10 @@
 #include <engine/raytracer/shader/shdr_BlinnPhong.h>
-#include <engine/raytracer/eng_Scene.h>
+#include <engine/raytracer/eng_RayCaster.h>
+#include <engine/eng_Scene.h>
 
 namespace eng::rt::shdr {
 
-Vector3DF BlinnPhong::GetColor(Scene* p_scene, int depth, const HitStruct& rec) {
-    /* Request color from base shader. */
-    const auto base_color = m_base ? m_base->GetColor(p_scene, depth, rec) : Vector3DF(1,1,1);
+Vector3DF BlinnPhong::GetColor(RayCaster* pRc, int depth, const HitStruct& rec) {
 
     Vector3DF light_sum;
     for (const auto& light : m_lights) {
@@ -15,7 +14,7 @@ Vector3DF BlinnPhong::GetColor(Scene* p_scene, int depth, const HitStruct& rec) 
             light.position - rec.position
         };
 
-        if (!p_scene->IsObjectInPath(r, {0.001, 1.0})) {
+        if (!pRc->IsObjectInPath(r, {0.001, 1.0})) {
             const auto dir = light.GetDirection(rec.position);
             const auto nl  = std::max(0.0, dot(rec.normal, dir));
 
@@ -25,7 +24,7 @@ Vector3DF BlinnPhong::GetColor(Scene* p_scene, int depth, const HitStruct& rec) 
         }
     }
 
-    return light_sum * base_color;
+    return light_sum * m_baseColor;
 }
 
 } // namespace eng::shdr

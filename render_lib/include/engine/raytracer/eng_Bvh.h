@@ -26,6 +26,8 @@ public:
         this->Initialize(pParent, std::forward<R&&>(objects), axis);
     }
 
+    virtual ~BvhNode() = default;
+
     template<std::ranges::random_access_range R>
     void Initialize(Bvh* pParent, R&& objects, int axis) {
         m_pParent = pParent;
@@ -87,6 +89,8 @@ public:
     Bvh(R&& objects) : m_firstLevel(this, std::forward<R&&>(objects), 0) {
         /* ... */
     }
+
+    virtual ~Bvh() = default;
 
     template<std::ranges::random_access_range R>
     void Initialize(R&& object) {

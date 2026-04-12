@@ -10,14 +10,14 @@ namespace eng::rt::shdr {
 class BlinnPhong : public IShader, public ObjectBase<BlinnPhong> {
 public:
     template<typename R>
-    constexpr BlinnPhong(Handle<IShader> base_shader, R&& lights, float exp)
-        : m_base(base_shader),
+    constexpr BlinnPhong(Vector3DF baseColor, R&& lights, float exp)
+        : m_baseColor(baseColor),
           m_lights(std::from_range, std::forward<R>(lights)),
           m_exp(exp) {}
 
-    virtual Vector3DF GetColor(Scene* p_scene, int depth, const HitStruct& rec) override;
+    virtual Vector3DF GetColor(RayCaster* pRc, int depth, const HitStruct& rec) override;
 private:
-    Handle<IShader> m_base;
+    Vector3DF m_baseColor;
     std::vector<eng::shdr::PointLight> m_lights;
     float m_exp;
 }; // class BlinnPhong

@@ -3,15 +3,23 @@
 
 namespace eng::rt {
 
-void ThreadedRenderer::Render(int camera_id, fb::Framebuffer* p_fb) {
+void ThreadedRenderer::PreRender() {
+    /* Make sure the raycaster's BVH tree is ready. */
+    m_caster.PrepareBvhTree();
+}
+
+void ThreadedRenderer::Render(std::string_view cameraName, fb::Framebuffer* p_fb) {
+    assert(m_pScene);
+    assert(m_caster.IsInitialized());
+    assert(m_thread_count > 0);
+
     /* Find the target camera. */
-    auto camera = m_cameras[camera_id];
+    auto camera = m_pScene->cameras.Get(cameraName);
 
     /* Retrieve it's img dimensions. */
     auto [width, height] = camera->GetImageDimensions();
-    
-    /* Update the scene's bvh. */
-    m_p_scene->PrepareBvhTree();
+
+    std::print("{} {}\n", width, height);
 
     std::atomic<int> cur_line = 0;
     const auto worker_func = [&]() {

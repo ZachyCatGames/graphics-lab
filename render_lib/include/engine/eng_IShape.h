@@ -6,7 +6,7 @@ namespace eng {
 
 class IShape {
 public:
-    virtual ~IShape();
+    virtual ~IShape() = default;
     
     virtual Vector3DF GetPosition() const = 0;
     virtual Bounds GetBounds() const = 0;

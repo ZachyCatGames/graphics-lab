@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <vector>
 
+#include <engine/eng_Hash.h>
 #include <engine/eng_ICamera.h>
 #include <engine/eng_Interval.h>
 #include <engine/eng_IShader.h>
@@ -15,95 +16,69 @@
 
 namespace eng {
 
-struct RtSceneConfig {
-    int recursionDepth;
-
-    constexpr RtSceneConfig& SetRecusionDepth(int depth) noexcept {
-        recursionDepth = depth;
-        return *this;
-    }
-};
-
-struct SceneConfig {
-    union {
-        RtSceneConfig rtConfig;
-    };
-};
-
+/**
+ * Scene is a basic object container class.
+ */
 class Scene {
-private:
-    struct ShapeAttributes {
-        constexpr ShapeAttributes() : shader() {}
-
-        Handle<IShader> shader;
-    }; // struct ShapeAttributes;
-
-    using MapType  = std::unordered_map<Handle<IShape>, ShapeAttributes>;
-    using IterType = MapType::iterator;
 public:
-    class ObjectContext {
+    template<typename T>
+    class ObjectCollection {
     public:
-        ObjectContext() = delete;
-        ObjectContext(const ObjectContext&) = delete;
-        ObjectContext(ObjectContext&&) = delete;
+        /**
+         * Add an named initialized object to the scene.
+         * 
+         * @param handle  Handle of the object to be added
+         * @return Error code.
+         */
+        int Insert(std::string_view name, Handle<T> handle);
 
-        constexpr const ObjectContext& BindShader(Handle<IShader> shader) const {
-            this->GetAttribs()->shader = shader;
-            return *this;
-        }
+        /**
+         * Add an unnamed initialized shape to the scene.
+         */
+        int Insert(Handle<T> handle);
 
-        [[nodiscard]] constexpr auto GetShader() const { return this->GetAttribs()->shader; }
-        [[nodiscard]]  auto GetHandle() const { return std::get<0>(*m_iter); }
+        Handle<T> Get(std::string_view name);
 
-        [[nodiscard]] constexpr auto IsValid() const { return this->GetHandle().IsValid(); }
+        bool Contains(std::string_view name);
+
+        int Remove(std::string_view name);
+        int Remove(Handle<T> name);
+
+        const auto& GetList() const { return m_list; }
+
+        void Reserve(size_t num);
+
+        constexpr bool GetUpdateFlag() const noexcept { return m_updated; }
+        constexpr void ClearUpdateFlag() noexcept { m_updated = false; }
     private:
-        friend class Scene;
-        constexpr ObjectContext(IterType iter) : m_iter(iter), valid(true) {}
+        int InsertImpl(std::string_view name, Handle<T> handle);
 
-        constexpr ObjectContext(IterType iter, bool) : m_iter(iter), valid(false) {} 
-
-        template<typename Self>
-        constexpr ShapeAttributes* GetAttribs(this Self&& self) { return &std::get<1>(*self.m_iter); }
+        int RemoveImpl(std::string_view name);
     private:
-        IterType m_iter;
-        bool valid;
-    }; // class ObjectContext
+        std::unordered_map<std::string_view, Handle<T>, Hash<std::string_view>> m_map;
+        std::vector<Handle<T>> m_list;
+        bool m_updated;
+    }; // class ObjectCollection
+public:
+    /**************************************************
+     * Init functions.
+     **************************************************/
+    Scene();
 
     /**************************************************
      * Shape functions.
      **************************************************/
-    /**
-     * Initializes a shape of type T with the provided args and
-     * adds it to the scene.
-     * 
-     * An ObjectContext object is returned that can be used to setup
-     * additional object state (e.g., shader) by calling its methods
-     * (e.g., BindShader).
-     * This context object cannot be assigned to a variable and may
-     * be invalidated as soon as another shape is added to the scene.
-     * 
-     * @param args  Arguments forwarded to the T to be constructed
-     * @return Object context.
-     */
-    template<std::derived_from<IShape> T, typename... Args>
-    ObjectContext EmplaceShape(Args&&... args) {
-        auto handle = T::Create(std::forward<Args>(args)...);
-        return this->InsertShape(handle);
-    }
+    ObjectCollection<IShape> shapes;
 
-    /**
-     * Add an initialized shape to the scene.
-     * 
-     * @param handle  Handle of the shape to be added
-     * @return Object context (see \ref EmplaceShape).
-     */
-    ObjectContext InsertShape(Handle<IShape> handle);
+    /**************************************************
+     * Shader functions.
+     **************************************************/
+    ObjectCollection<IShader> shaders;
 
-    [[nodiscard]] bool ContainsShape(Handle<IShape> shape);
-
-    ObjectContext GetShapeContext(Handle<IShape> shape);
-
-    void RemoveShape(Handle<IShape> shape);
+    /**************************************************
+     * Camera functions.
+     **************************************************/
+    ObjectCollection<ICamera> cameras;
 
     /**************************************************
      * Point light functions.
@@ -115,6 +90,13 @@ public:
 
     const std::vector<shdr::PointLight>& GetPointLights() const noexcept { return m_lights; }
 
+    /** 
+     * Reserve / preallocate point light objects.
+     * 
+     * @param count  Number of point lights to preallocate.
+     */
+    void ReservePointLights(size_t count);
+
     /**
      * Reserve / preallocate shape handles.
      * 
@@ -124,24 +106,17 @@ public:
      * 
      * @param count  Number of shape handles to preallocate.
      */
-    void ReserveShapes(size_t count);
 
-    /** 
-     * Reserve / preallocate point light objects.
-     * 
-     * @param count  Number of point lights to preallocate.
-     */
-    void ReservePointLights(size_t count);
 protected:
-    /**************************************************
-     * Init functions.
-     **************************************************/
-    Scene();
-private:
-protected:
-    std::vector<Handle<IShape>> m_shapes;
-    MapType m_attribs;
+    int InsertShapeImpl(std::string_view name, Handle<IShape> handle);
+    int RemoveShapeImpl(std::string_view name);
 
+    int InsertShaderImpl(std::string_view name, Handle<IShader> handle);
+    int RemoveShaderImpl(std::string_view name);
+
+    int InsertCameraImpl(std::string_view name, Handle<ICamera> handle);
+    int RemoveCameraImpl(std::string_view name);
+protected:
     std::vector<shdr::PointLight> m_lights;
 
     bool m_objectsUpdated;

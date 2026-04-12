@@ -1,5 +1,5 @@
 #pragma once
-#include <engine/eng_Ray.h>
+#include <engine/eng_Vector3D.h>
 #include <utility>
 
 namespace eng {
@@ -9,13 +9,12 @@ public:
     constexpr ICamera() = default;
     virtual ~ICamera() = default;
 
-    virtual Ray GenerateRay(float i, float j) = 0;
-    virtual constexpr std::pair<float, float> GetImageDimensions() = 0;
+    virtual Vector3DF GetPosition() = 0;
+    virtual Vector3DF GetDirection() = 0;
 
-    constexpr virtual float GetMinT() const = 0;
+    virtual float GetNearPlaneDistance() = 0;
 
-private:
-    /* ... */
+    virtual std::pair<float, float> GetImageDimensions() = 0;
 }; // class ICamera
 
 } // namespace eng

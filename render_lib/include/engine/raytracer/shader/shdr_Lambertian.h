@@ -10,13 +10,13 @@ namespace eng::rt::shdr {
 class Lambertian : public IShader, public ObjectBase<Lambertian> {
 public:
     template<std::ranges::input_range R>
-    constexpr Lambertian(Handle<IShader> base_shader, R&& lights)
-        : m_base(base_shader),
+    constexpr Lambertian(Vector3DF baseColor, R&& lights)
+        : m_baseColor(baseColor),
           m_lights(std::from_range, std::forward<R>(lights)) {}
 
-    virtual Vector3DF GetColor(Scene* p_scene, int depth, const HitStruct& rec) override;
+    virtual Vector3DF GetColor(RayCaster* pRc, int depth, const HitStruct& rec) override;
 public:
-    Handle<IShader> m_base;
+    Vector3DF m_baseColor;
     std::vector<eng::shdr::PointLight> m_lights;
 }; // class Lambertian
 

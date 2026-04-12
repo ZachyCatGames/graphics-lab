@@ -1,31 +1,37 @@
 #pragma once
-
 #include <engine/eng_ISceneLoader.h>
+#include <engine/eng_IObjectFactory.h>
 #include <engine/eng_Scene.h>
-#include <engine/raytracer/eng_RendererBase.h>
+#include <memory>
 
-namespace eng::rt {
+namespace eng {
 
 class SceneLoader : public ISceneLoader {
 private:
-  RendererBase* m_p_renderer;
-  Scene* m_p_scene; // Reference to the external scene
+  std::shared_ptr<Scene> m_pScene; // Reference to the external scene
+  IObjectFactory* m_pObjFactory;
+  size_t m_defaultImgWidth, m_defaultImgHeight;
 
 public:
   // The caller provides the scene to be filled
-  SceneLoader(RendererBase* renderer, Scene* sceneToPopulate)
-      : m_p_renderer(renderer), m_p_scene(sceneToPopulate), numShaders(0), numTextures(0) {}
+  SceneLoader(const std::shared_ptr<Scene> sceneToPopulate, IObjectFactory* pObjFactory, size_t defaultImgWidth, size_t defaultImgHeight) :
+      m_pScene(sceneToPopulate),
+      m_pObjFactory(pObjFactory),
+      m_defaultImgWidth(defaultImgWidth),
+      m_defaultImgHeight(defaultImgHeight),
+      numShaders(0),
+      numTextures(0) {}
 
   void reserveCameras(size_t count) override {
     /* ... */
   }
 
   void reserveLights(size_t count) override {
-    m_p_scene->ReservePointLights(count);
+    m_pScene->ReservePointLights(count);
   }
 
   void reserveShapes(size_t count) override {
-    m_p_scene->ReserveShapes(count);
+    m_pScene->shapes.Reserve(count);
   }
 
   void reserveShaders(size_t count) override { numShaders = count; }
