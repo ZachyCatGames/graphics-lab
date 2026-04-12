@@ -106,16 +106,6 @@ public:
      * 
      * @param count  Number of shape handles to preallocate.
      */
-
-protected:
-    int InsertShapeImpl(std::string_view name, Handle<IShape> handle);
-    int RemoveShapeImpl(std::string_view name);
-
-    int InsertShaderImpl(std::string_view name, Handle<IShader> handle);
-    int RemoveShaderImpl(std::string_view name);
-
-    int InsertCameraImpl(std::string_view name, Handle<ICamera> handle);
-    int RemoveCameraImpl(std::string_view name);
 protected:
     std::vector<shdr::PointLight> m_lights;
 

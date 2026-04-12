@@ -3,22 +3,15 @@
 
 namespace eng {
 
-template<typename Interface>
-class CameraBase : public Interface {
+namespace detail {
+
+class CameraBaseImpl {
 public:
-    virtual Vector3DF GetPosition() override { return m_position; }
-    virtual Vector3DF GetDirection() override { return m_W; }
-
-    virtual float GetNearPlaneDistance() override { return m_focal_length; }
-
-    virtual std::pair<float, float> GetImageDimensions() override { return { m_img_width, m_img_height }; }
-
-public:
-    constexpr CameraBase() : 
+    constexpr CameraBaseImpl() : 
         m_position(), m_U(1,0,0), m_V(0,1,0), m_W(0,0,1),
         m_focal_length(1.0), m_img_plane_width(2), m_img_plane_height(2) {}
 
-    constexpr CameraBase(const Vector3DF& pos, const Vector3DF& dir, float focal_length, int img_width, int img_height, float img_plane_height) :
+    constexpr CameraBaseImpl(const Vector3DF& pos, const Vector3DF& dir, float focal_length, int img_width, int img_height, float img_plane_height) :
         m_position(pos), m_img_width(img_width), m_img_height(img_height), m_focal_length(focal_length), m_img_plane_height(img_plane_height)
     {
         /* Calculate plane width. */
@@ -57,6 +50,21 @@ protected:
     float m_focal_length;
     float m_img_plane_width, m_img_plane_height;
     float m_right_bound, m_left_bound, m_top_bound, m_bottom_bound;
+}; // class CameraBaseImpl
+
+} // namespace detail
+
+template<typename Interface>
+class CameraBase : public detail::CameraBaseImpl, public Interface {
+public:
+    virtual Vector3DF GetPosition() override { return m_position; }
+    virtual Vector3DF GetDirection() override { return m_W; }
+
+    virtual float GetNearPlaneDistance() override { return m_focal_length; }
+
+    virtual std::pair<float, float> GetImageDimensions() override { return { m_img_width, m_img_height }; }
+public:
+    using detail::CameraBaseImpl::CameraBaseImpl;
 }; // class CameraBase
 
 } // namespace eng
