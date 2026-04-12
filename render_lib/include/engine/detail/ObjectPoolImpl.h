@@ -71,8 +71,11 @@ protected:
         /* Set Allocator. */
         m_allocator = alloc;
 
+        /* Setup initial allocation size. */
+        m_allocationSize = Traits::InitialObjectCount;
+
         /* Allocate initial block. */
-        this->AllocateNewBlock(Traits::InitialObjectCount);
+        this->AllocateNewBlock(m_allocationSize);
     }
 
     template<typename... Args>
@@ -82,10 +85,10 @@ protected:
         }
 
         /* Allocate an object. */
-        std::byte* obj = this->AllocateImpl();
+        pointer_type obj = this->AllocateImpl();
 
         /* Initialize it. */
-        return ::new(obj) value_type(std::forward<Args>(args)...);
+        return std::construct_at(obj, std::forward<Args>(args)...);
     }
 
     void FreeImpl(pointer_type p_obj) {
@@ -103,22 +106,20 @@ protected:
         m_first_free = poolEntry;
     }
 private:
-    // Only used for contexpr allocations.
-    struct AllocationBlock {
-        BlockHeader hdr;
-        PoolEntry entries[Traits::InitialObjectCount];
-    }; // struct AllocationBlock
 
-    [[nodiscard]] std::byte* AllocateImpl() {
+    [[nodiscard]] pointer_type AllocateImpl() {
         /* Allocate a new block if needed. */
         if (m_first_free == nullptr) {
             assert(m_cur_pool_block != nullptr);
-            this->AllocateNewBlock(m_cur_pool_block->n * 2);
+            /* Double the allocation size. */
+            m_allocationSize *= 2;
+
+            this->AllocateNewBlock(m_allocationSize);
             assert(m_first_free != nullptr);
         }
 
         /* Get first free object. */
-        auto cur = m_first_free;
+        PoolEntry* cur = m_first_free;
 
         /* Update first free object to next object. */
         m_first_free = cur->next_free;
@@ -126,7 +127,7 @@ private:
         /* Destroy next iterator / pointer. */
         std::destroy_at(&cur->next_free);
 
-        return reinterpret_cast<std::byte*>(cur);
+        return &cur->obj;
     }
 
     void AllocateNewBlock(size_t n) {
@@ -138,17 +139,17 @@ private:
         auto pBlkHeader = ::new(pNewMem) BlockHeader(m_cur_pool_block, allocSize);
 
         /* Pointer to the first object. */
-        auto pObj = pBlkHeader->b;
+        PoolEntry* pObj = pBlkHeader->b;
 
         /* Initialize each block to point to the next block. */
         for (size_t i = 0; i < n - 1; i++) {
             auto pNext = pObj + 1;
-            ::new(pObj) PoolEntry(pNext);
+            std::construct_at(pObj, pNext);
             pObj = pNext;
         }
 
         /* Link the beginning and ending. */
-        ::new(pObj) PoolEntry(nullptr);
+        std::construct_at(pObj, nullptr);
         m_first_free = pBlkHeader->b;
 
         /* Link this block as the current block. */
@@ -158,6 +159,7 @@ private:
     alloc_type m_allocator;
     BlockHeader* m_cur_pool_block;
     PoolEntry* m_first_free;
+    size_t m_allocationSize;
 }; // class ObjectPool
 
 
