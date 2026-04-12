@@ -33,15 +33,16 @@ struct ControlBlock {
 
     ReferenceCount ref_cnt;
     IControlBlockDeallocator* manager;
-    void* p_val;
+    void* p_val; // this can be eliminated if I abondon the constexpr dream
 }; // struct ControlBlock
 
 template<typename T>
 struct ControlBlockImpl : public ControlBlock {
     template<typename... Args>
-    constexpr ControlBlockImpl(IControlBlockDeallocator* man, Args&&... args) : ControlBlock(man, &val), pool_hndl(nullptr), val(std::forward<Args>(args)...) {}
+    constexpr ControlBlockImpl(IControlBlockDeallocator* man, Args&&... args) :
+        ControlBlock(man, &val),
+        val(std::forward<Args>(args)...) {}
 
-    PoolObjectHolder<ControlBlockImpl<T>> pool_hndl;
     T val;
 }; // struct ControlBlockImpl
 

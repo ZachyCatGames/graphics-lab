@@ -2,6 +2,7 @@
 #include <cassert>
 #include <cstring>
 #include <memory>
+#include <new>
 #include "ObjectPoolTypes.h"
 
 namespace eng::detail {
@@ -24,34 +25,51 @@ private:
     using PoolEntry   = PoolEntry<value_type>;
     using BlockHeader = BlockHeader<value_type>;
 
-    using block_alloc_type  = typename std::allocator_traits<Allocator>::template rebind_alloc<PoolEntry>;
-    using header_alloc_type = typename std::allocator_traits<Allocator>::template rebind_alloc<BlockHeader>;
+    using alloc_type = typename std::allocator_traits<Allocator>::template rebind_alloc<std::byte>;
+    
+    static constexpr size_t ObjectSize = std::max(alignof(value_type), sizeof(value_type));
 public:
     constexpr ~ObjectPoolImplBase() {
+        /* 
+         * NOTE: This will result in memory being leaked in consteval
+         * if we don't free objects beforethe allocator is destroyed.
+         * My solution is "don't skill issue." "*/
+        if consteval {
+            return;
+        }
+
         /* We can't really cleanly cleanup... just trash everything. */
         auto p_ent = m_cur_pool_block;
         while (p_ent != nullptr) {
             auto p_prev = p_ent->p_prev;
-            m_block_alloc.deallocate(p_ent->p_block, p_ent->n);
-            m_header_alloc.deallocate(p_ent, 1);
+            m_allocator.deallocate(reinterpret_cast<std::byte*>(p_ent), p_ent->n);
             p_ent = p_prev;
         }
     }
 
-    constexpr bool IsInitialized() const noexcept { return m_cur_pool_block != nullptr; }
+    constexpr bool IsInitialized() const noexcept {
+        if consteval {
+            return true;
+        }
+
+        return m_cur_pool_block != nullptr;
+    }
 protected:
     constexpr ObjectPoolImplBase(const Allocator& alloc = {})
-        : m_header_alloc(alloc),
-          m_block_alloc(alloc),
+        : m_allocator(alloc),
           m_cur_pool_block(nullptr),
           m_first_free(nullptr) {}
 
     constexpr void Initialize(const Allocator& alloc = {}) {
+        /* NOTE: in consteval this is basically just a wrapper around ::new. */
+        if consteval {
+            return;
+        }
+
         assert(!this->IsInitialized());
 
         /* Set Allocator. */
-        m_header_alloc = alloc;
-        m_block_alloc  = alloc;
+        m_allocator = alloc;
 
         /* Allocate initial block. */
         this->AllocateNewBlock(Traits::InitialObjectCount);
@@ -59,23 +77,30 @@ protected:
 
     template<typename... Args>
     [[nodiscard]] constexpr auto CreateObjectImpl(Args&&... args) {
+        if consteval {
+            return new value_type(std::forward<Args>(args)...);
+        }
+
         /* Allocate an object. */
-        auto obj = this->AllocateImpl();
+        std::byte* obj = this->AllocateImpl();
 
         /* Initialize it. */
-        std::construct_at(obj.Get(), std::forward<Args>(args)...);
-
-        return obj;
+        return ::new(obj) value_type(std::forward<Args>(args)...);
     }
 
-    constexpr void FreeImpl(PoolObjectHolder<value_type> p_obj) {
+    void FreeImpl(pointer_type p_obj) {
+        if consteval {
+            delete p_obj;
+        }
+
         /* Destroy the contained object. */
-        auto p_pool_ent = p_obj.m_entry;
-        std::destroy_at(&p_pool_ent->obj);
+        std::destroy_at(p_obj);
+
+        /* Re-construct it as a PoolEntry. */
+        auto poolEntry = ::new(p_obj) PoolEntry(m_first_free);
 
         /* Insert back into the free list. */
-        p_pool_ent->next_free = m_first_free;
-        m_first_free = p_pool_ent;
+        m_first_free = poolEntry;
     }
 private:
     // Only used for contexpr allocations.
@@ -84,7 +109,7 @@ private:
         PoolEntry entries[Traits::InitialObjectCount];
     }; // struct AllocationBlock
 
-    [[nodiscard]] constexpr auto AllocateImpl() {
+    [[nodiscard]] std::byte* AllocateImpl() {
         /* Allocate a new block if needed. */
         if (m_first_free == nullptr) {
             assert(m_cur_pool_block != nullptr);
@@ -101,38 +126,36 @@ private:
         /* Destroy next iterator / pointer. */
         std::destroy_at(&cur->next_free);
 
-        return PoolObjectHolder(cur);
+        return reinterpret_cast<std::byte*>(cur);
     }
 
-    constexpr void AllocateNewBlock(size_t n) {
+    void AllocateNewBlock(size_t n) {
         assert(n >= 2);
-        auto new_blk = m_block_alloc.allocate(n);
+        size_t allocSize = sizeof(BlockHeader) - 1 + n * ObjectSize;
+        std::byte* pNewMem = m_allocator.allocate(allocSize);
+
+        /* Initialize the block header, link it to the current block. */
+        auto pBlkHeader = ::new(pNewMem) BlockHeader(m_cur_pool_block, allocSize);
+
+        /* Pointer to the first object. */
+        auto pObj = pBlkHeader->b;
 
         /* Initialize each block to point to the next block. */
-        for (size_t i = 0; i < n; i++) {
-            std::construct_at(&new_blk[i], &new_blk[i+1]);
+        for (size_t i = 0; i < n - 1; i++) {
+            auto pNext = pObj + 1;
+            ::new(pObj) PoolEntry(pNext);
+            pObj = pNext;
         }
 
         /* Link the beginning and ending. */
-        std::construct_at(&new_blk[n-1], m_first_free);
-        m_first_free = &new_blk[1];
+        ::new(pObj) PoolEntry(nullptr);
+        m_first_free = pBlkHeader->b;
 
-        /* Terminate end. */
-        std::construct_at(&new_blk[n-1], nullptr);
-
-        /* Point the current pool block at the new block. */
-        m_first_free = new_blk;
-
-        /* Allocate block list header. */
-        auto p_hdr = m_header_alloc.allocate(1);
-
-        /* Link it in. */
-        std::construct_at(p_hdr, m_cur_pool_block, m_first_free, n);
-        m_cur_pool_block = p_hdr;
+        /* Link this block as the current block. */
+        m_cur_pool_block = pBlkHeader;
     }
 private:
-    block_alloc_type m_block_alloc;
-    header_alloc_type m_header_alloc;
+    alloc_type m_allocator;
     BlockHeader* m_cur_pool_block;
     PoolEntry* m_first_free;
 }; // class ObjectPool
@@ -157,7 +180,7 @@ protected:
         return obj;
     }
 
-    constexpr void Free(PoolObjectHolder<value_type> p_obj) {
+    constexpr void Free(pointer_type p_obj) {
         /* Call NotifyFree on manager. */
         if constexpr (requires { GetDerived()->NotifyFree(&p_obj); })
             GetDerived()->NotifyFree(p_obj);

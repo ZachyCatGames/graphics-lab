@@ -42,7 +42,7 @@ private:
         auto p_impl = static_cast<control_blk_impl*>(p_ctrl);
 
         /* Free the object. */
-        base_type::Free(p_impl->pool_hndl);
+        base_type::Free(p_impl);
 
         /* Remove it from the free list*/
         m_active.erase(std::ranges::find(m_active, p_impl));
@@ -225,12 +225,11 @@ template<typename... Args>
 [[nodiscard]] constexpr auto ObjectManagerImpl<T, Allocator>::CreateObject(Args&&... args) {
     /* Allocate a new object / control block. */
     auto blk = base_type::CreateObject(this, std::forward<Args>(args)...);
-    blk->pool_hndl = blk;
 
     /* Add it to the active list. */
-    m_active.push_back(blk.Get());
+    m_active.push_back(blk);
 
-    return Handle<value_type>(blk.Get());
+    return Handle<value_type>(blk);
 }
 
 } // namespace detail

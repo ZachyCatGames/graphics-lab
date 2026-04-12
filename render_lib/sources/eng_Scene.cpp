@@ -48,7 +48,6 @@ int Scene::ObjectCollection<T>::Insert(std::string_view name, Handle<T> handle) 
 template<typename T>
 int Scene::ObjectCollection<T>::Insert(Handle<T> handle) {
     auto name = CreateAnonymousName(handle);
-    std::print("{}\n", name);
     return this->InsertImpl(name, handle);
 }
 
