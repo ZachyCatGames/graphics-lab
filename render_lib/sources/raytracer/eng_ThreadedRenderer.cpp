@@ -19,8 +19,6 @@ void ThreadedRenderer::Render(std::string_view cameraName, fb::Framebuffer* p_fb
     /* Retrieve it's img dimensions. */
     auto [width, height] = camera->GetImageDimensions();
 
-    std::print("{} {}\n", width, height);
-
     std::atomic<int> cur_line = 0;
     const auto worker_func = [&]() {
         int line;

@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef>
+#include <string>
 #include <string_view>
 
 namespace eng {
@@ -8,24 +9,45 @@ namespace eng {
 template<typename T>
 struct Hash : std::hash<T> {};
 
-template<>
-struct Hash<std::string_view> {
+namespace detail {
+
+/*
+ * djb2 hash algorithm, found via:
+ * http://www.cse.yorku.ca/~oz/hash.html
+ * https://stackoverflow.com/questions/7968674/unexpected-collision-with-stdhash
+*/
+template<typename StringType>
+constexpr size_t HashStringFunction(const StringType& str) noexcept {
+    size_t hash = 5381;
+    for(auto c : str) {
+        hash = (hash * 33) ^ c;
+    }
+
+    return hash;
+}
+
+} // namespace detail
+
+template<typename T>
+struct Hash<std::basic_string_view<T>> {
     /**
-     * djb2 hash algorithm, found via:
-     * http://www.cse.yorku.ca/~oz/hash.html
-     * https://stackoverflow.com/questions/7968674/unexpected-collision-with-stdhash
-     * 
      * @param str  String to hash
      * @return Hash
      */
-    constexpr size_t operator()(const std::string_view& str) const {
-        size_t hash = 5381;
-        for(auto c : str) {
-            hash = (hash * 33) ^ c;
-        }
-
-        return hash;
+    constexpr size_t operator()(const std::basic_string_view<T>& str) const {
+        return detail::HashStringFunction(str);
     }
-}; // struct Hash<std::string_view>
+}; // struct Hash<std::basic_string_view<T>>
+
+template<typename T>
+struct Hash<std::basic_string<T>> {
+    /**
+     * @param str  String to hash
+     * @return Hash
+     */
+    constexpr size_t operator()(const std::basic_string<T>& str) const {
+        return detail::HashStringFunction(str);
+    }
+}; // struct Hash<std::basic_string<T>>
 
 } // namespace eng
