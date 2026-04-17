@@ -21,6 +21,7 @@ std::string CreateAnonymousName(const Handle<T>& obj) {
 Scene::Scene() :
     m_objectsUpdated(false) {}
 
+Scene::~Scene() = default;
 
 template<typename T>
 int Scene::ObjectCollection<T>::InsertImpl(std::string_view name, Handle<T> handle) {
@@ -107,15 +108,27 @@ template class Scene::ObjectCollection<IShape>;
 template class Scene::ObjectCollection<IShader>;
 template class Scene::ObjectCollection<ICamera>;
 
-shdr::PointLight& Scene::EmplacePointLight(const Vector3DF& pos, const Vector3DF& intensity) {
-    return m_lights.emplace_back(pos, intensity);
+Handle<Object> Scene::CreateObject(std::string_view name) {
+    /* Does this name already exist? */
+    auto cur = m_ObjectMap.find(name);
+    if (cur != m_ObjectMap.end())
+        return cur->second;
+
+    auto newObj = m_Manager.CreateObject();
+    m_ObjectMap[name] = newObj;
+    return newObj;
 }
 
-shdr::PointLight& Scene::InsertPointLight(const shdr::PointLight& light) {
-    m_lights.push_back(light);
-    return m_lights.back();
+Handle<Object> Scene::FindObject(std::string_view name) {
+    auto iter = m_ObjectMap.find(name);
+    if (iter == m_ObjectMap.end())
+        return nullptr;
+
+    return iter->second;
 }
 
-void Scene::ReservePointLights(size_t count) { m_lights.reserve(count); }
+void Scene::RemoveObject(std::string_view name) {
+    m_ObjectMap.erase(name);
+}
 
 } // namespace eng

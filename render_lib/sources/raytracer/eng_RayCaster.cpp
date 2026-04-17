@@ -37,8 +37,7 @@ void RayCaster::PrepareBvhTree() {
         return;
     
     m_scene->shapes.ClearUpdateFlag();
-    auto list = m_scene->shapes.GetList();
-    m_Bvh.Initialize(list);
+    m_Bvh.Initialize(*m_pRO);
 }
 
 } // namespace eng::rt

@@ -1,13 +1,12 @@
 #pragma once
 #include <engine/raytracer/eng_IShader.h>
-#include <engine/eng_ObjectBase.h>
 #include <ranges>
 
 #include <engine/shader/shdr_PointLight.h>
 
 namespace eng::rt::shdr {
 
-class Lambertian : public IShader, public ObjectBase<Lambertian> {
+class Lambertian : public IShader {
 public:
     template<std::ranges::input_range R>
     constexpr Lambertian(Vector3DF baseColor, R&& lights)

@@ -1,7 +1,6 @@
 #pragma once
 #include <engine/eng_Bounds.h>
 #include <engine/raytracer/eng_IShape.h>
-#include <engine/eng_ObjectBase.h>
 #include <engine/eng_Vector3D.h>
 #include <algorithm>
 #include <ranges>
@@ -12,7 +11,7 @@ class Bvh;
 
 namespace detail {
 
-class BvhNode : public IShape, public ObjectBase<BvhNode> {
+class BvhNode : public IShape {
 public:
     BvhNode() :
         m_left_child(nullptr),
@@ -52,15 +51,15 @@ public:
 
             /* Setup left and right BvhNodes. */
             auto next_axis = (axis + 1) % 3;
-            m_left_child  = BvhNode::Create(m_pParent, chunks.front(), next_axis);
-            m_right_child = BvhNode::Create(m_pParent, chunks.back(), next_axis);
+            m_left_child  = m_pParent->m_Nodes.emplace_back(m_pParent, chunks.front(), next_axis);
+            m_right_child = m_pParent->m_Nodes.emplace_back(m_pParent, chunks.back(), next_axis);
 
             /* Setup our bounds. */
             m_bounds = m_bounds = m_left_child->GetBounds().Combine(m_right_child->GetBounds());
         }
     }
 
-    virtual bool Intersect(const Ray& r, Interval<float> t_range, HitStruct* p_hit_info_out) const override;
+    virtual bool Intersect(const Ray& r, const Handle<Translation>& pos, Interval<float> t_range, HitStruct* p_hit_info_out) const override;
 
     virtual Vector3DF GetPosition() const override { return m_bounds.GetCenter(); }
     virtual Bounds GetBounds() const override { return m_bounds; }
@@ -94,6 +93,7 @@ public:
 
     template<std::ranges::random_access_range R>
     void Initialize(R&& object) {
+        m_Nodes.reserve(object.size());
         m_firstLevel.Initialize(this, std::forward<R&&>(object), 0);
     }
 
@@ -109,6 +109,7 @@ public:
 private:
     friend class detail::BvhNode;
     detail::BvhNode m_firstLevel;
+    std::vector<detail::BvhNode> m_Nodes;
 };
 
 } // namespace eng

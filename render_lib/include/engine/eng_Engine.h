@@ -1,10 +1,11 @@
 #pragma once
 #include <engine/eng_HandleGraphicsArgs.h>
 #include <engine/eng_IObjectFactory.h>
-#include <engine/eng_IRenderer.h>
+#include <engine/eng_Renderer.h>
 #include <engine/eng_ObjectBase.h>
 #include <engine/eng_Scene.h>
 #include <memory>
+#include <unordered_map>
 
 namespace eng {
 
@@ -23,13 +24,14 @@ public:
 
         m_pRenderer->Render(cameraName, p_fb);
     }
+
 private:
     GraphicsArgs m_gArgs;
 
     std::shared_ptr<Scene> m_pActiveScene;
 
     std::unique_ptr<IObjectFactory> m_pObjFactory;
-    std::unique_ptr<IRenderer> m_pRenderer;
+    std::unique_ptr<Renderer> m_pRenderer;
 }; // class Engine
 
 } // namespace eng

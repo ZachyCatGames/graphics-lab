@@ -1,13 +1,12 @@
 #pragma once
 #include <engine/raytracer/eng_IShader.h>
-#include <engine/eng_ObjectBase.h>
 #include <engine/eng_ObjectManager.h>
 
 #include <engine/shader/shdr_PointLight.h>
 
 namespace eng::rt::shdr {
 
-class BlinnPhong : public IShader, public ObjectBase<BlinnPhong> {
+class BlinnPhong : public IShader {
 public:
     template<typename R>
     constexpr BlinnPhong(Vector3DF baseColor, R&& lights, float exp)

@@ -5,16 +5,15 @@
 #include <vector>
 
 #include <engine/eng_Hash.h>
-#include <engine/eng_ICamera.h>
-#include <engine/eng_Interval.h>
-#include <engine/eng_IShader.h>
-#include <engine/eng_IShape.h>
 #include <engine/eng_ObjectManager.h>
 #include <engine/eng_Rng.h>
 
 #include <engine/shader/shdr_PointLight.h>
 
 namespace eng {
+
+class Object;
+class Engine;
 
 /**
  * Scene is a basic object container class.
@@ -64,50 +63,66 @@ public:
      * Init functions.
      **************************************************/
     Scene();
+    ~Scene();
 
-    /**************************************************
-     * Shape functions.
-     **************************************************/
-    ObjectCollection<IShape> shapes;
+    Handle<Object> CreateObject(std::string_view name);
 
-    /**************************************************
-     * Shader functions.
-     **************************************************/
-    ObjectCollection<IShader> shaders;
+    Handle<Object> FindObject(std::string_view name);
 
-    /**************************************************
-     * Camera functions.
-     **************************************************/
-    ObjectCollection<ICamera> cameras;
+    void RemoveObject(std::string_view name);
 
-    /**************************************************
-     * Point light functions.
-     **************************************************/
-    shdr::PointLight& EmplacePointLight(const Vector3DF& pos, const Vector3DF& intensity);
+    Engine* GetParent() const noexcept { return m_pParent; }
 
-    shdr::PointLight& InsertPointLight(const shdr::PointLight& light);
-    //void InsertPointLight(shdr::PointLight&& light);
+    // General CreateComponent impl
+    template<typename T, typename... Args>
+    constexpr auto CreateComponent(Args&&... args) {
+        static constexpr auto id = typeid(T);
+        auto managerIter = m_ComponentManagerMap.find(id);
 
-    const std::vector<shdr::PointLight>& GetPointLights() const noexcept { return m_lights; }
+        ComponentManager<T>* pMan;
+        if (managerIter == m_ComponentManagerMap.end()) {
+            auto tmp = std::make_unique<ComponentManager<T>>();
+            pMan = tmp.get();
+            m_ComponentManagerMap[id] = std::move(tmp);
+        } else {
+            pMan = managerIter->second.get();
+        }
 
-    /** 
-     * Reserve / preallocate point light objects.
-     * 
-     * @param count  Number of point lights to preallocate.
-     */
-    void ReservePointLights(size_t count);
+        return pMan->Create(std::forward<Args>(args)...);
+    }
+private:
+    class IComponentManager {
+    public:
+        constexpr virtual ~IComponentManager() = default;
 
-    /**
-     * Reserve / preallocate shape handles.
-     * 
-     * This can be used when the number of shapes being used is known ahead
-     * of time to reduce the number of allocations / copies required from
-     * vector resizes.
-     * 
-     * @param count  Number of shape handles to preallocate.
-     */
+        constexpr virtual void EarlyUpdateAll() = 0;
+        constexpr virtual void UpdateAll() = 0;
+    };
+
+    template<typename T>
+    class ComponentManager {
+    public:
+        constexpr virtual void EarlyUpdateAll() override {
+            m_Manager.InvokeOnAll(&T::EarlyUpdateImpl);
+        }
+
+        constexpr virtual void UpdateAll() override {
+            m_Manager.InvokeOnAll(&T::UpdateImpl);
+        }
+
+        template<typename... Args>
+        constexpr auto Create(Args&&... args) {
+            return m_Manager.CreateObject(std::forward<Args>(args)...);
+        }
+    private:
+        ObjectManager<T> m_Manager
+    };
 protected:
-    std::vector<shdr::PointLight> m_lights;
+    Engine* m_pParent;
+    ObjectManager<Object> m_Manager;
+    std::unordered_map<std::string_view, Handle<Object>> m_ObjectMap;
+
+    std::unordered_map<std::type_info, std::unique_ptr<IComponentManager>> m_ComponentManagerMap;
 
     bool m_objectsUpdated;
 }; // class Scene

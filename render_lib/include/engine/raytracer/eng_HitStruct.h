@@ -2,6 +2,7 @@
 #include <engine/eng_ObjectManager.h>
 #include <engine/eng_Ray.h>
 #include <engine/eng_Vector3D.h>
+#include <engine/eng_Material.h>
 
 namespace eng::rt {
 
@@ -12,6 +13,7 @@ struct HitStruct {
     Vector3DF normal;
     Vector3DF position;
     IShader* shader;
+    Material* material;
     float t;
 }; // struct HitStruct
 

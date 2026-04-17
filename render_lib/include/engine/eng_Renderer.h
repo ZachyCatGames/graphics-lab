@@ -1,12 +1,22 @@
 #pragma once
 #include <engine/framebuffer/fb_Framebuffer.h>
+#include <engine/eng_Material.h>
+#include <engine/eng_Shape.h>
+#include <engine/eng_Translation.h>
 #include <string_view>
+#include <vector>
 
 namespace eng {
 
-class IRenderer {
+class Renderer {
 public:
-    virtual ~IRenderer() = default;
+    virtual ~Renderer();
+
+    virtual void AddRenderObject(Handle<Shape> mesh, Handle<Material> mat, Handle<Translation> pos);
+
+    virtual void ClearRenderObjects();
+
+    virtual void ReserveRenderObjects(size_t num);
 
     /**
      * Perform pre-rendering setup.
@@ -21,6 +31,8 @@ public:
      * @param p_fb  Framebuffer to render out to.
      */
     virtual void Render(std::string_view cameraName, fb::Framebuffer* p_fb) = 0;
-}; // class IRenderer
+protected:
+    std::vector<RenderObject> m_RenderObjects;
+}; // class Renderer
 
 } // namespace eng

@@ -1,6 +1,7 @@
 #pragma once
 #include <engine/eng_Scene.h>
 #include <engine/eng_Ray.h>
+#include <engine/eng_RenderObject.h>
 #include <engine/raytracer/eng_Bvh.h>
 
 namespace eng::rt {
@@ -8,23 +9,23 @@ namespace eng::rt {
 class RayCaster {
 public:
     RayCaster() : m_scene(nullptr) {}
-    RayCaster(const std::shared_ptr<eng::Scene>& scene, int maxDepth) :
-        m_scene(scene),
+    RayCaster(std::vector<RenderObject>* ro, int maxDepth) :
+        m_pRO(ro),
         m_maxDepth(maxDepth) 
     {
-        assert(m_scene);
+        assert(ro);
     }
 
-    int Initialize(const std::shared_ptr<eng::Scene>& scene, int maxDepth) {
-        if(!m_scene)
+    int Initialize(std::vector<RenderObject>* ro, int maxDepth) {
+        if(!ro)
             return -1;
-        m_scene = scene;
+        m_pRO = ro;
         return 0;
     }
 
-    void Finalize() { m_scene.reset(); }
+    void Finalize() { m_pRO = nullptr; }
 
-    [[nodiscard]] bool IsInitialized() const noexcept { return m_scene != nullptr; }
+    [[nodiscard]] bool IsInitialized() const noexcept { return m_pRO != nullptr; }
 
     void PrepareBvhTree();
 
@@ -32,7 +33,7 @@ public:
 
     bool IsObjectInPath(const Ray& r, Interval<float> t_range); 
 private:
-    std::shared_ptr<eng::Scene> m_scene;
+    std::vector<RenderObject>* m_pRO;
     Bvh m_Bvh;
     int m_maxDepth;
 }; // class RayCaster

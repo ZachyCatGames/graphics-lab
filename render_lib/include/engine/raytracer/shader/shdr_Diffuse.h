@@ -1,9 +1,8 @@
 #include <engine/raytracer/eng_IShader.h>
-#include <engine/eng_ObjectBase.h>
 
 namespace eng::rt::shdr {
 
-class Diffuse : public IShader, public ObjectBase<Diffuse> {
+class Diffuse : public IShader {
 public:
     Diffuse(Handle<IShader> base_shader)
         : m_shader(base_shader) {}
