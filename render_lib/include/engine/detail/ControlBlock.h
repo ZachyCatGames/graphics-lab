@@ -37,13 +37,13 @@ struct ControlBlock {
 }; // struct ControlBlock
 
 template<typename T>
-struct ControlBlockImpl : public ControlBlock {
+struct TypedControlBlock : public ControlBlock {
     template<typename... Args>
-    constexpr ControlBlockImpl(IControlBlockDeallocator* man, Args&&... args) :
+    constexpr TypedControlBlock(IControlBlockDeallocator* man, Args&&... args) :
         ControlBlock(man, &val),
         val(std::forward<Args>(args)...) {}
 
     T val;
-}; // struct ControlBlockImpl
+}; // struct TypedControlBlock
 
 } // namespace eng::detail

@@ -13,7 +13,7 @@ union PoolEntry {
     explicit constexpr PoolEntry(std::nullptr_t) noexcept
         : next_free(nullptr) {}
 
-    static constexpr size_t ObjectSize = std::max(alignof(T), sizeof(T));
+    static constexpr size_t ObjectSize = sizeof(T);
 
 
     T obj;
