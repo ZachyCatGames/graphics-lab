@@ -37,8 +37,16 @@ void RayCaster::PrepareBvhTree() {
         return;
     
     m_scene->shapes.ClearUpdateFlag();
-    auto list = m_scene->shapes.GetList();
-    m_Bvh.Initialize(list);
+    const auto& list = m_scene->shapes.GetList();
+
+    /* Prepare pointer list. */
+    std::vector<IShape*> pointers;
+    pointers.reserve(list.size());
+    for (auto handle : list) {
+        pointers.push_back(static_cast<IShape*>(handle.Get()));
+    }
+
+    m_Bvh.Initialize(pointers);
 }
 
 } // namespace eng::rt
