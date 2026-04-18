@@ -20,6 +20,8 @@ struct ControlBlock {
     ControlBlock(const ControlBlock& other) = delete;
     ControlBlock(ControlBlock&& other) = delete;
 
+    virtual ~ControlBlock() = default;
+
     template<typename T>
     [[nodiscard]] constexpr auto Get() const noexcept { return static_cast<T*>(p_val); }
 
@@ -42,6 +44,8 @@ struct TypedControlBlock : public ControlBlock {
     constexpr TypedControlBlock(IControlBlockDeallocator* man, Args&&... args) :
         ControlBlock(man, &val),
         val(std::forward<Args>(args)...) {}
+
+    virtual ~TypedControlBlock() = default;
 
     T val;
 }; // struct TypedControlBlock
