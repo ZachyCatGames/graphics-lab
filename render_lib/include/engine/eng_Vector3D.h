@@ -108,6 +108,8 @@ public:
         return Vector3D<ValueT>(glmVec.x, glmVec.y, glmVec.z);
     }
 #endif // ENGINE_BUILD_GL_RENDER
+
+    static constexpr Vector3D<ValueT> Zero() { return Vector3D<ValueType>(0, 0, 0); }
 private:
     union {
         ValueT e[3];
