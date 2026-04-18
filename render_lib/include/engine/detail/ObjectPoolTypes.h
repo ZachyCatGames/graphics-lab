@@ -32,7 +32,7 @@ struct BlockHeader {
 
     static constexpr size_t ObjectSize = std::max(alignof(T), sizeof(T));
 
-    alignas(alignof(T)) PoolEntry<T> b[0]; // used as beginning location of objects.
+    alignas(alignof(T)) std::byte b[0]; // used as beginning location of objects.
 };
 
 } // namespace eng::detail

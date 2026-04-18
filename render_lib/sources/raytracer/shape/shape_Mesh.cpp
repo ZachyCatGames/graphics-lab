@@ -49,7 +49,12 @@ Mesh::Mesh(const std::vector<Triangle>& tris, Vector3DF position, Handle<IShader
 Mesh::~Mesh() = default;
 
 bool Mesh::Intersect(const Ray& r, Interval<float> t_range, HitStruct* p_hit_info_out) const {
-    return m_Bvh.Intersect(r, t_range, p_hit_info_out);
+    if (m_Bvh.Intersect(r, t_range, p_hit_info_out)) {
+        p_hit_info_out->shader = this->GetShaderRT().Get();
+        return true;
+    }
+
+    return false;
 }
 
 Vector3DF Mesh::GetPosition() const { return m_Position; }

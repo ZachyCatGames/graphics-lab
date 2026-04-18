@@ -58,7 +58,8 @@ protected:
     constexpr ObjectPoolImplBase(const Allocator& alloc = {})
         : m_allocator(alloc),
           m_cur_pool_block(nullptr),
-          m_first_free(nullptr) {}
+          m_first_free(nullptr),
+          m_allocationSize(0) {}
 
     constexpr void Initialize(const Allocator& alloc = {}) {
         /* NOTE: in consteval this is basically just a wrapper around ::new. */
@@ -139,7 +140,7 @@ private:
         auto pBlkHeader = ::new(pNewMem) BlockHeader(m_cur_pool_block, allocSize);
 
         /* Pointer to the first object. */
-        PoolEntry* pObj = pBlkHeader->b;
+        PoolEntry* pObj = reinterpret_cast<PoolEntry*>(pBlkHeader->b);
 
         /* Initialize each block to point to the next block. */
         for (size_t i = 0; i < n - 1; i++) {
@@ -150,7 +151,7 @@ private:
 
         /* Link the beginning and ending. */
         std::construct_at(pObj, nullptr);
-        m_first_free = pBlkHeader->b;
+        m_first_free = reinterpret_cast<PoolEntry*>(pBlkHeader->b);
 
         /* Link this block as the current block. */
         m_cur_pool_block = pBlkHeader;
