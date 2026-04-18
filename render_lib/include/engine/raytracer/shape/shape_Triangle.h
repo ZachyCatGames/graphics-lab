@@ -15,7 +15,10 @@ public:
     virtual Vector3DF GetPosition() const override;
     virtual Bounds GetBounds() const override;
 private:
+    Bounds CalculateBounds() const noexcept;
+private:
     Vector3DF m_a, m_b, m_c;
+    Bounds m_Bounds;
 }; // class Triangle
 
 } // namespace eng::shape

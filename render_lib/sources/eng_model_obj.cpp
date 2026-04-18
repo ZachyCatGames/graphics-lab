@@ -41,7 +41,7 @@
 #include <limits>
 #include <string>
 #include <iostream>
-#include "model_obj.h"
+#include <engine/eng_model_obj.h>
 
 namespace
 {

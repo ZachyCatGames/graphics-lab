@@ -2,6 +2,7 @@
 
 #include <engine/raytracer/eng_PerspectiveCamera.h>
 
+#include <engine/raytracer/shape/shape_Mesh.h>
 #include <engine/raytracer/shape/shape_Triangle.h>
 #include <engine/raytracer/shape/shape_Sphere.h>
 
@@ -20,6 +21,10 @@ Handle<eng::IShape> ObjectFactory::CreateSphere(const Vector3DF& pos, float radi
 
 Handle<eng::IShape> ObjectFactory::CreateTriangle(const Vector3DF& a, const Vector3DF& b, const Vector3DF& c, Handle<eng::IShader> shader) {
     return shape::Triangle::Create(a, b, c, static_cast<Handle<IShader>>(shader));
+}
+
+Handle<eng::IShape> ObjectFactory::CreateMesh(const std::vector<float>& vertices, const Vector3DF& position, Handle<eng::IShader> shader) {
+    return shape::Mesh::Create(vertices, position, shader);
 }
 
 Handle<eng::IShader> ObjectFactory::CreateLambertian(Vector3DF baseColor, const std::vector<eng::shdr::PointLight>& lights) {

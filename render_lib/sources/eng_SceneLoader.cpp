@@ -1,4 +1,5 @@
 #include <engine/eng_SceneLoader.h>
+#include <engine/eng_model_obj.h>
 
 /* Builtin lights. */
 #include <engine/shader/shdr_PointLight.h>
@@ -117,6 +118,18 @@ void SceneLoader::addShape(const ISceneLoader::ShapeDesc &shapeDesc) {
             Vector3DF(v2.x, v2.y, v2.z),
             shader
         );
+    } else if (shapeDesc.type == "mesh") {
+        /* Setup OBJ loader. */
+        ModelOBJ objLoader;
+        objLoader.import(shapeDesc.meshFilePath.c_str());
+
+        /* Grab first mesh. */
+        if (objLoader.getNumberOfMeshes() < 1) {
+            std::cout << "OBJ has no meshes?" << std::endl;
+            return;
+        }
+        const auto& first = objLoader.getMesh(0);
+
     } else {
         std::cout << "Unsupported shape type" << std::endl;
         return;

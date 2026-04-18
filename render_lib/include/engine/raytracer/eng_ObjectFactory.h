@@ -12,6 +12,7 @@ public:
 
     virtual Handle<eng::IShape> CreateSphere(const Vector3DF& pos, float radius, Handle<eng::IShader> shader) override;
     virtual Handle<eng::IShape> CreateTriangle(const Vector3DF& a, const Vector3DF& b, const Vector3DF& c, Handle<eng::IShader> shader) override;
+    virtual Handle<eng::IShape> CreateMesh(const std::vector<float>& vertices, const Vector3DF& position, Handle<eng::IShader> shader) override;
 
     virtual Handle<eng::IShader> CreateLambertian(Vector3DF baseColor, const std::vector<eng::shdr::PointLight>& lights) override;
     virtual Handle<eng::IShader> CreatePhong(Vector3DF baseColor, const std::vector<eng::shdr::PointLight>& lights, float exp) override;

@@ -16,6 +16,7 @@ add_library (render_lib
   sources/raytracer/shader/shdr_NormalShader.cpp
 
   # Shape Library
+  sources/raytracer/shape/shape_Mesh.cpp
   sources/raytracer/shape/shape_Sphere.cpp
   sources/raytracer/shape/shape_Triangle.cpp
 
@@ -27,6 +28,7 @@ add_library (render_lib
   sources/eng_ArgumentParsing.cpp
   sources/eng_Engine.cpp
   sources/eng_HandleGraphicsArgs.cpp
+  sources/eng_model_obj.cpp
   sources/eng_Scene.cpp
   sources/eng_SceneLoader.cpp
   sources/eng_SceneParser_JSON.cpp
