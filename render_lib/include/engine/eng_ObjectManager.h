@@ -124,7 +124,8 @@ public:
     }
 
     template<typename Self>
-    [[nodiscard]] constexpr auto Get(this Self&& self) noexcept {
+    [[nodiscard]] constexpr pointer_type Get(this Self&& self) noexcept {
+        if (self.m_ctlr_blk_ptr == nullptr) return nullptr;
         return self.m_ctlr_blk_ptr->template Get<value_type>();
     }
 
