@@ -3,6 +3,7 @@
 namespace eng {
 
 class IShader {
+public:
     virtual ~IShader() = default;
 };
 

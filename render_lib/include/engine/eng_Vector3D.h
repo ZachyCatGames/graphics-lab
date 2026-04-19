@@ -6,6 +6,7 @@
 #include <ranges>
 #include <cmath>
 #include <iostream>
+#include <tuple>
 
 #include <smmintrin.h>
 
@@ -66,14 +67,17 @@ public:
     [[nodiscard]] constexpr auto b() const noexcept requires (N >= 3) { return e[2]; }
     [[nodiscard]] constexpr auto a() const noexcept requires (N >= 4) { return e[4]; }
 
-    [[nodiscard]] constexpr ValueType get_ptr() noexcept { return &e[0]; }
+    template<typename Self>
+    [[nodiscard]] constexpr auto get_ptr(this Self&& self) noexcept {
+        return &self.e[0];
+    }
 
     [[nodiscard]] constexpr Vector<ValueT, N> operator-() const noexcept {
         return Vector(e | std::ranges::views::transform(std::negate()));
     }
 
     template<typename Self>
-    [[nodiscard]] constexpr auto&& operator[](this Self&& self, int index) {
+    [[nodiscard]] constexpr auto&& operator[](this Self&& self, size_t index) {
         assert(index < N);
         return std::forward<Self>(self).e[index];
     }
@@ -165,30 +169,38 @@ public:
         return vec;
     }
 #ifdef ENGINE_BUILD_GL_RENDER
-    // TODO: template me
     [[nodiscard]] glm::vec3 ToGlmVector() const noexcept {
-        return glm::vec3(e[0], e[1], e[2]);
-    } 
+        return std::make_from_tuple<glm::vec<N, ValueType>>(e);
+    }
 
-    // TODO: and me
     [[nodiscard]] static Vector<ValueT, N> FromGlmVector(const glm::vec3& glmVec) noexcept {
-        return Vector<ValueT, N>(glmVec.x, glmVec.y, glmVec.z);
+        // yeah yeah, whatever
+        return std::bit_cast<Vector<ValueT, N>>(glmVec);
     }
 #endif // ENGINE_BUILD_GL_RENDER
 
     // default constructor sets everything to zero (in theory...)
     static constexpr Vector<ValueT, N> Zero() { return Vector(); }
-private:
+
     union {
-        std::array<ValueT, N> e;
-        __m128 v;
+        std::array<ValueType, N> e;
+        //__m128 v;
     };
 }; // class Vector
 
 template<typename T>
+using Vector2D = Vector<T, 2>;
+
+template<typename T>
 using Vector3D = Vector<T, 3>;
 
+template<typename T>
+using Vector4D = Vector<T, 4>;
+
+using Vector2DF = Vector<float, 2>;
 using Vector3DF = Vector<float, 3>;
+using Vector4DF = Vector<float, 4>;
+
 static_assert(std::is_standard_layout_v<Vector3DF>);
 
 template<typename T, typename S, size_t NE>
@@ -322,7 +334,7 @@ template<typename ValueT, size_t NE>
 [[nodiscard]] constexpr double dot(const Vector<ValueT, NE> &u, const Vector<ValueT, NE> &v) noexcept {
     if constexpr (NE < 5) {
         if !consteval {
-            return std::bit_cast<float>(_mm_extract_ps(_mm_dp_ps(u.v, v.v, 0x71), 0));
+            //return std::bit_cast<float>(_mm_extract_ps(_mm_dp_ps(u.v, v.v, 0x71), 0));
         }
     }
 

@@ -30,7 +30,7 @@ struct BlockHeader {
     BlockHeader<T>* p_prev;
     size_t n;
 
-    static constexpr size_t ObjectSize = std::max(alignof(T), sizeof(T));
+    static constexpr size_t ObjectSize = sizeof(T);
 
     alignas(alignof(T)) std::byte b[0]; // used as beginning location of objects.
 };

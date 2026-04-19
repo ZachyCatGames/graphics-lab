@@ -42,6 +42,8 @@ add_library (render_lib
   sources/raytracer/eng_ThreadedRenderer.cpp
 
   # GL Core Library
+  sources/gl/eng_BlinnPhong.cpp
+  sources/gl/eng_Mesh.cpp
   sources/gl/eng_PerspectiveCamera.cpp
 
   ${UTIL_PLAT_SRC}

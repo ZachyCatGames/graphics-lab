@@ -13,6 +13,10 @@
 #include "GLSL.h"
 
 #include <engine/gl/eng_PerspectiveCamera.h>
+#include <engine/gl/eng_BlinnPhong.h>
+#include <engine/gl/eng_Mesh.h>
+
+using namespace eng;
 
 int CheckGLErrors(const char *s)
 {
@@ -84,81 +88,43 @@ int main(void)
     std::cout << "GL_MAJOR_VERSION: " << major_version << std::endl;
 
     double timeDiff = 0.0, startFrameTime = 0.0, endFrameTime = 0.0;
-    
-    /* Generate and bind a buffer on the GPU. */
-    GLuint m_triangleVBO[1];
-    glGenBuffers(1, m_triangleVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, m_triangleVBO[0]);
 
-    std::vector<float> host_vertexBuffer {
-        -3.0f, -3.0f, 0.0f,     0.0f, 0.0f, 1.0f,     // V0
-         3.0f, -3.0f, 0.0f,     0.0f, 0.0f, 1.0f,     // V1
-         0.0f,  5.0f, 0.0f,     0.0f, 0.0f, 1.0f      // V2
+    std::vector<float> vertexPositions {
+        -3.0f, -3.0f, 0.0f,     // V0
+         3.0f, -3.0f, 0.0f,     // V1
+         0.0f,  5.0f, 0.0f      // V2
     };
-    /*
-    std::vector<float> host_vertexBuffer {
-        -0.5f, -0.5f, 0.0f,      // V0
-        0.5f, -0.5f, 0.0f,       // V1
-        0.5f, 0.5f, 0.0f,        // V2
-        -0.5, 0.5f, 0.0f,        // V3
-    }; */
+    std::vector<float> vertexNormals {
+        0.0f, 0.0f, 1.0f,     // V0
+        0.0f, 0.0f, 1.0f,     // V1
+        0.0f, 0.0f, 1.0f      // V2
+    };
 
-    const size_t vertexBufferSizeBytes = host_vertexBuffer.size() * sizeof(float);
+    /* Setup our mesh (single tri!) */
+    gl::Mesh mesh(vertexPositions, vertexNormals, Vector3DF(0,0,0), nullptr);
 
-    /* Copy VBO from the host to the GPU. */
-    glBufferData(GL_ARRAY_BUFFER, vertexBufferSizeBytes, host_vertexBuffer.data(), GL_STATIC_DRAW);
-    
-    /* Unbind the buffer. */
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // Create a shader using my GLSLObject class
+    eng::gl::BlinnPhong shader;
 
-    /* Clear host-side vertex buffer since it's not needed anymore. */
-    host_vertexBuffer.clear();
-
-    GLuint m_VAO;
-    glGenVertexArrays(1, &m_VAO);
-    glBindVertexArray(m_VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, m_triangleVBO[0]);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
-
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), reinterpret_cast<void*>(3 * sizeof(GLfloat)));
-
-    glBindVertexArray(0);
-
-    // Create a shader using my GLSLObject class                                                            
-    sivelab::GLSLObject shader;
-    shader.addShader( "vertexShader_BlinnPhong.glsl", sivelab::GLSLObject::VERTEX_SHADER );
-    shader.addShader( "fragmentShader_BlinnPhong.glsl", sivelab::GLSLObject::FRAGMENT_SHADER );
-    shader.createProgram();
-
-    GLuint projMatrixId, viewMatrixId, modelMatrixId, normalMatrixId;
-    projMatrixId   = shader.createUniform("projMatrix");
-    viewMatrixId   = shader.createUniform("viewMatrix");
-    modelMatrixId  = shader.createUniform("modelMatrix");
-    normalMatrixId = shader.createUniform("normalMatrix");
-
-    GLuint lightPosWorldId, eyePosWorldId;
-    lightPosWorldId = shader.createUniform("lightPosWorld");
-    eyePosWorldId   = shader.createUniform("eyePosWorld");
-
-    GLuint diffuseComponentId, specularComponentId, phongExponentId;
-    diffuseComponentId  = shader.createUniform("diffuseComponent");
-    specularComponentId = shader.createUniform("specularComponent");
-    phongExponentId     = shader.createUniform("phongExponent");
-
+    /* Setup our camera. */
     constexpr eng::Vector3DF pos(0, 0, 0), viewDir(0, 0, -1);
-
     eng::gl::PerspectiveCamera cam(pos, viewDir, 0.5, winWidth, winHeight, 1.0);
 
     /* Misc parameters. */
     constexpr float phongExponent = 10.0;
-    constexpr glm::vec4 diffuseComponent{ 1.0, 1.0, 1.0, 1.0 };
-    constexpr glm::vec4 specularComponent{ 1.0, 1.0, 1.0, 1.0 };
-    constexpr glm::vec4 lightPos{ 0, 0, 2, 1.0 };
-    constexpr glm::vec4 eyePos{ 0, 0, 0, 1.0 };
+    constexpr Vector4DF diffuseComponent{ 1.0, 1.0, 1.0, 1.0 };
+    constexpr Vector4DF specularComponent{ 1.0, 1.0, 1.0, 1.0 };
+    constexpr Vector4DF lightPos{ 0, 0, 2, 1.0 };
+    constexpr Vector4DF eyePos{ 0, 0, 0, 1.0 };
+
+    /* Copy eye and light position over. */
+    shader.AssignEyePosition(eyePos)
+          .AssignLightPosition(lightPos);
+
+    /* Copy lighting components. */
+    shader.AssignDiffuseComponent(diffuseComponent)
+          .AssignSpecularComponent(specularComponent)
+          .AssignPhongExponent(phongExponent);
 
     /* Loop until the user closes the window */
     glm::mat4 modelMatrix, normalMatrix;
@@ -178,10 +144,6 @@ int main(void)
         glm::mat4 m_view = cam.GetViewMatrix();
         //glm::mat4 m_view = glm::lookAt(m_pos, m_pos - m_W, m_V);
 
-        /* Render your objects here */
-        /* (my amazing triangle) */
-        shader.activate();
-
         /* Setup model matrix. */
         modelMatrix = glm::mat4(1.0);
         modelMatrix = glm::rotate(modelMatrix, rotationAngle, glm::vec3(0, 1, 0));
@@ -193,25 +155,18 @@ int main(void)
             rotationAngle = 0;
 
         /* Copy the view and project matrices to the device. */
-        glUniformMatrix4fv(projMatrixId,  1, GL_FALSE, glm::value_ptr(projectionMatrix));
-        glUniformMatrix4fv(viewMatrixId,  1, GL_FALSE, glm::value_ptr(m_view));
-        glUniformMatrix4fv(modelMatrixId, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-        glUniformMatrix4fv(normalMatrixId, 1, GL_FALSE, glm::value_ptr(normalMatrix));
+        shader.AssignProjectionMatrix(projectionMatrix)
+              .AssignViewMatrix(m_view)
+              .AssignModelMatrix(modelMatrix)
+              .AssignNormalMatrix(normalMatrix);
 
-        /* Copy eye and light position over. */
-        glUniform4fv(eyePosWorldId, 1, glm::value_ptr(eyePos));
-        glUniform4fv(lightPosWorldId, 1, glm::value_ptr(lightPos));
+        /* Render your objects here */
+        /* (my amazing triangle) */
+        shader.Activate();
 
-        /* Copy lighting components. */
-        glUniform4fv(diffuseComponentId, 1, glm::value_ptr(diffuseComponent));
-        glUniform4fv(specularComponentId, 1, glm::value_ptr(specularComponent));
-        glUniform1f(phongExponentId, phongExponent);
+        mesh.Render();
 
-        glBindVertexArray(m_VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        glBindVertexArray(0);
-
-        shader.deactivate();
+        shader.Deactivate();
 
         // Swap the front and back buffers
         glfwSwapBuffers(window);
