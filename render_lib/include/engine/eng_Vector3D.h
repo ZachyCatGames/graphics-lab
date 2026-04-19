@@ -19,14 +19,16 @@ class Vector {
 public:
     using ValueType = std::remove_reference_t<ValueT>;
 
-    constexpr Vector() noexcept : e{0} {}
+    constexpr Vector() noexcept {
+        std::ranges::fill(this->e, static_cast<ValueType>(0));
+    }
 
     template<typename... Args>
     requires (sizeof...(Args) == N)
     constexpr Vector(Args&&... args) : e{static_cast<ValueType>(args)...} {}
 
     template<typename OtherT, typename ValueT2, size_t N2>
-    requires (N2 == (N + 1))
+    requires (N2 == (N - 1))
     constexpr Vector(const Vector<OtherT, N2>& other, ValueT2 extra) {
         std::ranges::copy(other.e, this->e.begin());
         this->e[N-1] = static_cast<ValueType>(extra);
@@ -63,7 +65,7 @@ public:
     [[nodiscard]] constexpr auto b() const noexcept requires (N >= 3) { return e[2]; }
     [[nodiscard]] constexpr auto a() const noexcept requires (N >= 4) { return e[4]; }
 
-    constexpr ValueType get_ptr() noexcept { return &e[0]; }
+    [[nodiscard]] constexpr ValueType get_ptr() noexcept { return &e[0]; }
 
     [[nodiscard]] constexpr Vector<ValueT, N> operator-() const noexcept {
         return Vector(std::ranges::views::transform(e, [](ValueT val) { return -val; }));
