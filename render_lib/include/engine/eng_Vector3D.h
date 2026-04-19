@@ -29,7 +29,7 @@ public:
     requires (N2 == (N + 1))
     constexpr Vector(const Vector<OtherT, N2>& other, ValueT2 extra) {
         std::ranges::copy(other.e, this->e.begin());
-        this->e[N-1] = static_cast<ValueT>(extra);
+        this->e[N-1] = static_cast<ValueType>(extra);
     }
 
     template<typename OtherT>
@@ -156,8 +156,8 @@ public:
         return Vector(gen);
     }
 
-    [[nodiscard]] static Vector<ValueT> random_in_unit_sphere() {
-        Vector<ValueT> vec;
+    [[nodiscard]] static Vector<ValueT, N> random_in_unit_sphere() {
+        Vector<ValueT, N> vec;
         while (vec = random(-1.0, 1.0), vec.length() > 1) {}
         return vec;
     }
@@ -168,12 +168,13 @@ public:
     } 
 
     // TODO: and me
-    [[nodiscard]] static Vector<ValueT> FromGlmVector(const glm::vec3& glmVec) noexcept {
-        return Vector<ValueT>(glmVec.x, glmVec.y, glmVec.z);
+    [[nodiscard]] static Vector<ValueT, N> FromGlmVector(const glm::vec3& glmVec) noexcept {
+        return Vector<ValueT, N>(glmVec.x, glmVec.y, glmVec.z);
     }
 #endif // ENGINE_BUILD_GL_RENDER
 
-    static constexpr Vector<ValueT> Zero() { return Vector<ValueType>(0, 0, 0); }
+    // default constructor sets everything to zero (in theory...)
+    static constexpr Vector<ValueT, N> Zero() { return Vector(); }
 private:
     union {
         std::array<ValueT, N> e;
