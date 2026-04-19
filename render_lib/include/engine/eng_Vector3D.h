@@ -23,18 +23,18 @@ public:
 
     template<typename... Args>
     requires (sizeof...(Args) == N)
-    constexpr Vector(Args&&... args) : e{static_cast<ValueT>(args)...} {}
+    constexpr Vector(Args&&... args) : e{static_cast<ValueType>(args)...} {}
 
     template<typename OtherT, typename ValueT2, size_t N2>
     requires (N2 == (N + 1))
     constexpr Vector(const Vector<OtherT, N2>& other, ValueT2 extra) {
-        std::ranges::copy(other.e, this->e);
+        std::ranges::copy(other.e, this->e.begin());
         this->e[N-1] = static_cast<ValueT>(extra);
     }
 
     template<typename OtherT>
     constexpr Vector(const Vector<OtherT, N>& other) {
-        std::ranges::copy(other.e, this->e);
+        std::ranges::copy(other.e, this->e.begin());
     }
 
     template<std::ranges::range R>
@@ -303,29 +303,33 @@ template<typename ValueT, typename ValueS, size_t NE>
 template<typename ValueT, typename WithinT, size_t NE>
 [[nodiscard]] constexpr bool equal_within(const Vector<ValueT, NE>& lhs, const Vector<ValueT, NE>& rhs, const WithinT& within) noexcept {
     const auto withint = static_cast<std::remove_reference_t<ValueT>>(within);
-    if (lhs.x() > rhs.x() + withint || lhs.x() < rhs.x() - withint)
-        return false;
-    if (lhs.y() > rhs.y() + withint || lhs.y() < rhs.y() - withint)
-        return false;
-    if (lhs.z() > rhs.z() + withint || lhs.z() < rhs.z() - withint)
-        return false;
-    return true; 
+    return std::ranges::equal(lhs, rhs, [withint](auto v1, auto v2) {
+        return v1 > v2 + withint || v1 < v2 + withint;
+    });
 }
 
 // DO NOT use this for comparing math results
 template<typename ValueT, size_t NE>
 [[nodiscard]] constexpr bool equal_exact(const Vector<ValueT, NE>& lhs, const Vector<ValueT, NE>& rhs) noexcept {
-    return lhs.x() == rhs.x() && lhs.y() == rhs.y() && lhs.z() == rhs.z();
+    return std::ranges::equal(lhs, rhs);
 }
 
 template<typename ValueT, size_t NE>
 [[nodiscard]] constexpr double dot(const Vector<ValueT, NE> &u, const Vector<ValueT, NE> &v) noexcept {
-    return std::bit_cast<float>(_mm_extract_ps(_mm_dp_ps(u.v, v.v, 0x71), 0));
-    return u.x() * v.x() +
-           u.y() * v.y() +
-           u.z() * v.z();
+    if constexpr (NE < 5) {
+        if !consteval {
+            return std::bit_cast<float>(_mm_extract_ps(_mm_dp_ps(u.v, v.v, 0x71), 0));
+        }
+    }
+
+    decltype(u[0]+v[0]) sum = 0;
+    for (size_t i = 0; i < 3; i++)
+        sum += u[i] * v[i];
+
+    return sum;
 }
 
+// TODO: Lookup what cross product does, later
 template<typename ValueT, size_t NE>
 [[nodiscard]] constexpr Vector<ValueT, NE> cross(const Vector<ValueT, NE> &u, const Vector<ValueT, NE> &v) noexcept {
     return Vector { u.y() * v.z() - u.z() * v.y(),
