@@ -38,12 +38,12 @@ public:
     }
 
     template<std::ranges::range R>
-    constexpr Vector(R&& range) {
+    explicit constexpr Vector(R&& range) {
         std::ranges::copy(range, this->e.begin());
     }
 
     template<std::invocable G>
-    constexpr Vector(G&& generator) {
+    explicit constexpr Vector(G&& generator) {
         std::ranges::generate(this->e, generator);
     }
 
