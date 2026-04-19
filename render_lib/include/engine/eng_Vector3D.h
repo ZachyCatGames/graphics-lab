@@ -2,6 +2,7 @@
 #include <engine/eng_Rng.h>
 #include <array>
 #include <algorithm>
+#include <functional>
 #include <ranges>
 #include <cmath>
 #include <iostream>
@@ -68,7 +69,7 @@ public:
     [[nodiscard]] constexpr ValueType get_ptr() noexcept { return &e[0]; }
 
     [[nodiscard]] constexpr Vector<ValueT, N> operator-() const noexcept {
-        return Vector(std::ranges::views::transform(e, [](ValueT val) { return -val; }));
+        return Vector(std::ranges::views::transform(e, std::negate()));
     }
 
     template<typename Self>
