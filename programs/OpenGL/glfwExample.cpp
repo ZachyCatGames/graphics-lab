@@ -12,7 +12,7 @@
 
 #include "GLSL.h"
 
-#include <engine/eng_PerspectiveCamera.h>
+#include <engine/gl/eng_PerspectiveCamera.h>
 
 int CheckGLErrors(const char *s)
 {
@@ -91,8 +91,8 @@ int main(void)
     glBindBuffer(GL_ARRAY_BUFFER, m_triangleVBO[0]);
 
     std::vector<float> host_vertexBuffer {
-        -3.0f, -3.0f, 0.0f,     1.0f, 0.0f, 0.0f,     // V0
-         3.0f, -3.0f, 0.0f,     0.0f, 1.0f, 0.0f,     // V1
+        -3.0f, -3.0f, 0.0f,     0.0f, 0.0f, 1.0f,     // V0
+         3.0f, -3.0f, 0.0f,     0.0f, 0.0f, 1.0f,     // V1
          0.0f,  5.0f, 0.0f,     0.0f, 0.0f, 1.0f      // V2
     };
     /*
@@ -130,21 +130,38 @@ int main(void)
 
     // Create a shader using my GLSLObject class                                                            
     sivelab::GLSLObject shader;
-    shader.addShader( "vertexShader_withMatrixTransformation.glsl", sivelab::GLSLObject::VERTEX_SHADER );
-    shader.addShader( "fragmentShader_passthrough.glsl", sivelab::GLSLObject::FRAGMENT_SHADER );
+    shader.addShader( "vertexShader_BlinnPhong.glsl", sivelab::GLSLObject::VERTEX_SHADER );
+    shader.addShader( "fragmentShader_BlinnPhong.glsl", sivelab::GLSLObject::FRAGMENT_SHADER );
     shader.createProgram();
 
-    GLuint projMatrixId, viewMatrixId, modelMatrixId;
-    projMatrixId  = shader.createUniform("projMatrix");
-    viewMatrixId  = shader.createUniform("viewMatrix");
-    modelMatrixId = shader.createUniform("modelMatrix");
+    GLuint projMatrixId, viewMatrixId, modelMatrixId, normalMatrixId;
+    projMatrixId   = shader.createUniform("projMatrix");
+    viewMatrixId   = shader.createUniform("viewMatrix");
+    modelMatrixId  = shader.createUniform("modelMatrix");
+    normalMatrixId = shader.createUniform("normalMatrix");
+
+    GLuint lightPosWorldId, eyePosWorldId;
+    lightPosWorldId = shader.createUniform("lightPosWorld");
+    eyePosWorldId   = shader.createUniform("eyePosWorld");
+
+    GLuint diffuseComponentId, specularComponentId, phongExponentId;
+    diffuseComponentId  = shader.createUniform("diffuseComponent");
+    specularComponentId = shader.createUniform("specularComponent");
+    phongExponentId     = shader.createUniform("phongExponent");
 
     constexpr eng::Vector3DF pos(0, 0, 0), viewDir(0, 0, -1);
 
-    eng::PerspectiveCamera cam(pos, viewDir, 0.5, winWidth, winHeight, 1.0);
+    eng::gl::PerspectiveCamera cam(pos, viewDir, 0.5, winWidth, winHeight, 1.0);
+
+    /* Misc parameters. */
+    constexpr float phongExponent = 10.0;
+    constexpr glm::vec4 diffuseComponent{ 1.0, 1.0, 1.0, 1.0 };
+    constexpr glm::vec4 specularComponent{ 1.0, 1.0, 1.0, 1.0 };
+    constexpr glm::vec4 lightPos{ 0, 0, 2, 1.0 };
+    constexpr glm::vec4 eyePos{ 0, 0, 0, 1.0 };
 
     /* Loop until the user closes the window */
-    glm::mat4 modelMatrix;
+    glm::mat4 modelMatrix, normalMatrix;
     float rotationAngle = 0;
     while (!glfwWindowShouldClose(window))
     {
@@ -168,6 +185,7 @@ int main(void)
         /* Setup model matrix. */
         modelMatrix = glm::mat4(1.0);
         modelMatrix = glm::rotate(modelMatrix, rotationAngle, glm::vec3(0, 1, 0));
+        normalMatrix = glm::transpose(glm::inverse(modelMatrix));
 
         /* Increment rotation angle. */
         rotationAngle += 0.05;
@@ -178,6 +196,16 @@ int main(void)
         glUniformMatrix4fv(projMatrixId,  1, GL_FALSE, glm::value_ptr(projectionMatrix));
         glUniformMatrix4fv(viewMatrixId,  1, GL_FALSE, glm::value_ptr(m_view));
         glUniformMatrix4fv(modelMatrixId, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+        glUniformMatrix4fv(normalMatrixId, 1, GL_FALSE, glm::value_ptr(normalMatrix));
+
+        /* Copy eye and light position over. */
+        glUniform4fv(eyePosWorldId, 1, glm::value_ptr(eyePos));
+        glUniform4fv(lightPosWorldId, 1, glm::value_ptr(lightPos));
+
+        /* Copy lighting components. */
+        glUniform4fv(diffuseComponentId, 1, glm::value_ptr(diffuseComponent));
+        glUniform4fv(specularComponentId, 1, glm::value_ptr(specularComponent));
+        glUniform1f(phongExponentId, phongExponent);
 
         glBindVertexArray(m_VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);

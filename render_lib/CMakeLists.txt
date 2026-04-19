@@ -41,6 +41,9 @@ add_library (render_lib
   sources/raytracer/eng_RendererBase.cpp
   sources/raytracer/eng_ThreadedRenderer.cpp
 
+  # GL Core Library
+  sources/gl/eng_PerspectiveCamera.cpp
+
   ${UTIL_PLAT_SRC}
 )
 target_compile_definitions(render_lib PUBLIC HAS_GLM)
