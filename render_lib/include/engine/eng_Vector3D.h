@@ -69,7 +69,7 @@ public:
     [[nodiscard]] constexpr ValueType get_ptr() noexcept { return &e[0]; }
 
     [[nodiscard]] constexpr Vector<ValueT, N> operator-() const noexcept {
-        return Vector(std::ranges::views::transform(e, std::negate()));
+        return Vector(e | std::ranges::views::transform(std::negate()));
     }
 
     template<typename Self>
