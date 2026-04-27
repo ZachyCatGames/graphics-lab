@@ -3,6 +3,7 @@
 #include <cstring>
 #include <memory>
 #include <new>
+#include <type_traits>
 #include "eng_ObjectPoolTypes.h"
 
 namespace eng::detail {
@@ -78,7 +79,21 @@ public:
     template<typename... Args>
     [[nodiscard]] pointer_type AllocateAndConstruct(Args&&... args) {
         // NOTE: this kinda breaks if T throws an exception, do we want to deal with that?
-        return std::construct_at(this->Allocate(), std::forward<Args>(args)...);
+        pointer_type newObject = this->Allocate();
+        if (newObject == nullptr)
+            return nullptr;
+
+        if constexpr (std::is_nothrow_constructible_v<value_type, Args...>) {
+            return std::construct_at(newObject, std::forward<Args>(args)...);
+        } else {
+            try {
+                return std::construct_at(newObject, std::forward<Args>(args)...);
+            }
+            catch (std::exception& excpt) {
+                this->Free(newObject);
+                throw excpt;
+            }
+        }
     }
 
     void DestroyAndFree(pointer_type pObject) {
