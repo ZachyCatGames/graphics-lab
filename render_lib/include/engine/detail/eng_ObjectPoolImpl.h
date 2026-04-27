@@ -28,10 +28,10 @@ public:
 private:
     using Traits = PoolTraits<T>;
 
-    using __PoolEntry   = PoolEntry<value_type>;
-    using __BlockHeader = BlockHeader<value_type>;
+    using PoolEntryT   = PoolEntry<value_type>;
+    using BlockHeaderT = BlockHeader<value_type>;
 
-    static constexpr size_t MinimumAllocationRequirement = sizeof(__BlockHeader);
+    static constexpr size_t MinimumAllocationRequirement = sizeof(BlockHeaderT);
     static constexpr size_t ObjectSize = sizeof(value_type);
 public:
     constexpr PoolAllocatorImpl()
@@ -56,7 +56,7 @@ public:
         }
 
         /* Get first free object. */
-        __PoolEntry* cur = m_first_free;
+        PoolEntryT* cur = m_first_free;
 
         /* Update first free object to next object. */
         m_first_free = cur->next_free;
@@ -68,8 +68,8 @@ public:
     }
 
     void Free(pointer_type p_obj) {
-        /* Re-construct it as a __PoolEntry. */
-        auto poolEntry = ::new(p_obj) __PoolEntry(m_first_free);
+        /* Re-construct it as a PoolEntryT. */
+        auto poolEntry = ::new(p_obj) PoolEntryT(m_first_free);
 
         /* Insert back into the free list. */
         m_first_free = poolEntry;
@@ -87,7 +87,7 @@ public:
     }
 protected:
     static constexpr size_t CalculateBlockCount(size_t sizeBytes) {
-        return (sizeBytes - sizeof(__BlockHeader)) / __PoolEntry::ObjectSize;
+        return (sizeBytes - sizeof(BlockHeaderT)) / PoolEntryT::ObjectSize;
     }
 
     void Initialize(std::byte* pMemory, size_t sizeBytes) {
@@ -107,7 +107,7 @@ protected:
     }
 
     void ExpandPoolImpl() requires Extendable {
-        auto [pNewMem, newMemorySize] = GetDerived()->RequestExpansion(sizeof(__BlockHeader) + m_allocationSize * ObjectSize);
+        auto [pNewMem, newMemorySize] = GetDerived()->RequestExpansion(sizeof(BlockHeaderT) + m_allocationSize * ObjectSize);
         this->PrepareNewBlock(pNewMem, newMemorySize);
         assert(m_first_free != nullptr);
 
@@ -120,10 +120,10 @@ private:
 
     void PrepareNewBlock(std::byte* pNewMem, size_t newMemorySize) requires Extendable {
         /* Initialize the block header, link it to the current block. */
-        auto pBlkHeader = ::new(pNewMem) __BlockHeader(m_cur_pool_block, newMemorySize);
+        auto pBlkHeader = ::new(pNewMem) BlockHeaderT(m_cur_pool_block, newMemorySize);
 
         /* Pointer to the first object. */
-        __PoolEntry* pObj = reinterpret_cast<__PoolEntry*>(pBlkHeader->b);
+        PoolEntryT* pObj = reinterpret_cast<PoolEntryT*>(pBlkHeader->b);
 
         /* Initialize each block to point to the next block. */
         size_t n = this->CalculateBlockCount(newMemorySize);
@@ -135,14 +135,14 @@ private:
 
         /* Link the beginning and ending. */
         std::construct_at(pObj, nullptr);
-        m_first_free = reinterpret_cast<__PoolEntry*>(pBlkHeader->b);
+        m_first_free = reinterpret_cast<PoolEntryT*>(pBlkHeader->b);
 
         /* Link this block as the current block. */
         m_cur_pool_block = pBlkHeader;
     }
 private:
-    __BlockHeader* m_cur_pool_block;
-    __PoolEntry* m_first_free;
+    BlockHeaderT* m_cur_pool_block;
+    PoolEntryT* m_first_free;
     size_t m_allocationSize;
 }; // class ObjectPool
 
