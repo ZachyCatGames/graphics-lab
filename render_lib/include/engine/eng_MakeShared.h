@@ -1,6 +1,6 @@
 #pragma once
 #include <engine/eng_Handle.h>
-#include <engine/detail/ControlBlock.h>
+#include <engine/detail/eng_ControlBlock.h>
 #include <engine/detail/eng_HandleConstructor.h>
 #include <engine/detail/eng_ObjectManager.h>
 
@@ -29,7 +29,7 @@ Handle<T> MakeShared(Args&&... args) {
 
 template<typename T, typename... Args>
 Handle<T> MakeSharedPooled(Args&&... args) {
-    return ObjectManager<T>::Get()->CreateObject(std::forward<Args>(args)...);
+    return detail::ObjectManager<T>::Get()->CreateObject(std::forward<Args>(args)...);
 }
 
 } // namespace eng

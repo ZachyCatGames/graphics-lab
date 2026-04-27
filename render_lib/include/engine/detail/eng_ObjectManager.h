@@ -6,15 +6,13 @@
 
 #include <print>
 
-#include <engine/detail/ObjectPoolImpl.h>
-#include <engine/detail/ControlBlock.h>
+#include <engine/detail/eng_ObjectPoolImpl.h>
+#include <engine/detail/eng_ControlBlock.h>
 #include <engine/eng_ManagedPoolAllocator.h>
 #include <engine/eng_Handle.h>
 #include <engine/detail/eng_HandleConstructor.h>
 
-namespace eng {
-
-namespace detail {
+namespace eng::detail {
 
 template<typename T, typename AllocatorType = std::allocator<T>>
 class ObjectManagerImpl : public detail::IControlBlockDeallocator {
@@ -65,8 +63,6 @@ private:
     std::vector<typed_control_blk*> m_active;
 }; // class ObjectManagerImpl
 
-} // namespace detail
-
 template<typename T, typename AllocatorType = std::allocator<T>>
 class ObjectManager : public detail::ObjectManagerImpl<T, AllocatorType> {
 public:
@@ -84,8 +80,6 @@ private:
 template<typename T, typename AllocatorType>
 constinit ObjectManager<T, AllocatorType> ObjectManager<T, AllocatorType>::s_manager{};
 
-namespace detail {
-
 template<typename T, typename Allocator>
 template<typename... Args>
 [[nodiscard]] constexpr auto ObjectManagerImpl<T, Allocator>::CreateObject(Args&&... args) {
@@ -98,9 +92,7 @@ template<typename... Args>
     return detail::HandleConstructor<value_type>::ConstructFromControlBlockPointer(blk, &blk->val);
 }
 
-} // namespace detail
-
-} // namespace eng
+} // namespace eng::detail
 
 namespace std {
 

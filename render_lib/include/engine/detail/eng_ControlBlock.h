@@ -1,6 +1,6 @@
 #pragma once
 #include <engine/eng_ReferenceCount.h>
-#include "ObjectPoolTypes.h"
+#include "eng_ObjectPoolTypes.h"
 
 namespace eng::detail {
 
