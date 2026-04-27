@@ -1,5 +1,8 @@
 #include <engine/eng_SceneLoader.h>
 #include <engine/eng_model_obj.h>
+#include <engine/eng_Material.h>
+#include <bit>
+#include <print>
 
 /* Builtin lights. */
 #include <engine/shader/shdr_PointLight.h>
@@ -53,6 +56,14 @@ void SceneLoader::addShader(const ISceneLoader::ShaderDesc &shaderDesc) {
         return;
     }
 
+    /* Setup material. */
+    Material material {
+        .ambientLight = std::bit_cast<Vector3DF>(shaderDesc.emission.data),
+        .diffuse = std::bit_cast<Vector3DF>(shaderDesc.diffuse.data),
+        .specular = std::bit_cast<Vector3DF>(shaderDesc.specular.data),
+        .shininess = shaderDesc.phongExp
+    };
+
     /* Create a shader of type type. */
     /* TODO: Move to a factory? */
     Handle<IShader> shader;
@@ -64,9 +75,9 @@ void SceneLoader::addShader(const ISceneLoader::ShaderDesc &shaderDesc) {
         auto base_color = Vector3DF(diffuse.x, diffuse.y, diffuse.z);
 
         if (shaderDesc.type == "Lambertian")
-            shader = m_pObjFactory->CreateLambertian(base_color, lights);
+            shader = m_pObjFactory->CreateLambertian(material, lights);
         else /* if (shaderDesc.type == "BlinnPhong" || shaderDesc.type == "Phong") */
-            shader = m_pObjFactory->CreatePhong(base_color, lights, shaderDesc.phongExp);
+            shader = m_pObjFactory->CreatePhong(material, lights);
 
     } else if (shaderDesc.type == "Mirror") {
         //shader = shdr::Mirror::Create();

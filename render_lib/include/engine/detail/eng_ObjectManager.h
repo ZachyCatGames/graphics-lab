@@ -95,7 +95,7 @@ template<typename... Args>
     /* Add it to the active list. */
     m_active.push_back(blk);
 
-    return detail::HandleConstructor<value_type>::ConstructFromControlBlockPointer(blk);
+    return detail::HandleConstructor<value_type>::ConstructFromControlBlockPointer(blk, &blk->val);
 }
 
 } // namespace detail

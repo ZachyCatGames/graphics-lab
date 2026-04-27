@@ -11,6 +11,7 @@ add_library (render_lib
   # Shader Library.
   sources/raytracer/shader/shdr_BlinnPhong.cpp
   sources/raytracer/shader/shdr_Diffuse.cpp
+  sources/raytracer/shader/shdr_FlatColorShader.cpp
   sources/raytracer/shader/shdr_Lambertian.cpp
   sources/raytracer/shader/shdr_Mirror.cpp
   sources/raytracer/shader/shdr_NormalShader.cpp
@@ -26,15 +27,18 @@ add_library (render_lib
 
   # Core Library.
   sources/eng_ArgumentParsing.cpp
+  sources/eng_CameraBase.cpp
   sources/eng_Engine.cpp
   sources/eng_HandleGraphicsArgs.cpp
   sources/eng_model_obj.cpp
   sources/eng_Scene.cpp
   sources/eng_SceneLoader.cpp
   sources/eng_SceneParser_JSON.cpp
+  sources/GLSL.cpp
 
   # RT Core Library
   sources/raytracer/eng_Bvh.cpp
+  sources/raytracer/eng_ExportableRenderBuffer.cpp
   sources/raytracer/eng_ObjectFactory.cpp
   sources/raytracer/eng_PerspectiveCamera.cpp
   sources/raytracer/eng_RayCaster.cpp
@@ -44,7 +48,10 @@ add_library (render_lib
   # GL Core Library
   sources/gl/eng_BlinnPhong.cpp
   sources/gl/eng_Mesh.cpp
+  sources/gl/eng_ObjectFactory.cpp
   sources/gl/eng_PerspectiveCamera.cpp
+  sources/gl/eng_Renderer.cpp
+  sources/gl/eng_Sphere.cpp
 
   ${UTIL_PLAT_SRC}
 )

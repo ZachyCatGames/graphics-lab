@@ -13,11 +13,25 @@ public:
 	constexpr Framebuffer();
 	constexpr Framebuffer(const int width, const int height);
 
-	constexpr void SetPixelColor(const int x, const int y, const Vector3D<float> &v) { m_fb[XyToIndex(x, y)] = v;}
-	constexpr void SetPixelColor(const int index, const Vector3D<float> &v) { m_fb[index] = v; }
+	constexpr void SetPixelColor(const int x, const int y, const Vector3D<float> &v) {
+		assert(x >= 0 && x < m_width);
+		assert(y >= 0 && x < m_height);
+		m_fb[XyToIndex(x, y)] = v;
+	}
+	constexpr void SetPixelColor(const int index, const Vector3D<float> &v) {
+		assert(index >= 0 && index < m_width * m_height);
+		m_fb[index] = v;
+	}
 
-	[[nodiscard]] constexpr const Vector3D<float>& GetPixelColor(const int x, const int y) const { return m_fb[XyToIndex(x, y)]; }
-	[[nodiscard]] constexpr const Vector3D<float>& GetPixelColor(const int index) const { return m_fb[index]; }
+	[[nodiscard]] constexpr const Vector3D<float>& GetPixelColor(const int x, const int y) const {
+		assert(x >= 0 && x < m_width);
+		assert(y >= 0 && x < m_height);
+		return m_fb[XyToIndex(x, y)];
+	}
+	[[nodiscard]] constexpr const Vector3D<float>& GetPixelColor(const int index) const {
+		assert(index >= 0 && index < m_width * m_height);
+		return m_fb[index];
+	}
 
 	[[nodiscard]] constexpr auto GetWidth() const { return m_width; }
 	[[nodiscard]] constexpr auto GetHeight() const { return m_height; }

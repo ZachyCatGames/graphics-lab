@@ -1,26 +1,18 @@
 #pragma once
-#include <engine/eng_ObjectManager.h>
 
 namespace eng {
 
 /**
  * Object base class.
  * 
- * Provides an allocation function for the derived class via CRTP.
+ * This is a stub now. Will remove it later.
  */
-template<typename T, typename AllocatorType = std::allocator<T>>
+template<typename T, typename AllocatorType = void>
 class ObjectBase {
 public:
     constexpr ObjectBase() = default;
 
-    template<typename... Args>
-    [[nodiscard]] static constexpr auto Create(Args&&... args);
 }; // class ObjectBase
 
-template<typename T, typename AllocatorType>
-template<typename... Args>
-[[nodiscard]] constexpr auto ObjectBase<T, AllocatorType>::Create(Args&&... args) {
-    return ObjectManager<T, AllocatorType>::Get()->CreateObject(std::forward<Args>(args)...);
-}
 
 } // namespace eng

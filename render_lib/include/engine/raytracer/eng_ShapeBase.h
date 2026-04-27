@@ -5,7 +5,8 @@ namespace eng::rt {
 
 class ShapeBase : public IShape {
 public:
-    constexpr ShapeBase(Handle<IShader> shader) : m_shader(shader) {}
+    constexpr ShapeBase(Handle<IShader> shader) :
+        m_shader(shader) {}
 
     virtual Handle<eng::IShader> GetShader() const override { return m_shader; }
 protected:

@@ -15,13 +15,16 @@ public:
 
     IObjectFactory* GetObjectFactory() const { return m_pObjFactory.get(); }
 
+    /* NOTE: This is for debugging!!! */
+    IRenderer* GetRenderer() const { return m_pRenderer.get(); }
+
     const auto& GetActiveScene() const { return m_pActiveScene; }
     void UpdateActiveScene(const Handle<Scene>& scene);
 
-    void RenderActiveScene(std::string_view cameraName, fb::Framebuffer* p_fb) {
+    void RenderActiveScene(std::string_view cameraName, Handle<RenderBuffer> fb) {
         m_pRenderer->PreRender();
 
-        m_pRenderer->Render(cameraName, p_fb);
+        m_pRenderer->Render(cameraName, fb);
     }
 private:
     GraphicsArgs m_gArgs;
@@ -30,6 +33,8 @@ private:
 
     std::unique_ptr<IObjectFactory> m_pObjFactory;
     std::unique_ptr<IRenderer> m_pRenderer;
+
+    std::string m_renderMode;
 }; // class Engine
 
 } // namespace eng

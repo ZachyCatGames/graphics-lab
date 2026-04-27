@@ -7,6 +7,7 @@ namespace eng::rt::shdr {
 Vector3DF BlinnPhong::GetColor(RayCaster* pRc, int depth, const HitStruct& rec) {
 
     Vector3DF light_sum;
+
     for (const auto& light : m_lights) {
         /* Calculate ray from position to the light. */
         const Ray r {
@@ -20,11 +21,13 @@ Vector3DF BlinnPhong::GetColor(RayCaster* pRc, int depth, const HitStruct& rec) 
 
             const auto half_vector = (-rec.r.direction() + light.GetDirection(rec.position)).normalize();
 
-            light_sum += Vector3DF( nl, nl, nl ) * light.intensity + std::pow(std::max(0.0, dot(rec.normal, half_vector)), m_exp);
+            light_sum += 
+                (m_Material.specular * Vector3DF( nl, nl, nl ) * light.intensity) +
+                (m_Material.specular * std::pow(std::max(0.0, dot(rec.normal, half_vector)), m_Material.shininess));
         }
     }
 
-    return light_sum * m_baseColor;
+    return light_sum;
 }
 
 } // namespace eng::shdr

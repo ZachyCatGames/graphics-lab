@@ -20,7 +20,7 @@ public:
 
     virtual void PreRender() override;
 
-    virtual void Render(std::string_view cameraName, fb::Framebuffer* p_fb) override;
+    virtual void Render(std::string_view cameraName, Handle<RenderBuffer> fb) override;
 private:
     std::shared_ptr<Scene> m_pScene;
     size_t m_thread_count;

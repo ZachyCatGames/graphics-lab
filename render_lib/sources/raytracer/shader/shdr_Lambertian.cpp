@@ -19,11 +19,11 @@ Vector3DF Lambertian::GetColor(RayCaster* pRc, int depth, const HitStruct& rec) 
             const auto dir = light.GetDirection(rec.position);
             const auto nl  = std::max(0.0, dot(rec.normal, dir));
 
-            light_sum += Vector3DF( nl, nl, nl ) * light.intensity;
+            light_sum += (m_Material.diffuse * Vector3DF( nl, nl, nl ) * light.intensity);
         }
     }
 
-    return light_sum * m_baseColor;
+    return light_sum;
 }
 
 } // namespace eng::shdr

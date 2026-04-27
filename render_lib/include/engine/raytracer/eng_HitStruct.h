@@ -1,5 +1,5 @@
 #pragma once
-#include <engine/eng_ObjectManager.h>
+#include <engine/eng_Material.h>
 #include <engine/eng_Ray.h>
 #include <engine/eng_Vector3D.h>
 
@@ -12,6 +12,7 @@ struct HitStruct {
     Vector3DF normal;
     Vector3DF position;
     IShader* shader;
+    const Material* pMaterial;
     float t;
 }; // struct HitStruct
 

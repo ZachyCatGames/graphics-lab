@@ -1,12 +1,13 @@
 #pragma once
 #include <engine/raytracer/eng_HitStruct.h>
+#include <engine/eng_IShader.h>
 #include <engine/eng_Vector3D.h>
 
 namespace eng::rt {
 
 class RayCaster;
 
-class IShader {
+class IShader : public eng::IShader {
 public:
     virtual Vector3DF GetColor(RayCaster* pRc, int depth, const HitStruct& rec) = 0;
 }; // class IShader

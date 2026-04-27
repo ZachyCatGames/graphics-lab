@@ -1,33 +1,28 @@
+#include "engine/gl/eng_BlinnPhong.h"
 #include <engine/gl/eng_Mesh.h>
 
 namespace eng::gl {
 
-
-Mesh::Mesh(const std::vector<float>& verts, const std::vector<float> normals, const Vector3DF& position, Handle<IShader> shader) :
-    m_Shader(shader),
+Mesh::Mesh(const std::vector<Vertex>& verts, const Vector3DF& position, Handle<IShader> shader) :
+    m_Shader(shader.StaticCast<BlinnPhong>()),
     m_Position(position)
 {
-    assert(verts.size() == normals.size());
     assert(verts.size() % 3 == 0);
-    static_assert(sizeof(Vertex) == sizeof(float) * 6);
+    static_assert(sizeof(Vertex) == sizeof(float) * 8);
 
     /* Generate a VBO. */
     glGenBuffers(1, &m_VboId);
     glBindBuffer(GL_ARRAY_BUFFER, m_VboId);
 
-    std::vector<Vertex> hostVbo;
-    m_VertexCount = verts.size() / 3;
-    hostVbo.reserve(m_VertexCount);
-    for (size_t i = 0; i < verts.size(); i += 3) {
-        hostVbo.push_back({
-            Vector3DF(verts[i], verts[i+1], verts[i+2]),
-            Vector3DF(normals[i], normals[i+1], normals[i+2])
-        });
-    }
+    /*
+    for (auto& v : verts) {
+        std::print("{} {} {}\n", v.position[0], v.position[1], v.position[2]);
+        std::print("{} {}\n", v.texCoord[0], v.texCoord[1]);
+    }*/
 
     /* Copy our vertex buffer data to the device. */
-    const size_t vertexBufferSizeBytes = hostVbo.size() * sizeof(Vertex);
-    glBufferData(GL_ARRAY_BUFFER, vertexBufferSizeBytes, hostVbo.data(), GL_STATIC_DRAW);
+    const size_t vertexBufferSizeBytes = verts.size() * sizeof(Vertex);
+    glBufferData(GL_ARRAY_BUFFER, vertexBufferSizeBytes, verts.data(), GL_STATIC_DRAW);
 
     /* Unbind the vbo since we're doing with it for now... */
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -40,11 +35,15 @@ Mesh::Mesh(const std::vector<float>& verts, const std::vector<float> normals, co
 
     /* Setup attribute / location 1, our positions. */
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 6, (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 8, (void*)0);
     
     /* Setup our normal attribute. */
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 6, (void*)12);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 8, (void*)12);
+
+    /* Setup our texture UV attribute. */
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 8, (void*)24);
 
     /* Unbind vertex array buffer. */
     glBindVertexArray(0);
@@ -53,11 +52,14 @@ Mesh::Mesh(const std::vector<float>& verts, const std::vector<float> normals, co
     //glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-Mesh::~Mesh() = default;
+Mesh::~Mesh() = default; // TODO
 
 Handle<IShader> Mesh::GetShader() const { return m_Shader; }
 
-void Mesh::Render() {
+void Mesh::Render() const {
+    /* Activate our shader. */
+    m_Shader->Activate();
+
     /* Bind our vertex array. */
     glBindVertexArray(m_VaoId);
 
@@ -66,6 +68,13 @@ void Mesh::Render() {
 
     /* Unbind our vertex array, we're done. */
     glBindVertexArray(0);
+
+    /* Deactive our shader. */
+    m_Shader->Deactivate();
+}
+
+glm::mat4 Mesh::GetModelMatrix() const {
+    return glm::rotate(glm::translate(glm::mat4(1.0), m_Position.ToGlmVector()), this->rotationAngle, this->rotationAxis.ToGlmVector());
 }
 
 } // namespace eng

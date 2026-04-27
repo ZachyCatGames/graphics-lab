@@ -107,8 +107,6 @@ protected:
     }
 
     void ExpandPoolImpl() requires Extendable {
-        assert(m_cur_pool_block != nullptr);
-
         auto [pNewMem, newMemorySize] = GetDerived()->RequestExpansion(sizeof(__BlockHeader) + m_allocationSize * ObjectSize);
         this->PrepareNewBlock(pNewMem, newMemorySize);
         assert(m_first_free != nullptr);

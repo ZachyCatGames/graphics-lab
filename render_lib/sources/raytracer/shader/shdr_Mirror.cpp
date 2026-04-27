@@ -15,4 +15,14 @@ Vector3DF Mirror::GetColor(RayCaster* pRc, int depth, const HitStruct& rec) {
     return pRc->CastRayIntoScene(r, {0.001, std::numeric_limits<float>::infinity()}, depth+1);
 }
 
+const Material* Mirror::GetMaterial() const {
+    static constexpr Material material {
+        .ambientLight = Vector3DF::Zero(),
+        .diffuse = Vector3DF::Zero(),
+        .specular = Vector3DF::Zero(),
+        .shininess = std::numeric_limits<float>::infinity()
+    };
+    return &material;
+}
+
 } // namespace eng

@@ -14,7 +14,7 @@ static void AssignVec4(GLuint id, const Vector4DF& vector) {
 
 } // namespace
 
-BlinnPhong::BlinnPhong() {
+BlinnPhong::BlinnPhong(const Material& material) : m_Material(material){
     /* Setup shader object w/ the blinn phong vertex and fragment shader. */
     m_shaderObject.addShader("vertexShader_BlinnPhong.glsl", sivelab::GLSLObject::VERTEX_SHADER);
     m_shaderObject.addShader("fragmentShader_BlinnPhong.glsl", sivelab::GLSLObject::FRAGMENT_SHADER);
@@ -34,6 +34,8 @@ BlinnPhong::BlinnPhong() {
     m_diffuseComponentId  = m_shaderObject.createUniform("diffuseComponent");
     m_specularComponentId = m_shaderObject.createUniform("specularComponent");
     m_phongExponentId     = m_shaderObject.createUniform("phongExponent");
+
+    m_textureSamplerId = m_shaderObject.createUniform("textureSampler");
 }
 
 void BlinnPhong::Activate() {
@@ -46,10 +48,14 @@ void BlinnPhong::Activate() {
 
     AssignVec4(m_lightPosWorldId, m_lightPosition);
     AssignVec4(m_eyePosWorldId, m_eyePosition);
-    AssignVec4(m_diffuseComponentId, m_diffuseComponent);
-    AssignVec4(m_specularComponentId, m_specularComponent);
+    AssignVec4(m_diffuseComponentId, Vector4DF(m_Material.diffuse, 1.0));
+    AssignVec4(m_specularComponentId, Vector4DF(m_Material.specular, 1.0));
 
-    glUniform1f(m_phongExponentId, m_phongExponent);
+    glUniform1f(m_phongExponentId, m_Material.shininess);
+
+    glUniform1i(m_textureSamplerId, m_textureSampler);
 }
+
+const Material* BlinnPhong::GetMaterial() const { return &m_Material; }
 
 } // namespace eng::gl

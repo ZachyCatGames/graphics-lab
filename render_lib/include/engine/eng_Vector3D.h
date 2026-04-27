@@ -182,10 +182,7 @@ public:
     // default constructor sets everything to zero (in theory...)
     static constexpr Vector<ValueT, N> Zero() { return Vector(); }
 
-    union {
-        std::array<ValueType, N> e;
-        //__m128 v;
-    };
+    std::array<ValueType, N> e;
 }; // class Vector
 
 template<typename T>

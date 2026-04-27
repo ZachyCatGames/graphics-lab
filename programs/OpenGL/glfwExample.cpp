@@ -12,9 +12,12 @@
 
 #include "GLSL.h"
 
+#include <engine/eng_Engine.h>
 #include <engine/gl/eng_PerspectiveCamera.h>
 #include <engine/gl/eng_BlinnPhong.h>
 #include <engine/gl/eng_Mesh.h>
+
+#include <engine/png++/png.hpp>
 
 using namespace eng;
 
@@ -24,7 +27,7 @@ int CheckGLErrors(const char *s)
     return errCount;
 }
 
-int main(void)
+int main(int argc, char** argv)
 {
     /* Initialize the library */
     if (!glfwInit()) {
@@ -87,48 +90,103 @@ int main(void)
     glGetIntegerv(GL_MAJOR_VERSION, &major_version);
     std::cout << "GL_MAJOR_VERSION: " << major_version << std::endl;
 
+    /* Disable the mouse cursor and enable raw input if supported. */
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    if (glfwRawMouseMotionSupported())
+        glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GL_TRUE);
+
     double timeDiff = 0.0, startFrameTime = 0.0, endFrameTime = 0.0;
 
-    std::vector<float> vertexPositions {
-        -3.0f, -3.0f, 0.0f,     // V0
-         3.0f, -3.0f, 0.0f,     // V1
-         0.0f,  5.0f, 0.0f      // V2
-    };
-    std::vector<float> vertexNormals {
-        0.0f, 0.0f, 1.0f,     // V0
-        0.0f, 0.0f, 1.0f,     // V1
-        0.0f, 0.0f, 1.0f      // V2
+    std::vector<Vertex> vertices {
+        { { -3.0f, -3.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } },
+        { {  3.0f, -3.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 0.0f } },
+        { {  0.0f,  5.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.5f, 1.0f } }
     };
 
-    /* Setup our mesh (single tri!) */
-    gl::Mesh mesh(vertexPositions, vertexNormals, Vector3DF(0,0,0), nullptr);
+    char* argv2[] = {
+        "program",
+        "--rendermode", "opengl"
+    };
+    Engine engine;
+    engine.Initialize(3, argv2);
 
-    // Create a shader using my GLSLObject class
-    eng::gl::BlinnPhong shader;
-
-    /* Setup our camera. */
-    constexpr eng::Vector3DF pos(0, 0, 0), viewDir(0, 0, -1);
-    eng::gl::PerspectiveCamera cam(pos, viewDir, 0.5, winWidth, winHeight, 1.0);
+    IObjectFactory* pObjFactory = engine.GetObjectFactory();
 
     /* Misc parameters. */
     constexpr float phongExponent = 10.0;
-    constexpr Vector4DF diffuseComponent{ 1.0, 1.0, 1.0, 1.0 };
-    constexpr Vector4DF specularComponent{ 1.0, 1.0, 1.0, 1.0 };
+    constexpr Vector3DF diffuseComponent{ 1.0, 1.0, 1.0 };
+    constexpr Vector3DF specularComponent{ 1.0, 1.0, 1.0 };
     constexpr Vector4DF lightPos{ 0, 0, 2, 1.0 };
-    constexpr Vector4DF eyePos{ 0, 0, 0, 1.0 };
+
+    // Create a shader using my GLSLObject class
+    std::vector<shdr::PointLight> lights;
+    Material material{
+        .ambientLight = Vector3DF::Zero(),
+        .diffuse = diffuseComponent,
+        .specular = specularComponent,
+        .shininess = phongExponent
+    };
+    Handle<gl::BlinnPhong> shader = pObjFactory->CreatePhong(material, lights);
+
+    /* Setup our mesh (single tri!) */
+    Handle<gl::Mesh> mesh = pObjFactory->CreateMesh(vertices, Vector3DF(0,0,0), shader);
+
+    /* Setup our camera. */
+    constexpr eng::Vector3DF pos(0, 0, 10), viewDir(0, 0, -1);
+    Handle<gl::PerspectiveCamera> cam = pObjFactory->CreatePerspectiveCamera(pos, viewDir, 0.5, winWidth, winHeight, 1.0);
+
+    /* Add things to the scene. */
+    std::shared_ptr<Scene> scene = engine.GetActiveScene();
+    scene->cameras.Insert("main", cam);
+    scene->shapes.Insert("myCoolTriangle", mesh);
+    scene->shaders.Insert("myCoolerShader", shader);
+
+    /* Grab our renderer. */
+    IRenderer* pRenderer = engine.GetRenderer();
+
+    GLuint texID;
+    {
+        png::image<png::rgb_pixel> texPngImage;
+        texPngImage.read(argv[1]);
+
+        int pngWidth = texPngImage.get_width();
+        int pngHeight = texPngImage.get_height();
+        std::print("PNG Width:  {}\n", pngWidth);
+        std::print("PNG Height: {}\n", pngHeight);
+
+        std::vector<float> texData(pngWidth * pngHeight * 3);
+
+        size_t idx = 0;
+        for (int row = 0; row < pngHeight; row++) {
+            for (int col = 0; col < pngWidth; col++) {
+                png::rgb_pixel pixel = texPngImage[pngHeight - row - 1][col];
+                texData[idx++] = ((float)pixel.red) / 255.0f;
+                texData[idx++] = ((float)pixel.green) / 255.0f;
+                texData[idx++] = ((float)pixel.blue) / 255.0f;
+            }
+        }
+
+        glGenTextures(1, &texID);
+        glBindTexture(GL_TEXTURE_2D, texID);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, pngWidth, pngHeight, 0, GL_RGB, GL_FLOAT, texData.data());
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 
     /* Copy eye and light position over. */
-    shader.AssignEyePosition(eyePos)
-          .AssignLightPosition(lightPos);
-
-    /* Copy lighting components. */
-    shader.AssignDiffuseComponent(diffuseComponent)
-          .AssignSpecularComponent(specularComponent)
-          .AssignPhongExponent(phongExponent);
+    shader->AssignLightPosition(lightPos);
 
     /* Loop until the user closes the window */
     glm::mat4 modelMatrix, normalMatrix;
+    constexpr float sensitivity = 0.2f;
     float rotationAngle = 0;
+    float lastX = winWidth / 2.0f;
+    float lastY = winHeight / 2.0f;
+    float yaw = 0;
+    float pitch = 0;
     while (!glfwWindowShouldClose(window))
     {
         endFrameTime = glfwGetTime();
@@ -139,34 +197,21 @@ int main(void)
         // background color)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        /* Create the view matrix from our camera data. */
-        glm::mat4 projectionMatrix = cam.GetProjectionMatrix(45.0f);
-        glm::mat4 m_view = cam.GetViewMatrix();
-        //glm::mat4 m_view = glm::lookAt(m_pos, m_pos - m_W, m_V);
-
-        /* Setup model matrix. */
-        modelMatrix = glm::mat4(1.0);
-        modelMatrix = glm::rotate(modelMatrix, rotationAngle, glm::vec3(0, 1, 0));
-        normalMatrix = glm::transpose(glm::inverse(modelMatrix));
-
         /* Increment rotation angle. */
-        rotationAngle += 0.05;
-        if(rotationAngle > M_PI * 2)
-            rotationAngle = 0;
+        //mesh->IncrementRotationAngle(0.05);
 
-        /* Copy the view and project matrices to the device. */
-        shader.AssignProjectionMatrix(projectionMatrix)
-              .AssignViewMatrix(m_view)
-              .AssignModelMatrix(modelMatrix)
-              .AssignNormalMatrix(normalMatrix);
+        // This activates texture unit 0, the next texture we bind will be bound into TU0.
+        glActiveTexture(GL_TEXTURE0);
+
+        // Bind our texture into texture unit 0.
+        glBindTexture(GL_TEXTURE_2D, texID);
+        shader->SetTextureId(0);
 
         /* Render your objects here */
         /* (my amazing triangle) */
-        shader.Activate();
+        pRenderer->Render("main", nullptr);
 
-        mesh.Render();
-
-        shader.Deactivate();
+        glBindTexture(GL_TEXTURE_2D, 0);
 
         // Swap the front and back buffers
         glfwSwapBuffers(window);
@@ -177,17 +222,39 @@ int main(void)
         /* Check for movement inputs. */
         constexpr float moveRatePerFrame = 0.05;
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            cam.MoveByW(-moveRatePerFrame);
+            cam->MoveByW(-moveRatePerFrame);
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            cam.MoveByU(-moveRatePerFrame);
+            cam->MoveByU(-moveRatePerFrame);
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            cam.MoveByW(moveRatePerFrame);
+            cam->MoveByW(moveRatePerFrame);
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            cam.MoveByU(moveRatePerFrame);
+            cam->MoveByU(moveRatePerFrame);
         }
+
+        /* Get mouse position. */
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+
+        /* Calculate diffs + update previous pos. */
+        float xDiff = xpos - lastX;
+        float yDiff = ypos - lastY;
+        lastX = xpos;
+        lastY = ypos;
+
+        /* Increment and clamp yaw & pitch. */
+        yaw += xDiff * sensitivity;
+        pitch += yDiff * sensitivity;
+        if (pitch > 89.9f)
+            pitch = 89.9f;
+        else if (pitch < -89.9f)
+            pitch = -89.9f;
+
+        std::cout << xpos << ", " << ypos << '\n';
+
+        cam->Rotate(pitch, yaw);
 
         if (glfwGetKey( window, GLFW_KEY_T ) == GLFW_PRESS) {
             std::cout << "fps: " << 1.0/timeDiff << std::endl;

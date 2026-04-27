@@ -1,3 +1,4 @@
+#include "engine/eng_ExportableRenderBuffer.h"
 #include <engine/eng_ObjectBase.h>
 #include <engine/eng_Scene.h>
 
@@ -13,6 +14,7 @@
 #include <memory>
 #include <thread>
 #include <vector>
+#include <algorithm>
 
 using namespace eng;
 
@@ -37,8 +39,12 @@ fb::Framebuffer fbb(img_width, img_height);
 #define VECTOR_COLOR_IMG
 
 int main(int argc, char** argv) {
+    char* test[] = {
+        "program", "--rendermode", "raytracer"
+    };
+
     Engine engine;
-    engine.Initialize(argc, argv);
+    engine.Initialize(3, test);
 
     IObjectFactory* objectFactory = engine.GetObjectFactory();
 
@@ -57,7 +63,14 @@ int main(int argc, char** argv) {
         Vector3DF(1,1,1)
     );
 
-    Handle<IShader> shader = objectFactory->CreateLambertian(Vector3DF(0.5, 0.5, 0.5), lights);
+    Material material {
+        .ambientLight = Vector3DF(0,0,0),
+        .diffuse = Vector3DF(0.5f, 0.5f, 0.5f),
+        .specular = Vector3DF(0,0,0),
+        .shininess = 0
+    };
+
+    Handle<IShader> shader = objectFactory->CreateLambertian(material, lights);
     assert(shader);
 
     std::print("mesh triangleCount: {}\n", mesh.triangleCount);
@@ -68,17 +81,21 @@ int main(int argc, char** argv) {
     std::print("number of triangles: {}\n", objLoader.getNumberOfTriangles());
     std::print("number of meshes: {}\n", objLoader.getNumberOfMeshes());
 
-    std::vector<float> vertices;
-    vertices.reserve(mesh.triangleCount * 9);
+    std::vector<Vertex> vertices;
+    vertices.reserve(mesh.triangleCount * 3);
     const int* indexBuffer = objLoader.getIndexBuffer();
     int start = mesh.startIndex;
     int end = start + mesh.triangleCount * 3;
     for (int i = start; i < end; i++) {
         const auto& vertex = objLoader.getVertex(indexBuffer[i]);
-        //std::print("{} {} {}\n", vertex.position[0], vertex.position[1], vertex.position[2]);
-        vertices.push_back(vertex.position[0]);
-        vertices.push_back(vertex.position[1]);
-        vertices.push_back(vertex.position[2]);
+        
+        Vertex newVertex{
+            .position = Vector3DF(vertex.position),
+            .normal = Vector3DF(vertex.normal),
+            .texCoord = Vector2DF(vertex.texCoord)
+        };
+        
+        vertices.push_back(newVertex);
     }
 
     std::print("vertex buffer size: {}\n", vertices.size());
@@ -96,8 +113,13 @@ int main(int argc, char** argv) {
     assert(camera);
     scene->cameras.Insert("main", camera);
 
-    engine.RenderActiveScene("main", &fbb);
+    auto renderBuffer = objectFactory->CreateExportableRenderBuffer(img_width, img_height);
+    assert(renderBuffer.IsValid());
 
+    std::cerr << "test\n";
+    engine.RenderActiveScene("main", renderBuffer);
+
+    auto fb = renderBuffer->ExportToFramebuffer();
     fb::PngWriter fbWriter("out.png");
-    fbWriter.WriteFramebuffer(fbb);
+    fbWriter.WriteFramebuffer(fb);
 }

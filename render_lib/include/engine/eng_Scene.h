@@ -5,11 +5,11 @@
 #include <vector>
 
 #include <engine/eng_Hash.h>
+#include <engine/eng_Handle.h>
 #include <engine/eng_ICamera.h>
 #include <engine/eng_Interval.h>
 #include <engine/eng_IShader.h>
 #include <engine/eng_IShape.h>
-#include <engine/eng_ObjectManager.h>
 #include <engine/eng_Rng.h>
 
 #include <engine/shader/shdr_PointLight.h>

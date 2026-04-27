@@ -1,7 +1,9 @@
 #pragma once
+#include <cmath>
 #include <engine/eng_CameraBase.h>
 #include <engine/eng_ObjectBase.h>
 #include <engine/gl/eng_ICamera.h>
+#include <glm/trigonometric.hpp>
 
 namespace eng::gl {
 

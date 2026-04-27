@@ -5,7 +5,7 @@
 #add_subdirectory(PerspectiveDirectionDemo)
 add_subdirectory(ObjTest)
 
-add_subdirectory(TriChallenge)
+#add_subdirectory(TriChallenge)
 
 #
 # OpenGL Example

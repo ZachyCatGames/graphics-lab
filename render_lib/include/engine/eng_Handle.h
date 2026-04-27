@@ -1,5 +1,7 @@
 #pragma once
 #include <engine/detail/ControlBlock.h>
+#include <cassert>
+#include <concepts>
 #include <type_traits>
 
 namespace eng {
@@ -27,34 +29,50 @@ public:
     using pointer_type   = value_type*;
     using reference_type = value_type&;
 
-    constexpr Handle() noexcept : m_ctlr_blk_ptr(nullptr) {}
+    constexpr Handle() noexcept : m_pValue(nullptr), m_ctlr_blk_ptr(nullptr) {}
 
-    constexpr Handle(std::nullptr_t) noexcept : m_ctlr_blk_ptr(nullptr) {}
+    constexpr Handle(std::nullptr_t) noexcept : m_pValue(nullptr), m_ctlr_blk_ptr(nullptr) {}
 
-    constexpr Handle(const Handle<T>& other) : m_ctlr_blk_ptr(nullptr) {
-        this->CopyFrom(other);
+    constexpr Handle(const Handle<T>& other) :
+        m_pValue(other.m_pValue),
+        m_ctlr_blk_ptr(other.m_ctlr_blk_ptr)
+    {
+        assert(!m_pValue && !m_ctlr_blk_ptr || m_pValue && m_ctlr_blk_ptr);
+        if (m_ctlr_blk_ptr != nullptr)
+            m_ctlr_blk_ptr->AddOne();
     }
 
-    constexpr Handle(Handle<T>&& other) : m_ctlr_blk_ptr(nullptr) {
-        this->MoveFrom(std::move(other));
+    constexpr Handle(Handle<T>&& other) :
+        m_pValue(other.m_pValue),
+        m_ctlr_blk_ptr(other.m_ctlr_blk_ptr)
+    {
+        other.m_pValue = nullptr;
+        other.m_ctlr_blk_ptr = nullptr;
     }
 
-    //template<std::derived_from<value_type> OtherType>
-    template<typename OtherType>
-    constexpr Handle(const Handle<OtherType>& other) : m_ctlr_blk_ptr(nullptr) {
-        this->CopyFrom(other);
+    template<std::derived_from<value_type> OtherType>
+    constexpr Handle(const Handle<OtherType>& other) :         m_pValue(other.m_pValue),
+        m_ctlr_blk_ptr(other.m_ctlr_blk_ptr)
+    {
+        assert(!m_pValue && !m_ctlr_blk_ptr || m_pValue && m_ctlr_blk_ptr);
+        if (m_ctlr_blk_ptr != nullptr)
+            m_ctlr_blk_ptr->AddOne();
     }
-    //template<std::derived_from<value_type> OtherType>
-    template<typename OtherType>
-    constexpr Handle(Handle<OtherType>&& other) : m_ctlr_blk_ptr(nullptr) {
-        this->MoveFrom(std::move(other));
+    
+    template<std::derived_from<value_type> OtherType>
+    constexpr Handle(Handle<OtherType>&& other) :
+        m_pValue(other.m_pValue),
+        m_ctlr_blk_ptr(other.m_ctlr_blk_ptr)
+    {
+        other.m_pValue = nullptr;
+        other.m_ctlr_blk_ptr = nullptr;
     }
 
     constexpr ~Handle() { this->Free(); }
 
     template<typename Self>
     [[nodiscard]] constexpr auto& operator*(this Self&& self) noexcept {
-        return *self.m_ctlr_blk_ptr->template Get<value_type>();
+        return *self.m_pValue;
     } 
 
     template<typename Self>
@@ -65,11 +83,21 @@ public:
     template<typename Self>
     [[nodiscard]] constexpr pointer_type Get(this Self&& self) noexcept {
         if (self.m_ctlr_blk_ptr == nullptr) return nullptr;
-        return self.m_ctlr_blk_ptr->template Get<value_type>();
+        return self.m_pValue;
     }
 
     [[nodiscard]] constexpr auto Clone() const {
         return Handle<T>(*this);
+    }
+
+    template<typename To>
+    [[nodiscard]] constexpr Handle<To> StaticCast() const {
+        return Handle<To>(m_ctlr_blk_ptr, static_cast<Handle<To>::pointer_type>(m_pValue));
+    }
+
+    template<typename To>
+    [[nodiscard]] constexpr Handle<To> DynamicCast() const {
+        return Handle<To>(m_ctlr_blk_ptr, dynamic_cast<Handle<To>::pointer_type>(m_pValue));
     }
 
     [[nodiscard]] constexpr auto GetRefCount() const noexcept {
@@ -92,15 +120,13 @@ public:
         return *this;
     }
 
-    //template<std::derived_from<value_type> OtherType>
-    template<typename OtherType>
+    template<std::derived_from<value_type> OtherType>
     constexpr Handle<T>& operator=(const Handle<OtherType>& rhs) {
         this->CopyFrom(rhs);
         return *this;
     }
 
-    //template<std::derived_from<value_type> OtherType>
-    template<typename OtherType>
+    template<std::derived_from<value_type> OtherType>
     constexpr Handle<T>& operator=(Handle<OtherType>&& rhs) {
         this->MoveFrom(std::move(rhs));
         return *this;
@@ -121,8 +147,9 @@ private:
 
     template<typename OtherType>
     constexpr void CopyFrom(const Handle<OtherType>& other) {
-        auto old = this->m_ctlr_blk_ptr;
+        control_blk* old = this->m_ctlr_blk_ptr;
 
+        m_pValue = other.m_pValue;
         m_ctlr_blk_ptr = other.m_ctlr_blk_ptr;
 
         if (m_ctlr_blk_ptr != nullptr)
@@ -136,11 +163,15 @@ private:
         if (this->m_ctlr_blk_ptr != other.m_ctlr_blk_ptr)
             this->Free();
 
+        m_pValue = other.m_pValue;
         m_ctlr_blk_ptr = other.m_ctlr_blk_ptr;
         other.m_ctlr_blk_ptr = nullptr;
     }
 
-    constexpr Handle(control_blk* ctlr_blk) noexcept : m_ctlr_blk_ptr(ctlr_blk) {
+    constexpr Handle(control_blk* ctlr_blk, pointer_type pValue) noexcept :
+        m_ctlr_blk_ptr(ctlr_blk),
+        m_pValue(pValue)
+    {
         /* Increment ref count. */
         m_ctlr_blk_ptr->ref_cnt.Increment();
     }
@@ -150,12 +181,13 @@ private:
             m_ctlr_blk_ptr->ReleaseOne();
     }
 private:
+    pointer_type m_pValue;
     control_blk* m_ctlr_blk_ptr;
 }; // class Handle
 
 template<typename T1, typename T2>
 [[nodiscard]] constexpr bool operator==(const Handle<T1>& lhs, const Handle<T2>& rhs) noexcept {
-    return lhs.m_ctlr_blk_ptr == rhs.m_ctlr_blk_ptr;
+    return lhs.m_pValue == rhs.m_pValue;
 }
 
 } // namespace eng

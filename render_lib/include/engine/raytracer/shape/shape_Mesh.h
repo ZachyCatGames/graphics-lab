@@ -1,5 +1,6 @@
 #pragma once
 #include <engine/eng_ObjectBase.h>
+#include <engine/eng_Vertex.h>
 #include <engine/raytracer/eng_Bvh.h>
 #include <engine/raytracer/eng_IShape.h>
 #include <engine/raytracer/eng_ShapeBase.h>
@@ -9,7 +10,7 @@ namespace eng::rt::shape {
 
 class Mesh final : public ShapeBase, public ObjectBase<Mesh> {
 public:
-    Mesh(const std::vector<float>& verts, Vector3DF positionOffset, Handle<IShader> shader);
+    Mesh(const std::vector<Vertex>& verts, Vector3DF positionOffset, Handle<IShader> shader);
 
     Mesh(const std::vector<Triangle>& tris, Vector3DF position, Handle<IShader> shader);
 

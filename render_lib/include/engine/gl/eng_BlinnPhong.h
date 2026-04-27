@@ -1,6 +1,8 @@
 #pragma once
 #include <engine/eng_IShader.h>
 #include <engine/GLSL.h>
+#include <engine/eng_ObjectBase.h>
+#include <engine/eng_Material.h>
 #include <engine/eng_Vector3D.h>
 #include <engine/shader/shdr_PointLight.h>
 
@@ -10,13 +12,15 @@
 
 namespace eng::gl {
 
-class BlinnPhong : public IShader {
+class BlinnPhong : public IShader, public ObjectBase<BlinnPhong> {
 public:
-    BlinnPhong();
+    BlinnPhong(const Material& material);
 
     void Activate();
 
     void Deactivate() { m_shaderObject.deactivate(); }
+
+    virtual const Material* GetMaterial() const override;
 
     BlinnPhong& AssignProjectionMatrix(const glm::mat4& projectionMatrix) {
         m_projectionMatrix = projectionMatrix;
@@ -47,32 +51,21 @@ public:
         m_eyePosition = eyePosition;
         return *this;
     }
-
-    BlinnPhong& AssignDiffuseComponent(const Vector4DF& diffuseComponent) {
-        m_diffuseComponent = diffuseComponent;
-        return *this;
-    }
-
-    BlinnPhong& AssignSpecularComponent(const Vector4DF& specularComponent) {
-        m_specularComponent = specularComponent;
-        return *this;
-    }
-
-    BlinnPhong& AssignPhongExponent(float phongExponent) {
-        m_phongExponent = phongExponent;
-        return *this;
-    }
+public:
+    sivelab::GLSLObject* GetShaderObject() { return &m_shaderObject; }
+    void SetTextureId(GLuint texId) { m_textureSamplerId = texId; }
 private:
     sivelab::GLSLObject m_shaderObject;
     GLuint m_projectionMatrixId, m_viewMatrixId, m_modelMatrixId, m_normalMatrixId;
     GLuint m_lightPosWorldId, m_eyePosWorldId;
     GLuint m_diffuseComponentId, m_specularComponentId, m_phongExponentId;
-
+    GLuint m_textureSamplerId;
 public:
+    Material m_Material;
     glm::mat4 m_projectionMatrix, m_viewMatrix, m_modelMatrix, m_normalMatrix;
     Vector4DF m_lightPosition;
-    Vector4DF m_eyePosition, m_diffuseComponent, m_specularComponent;
-    float m_phongExponent;
+    Vector4DF m_eyePosition;
+    GLuint m_textureSampler;
 }; // class BlinnPhong
 
 } // namespace eng::gl

@@ -13,17 +13,13 @@ private:
 }; // class IControlBlockDeallocator
 
 struct ControlBlock {
-    constexpr ControlBlock(IControlBlockDeallocator* man, void* p_val) noexcept
+    constexpr ControlBlock(IControlBlockDeallocator* man) noexcept
         : ref_cnt(),
-          manager(man),
-          p_val(p_val) {};
+          manager(man) {};
     ControlBlock(const ControlBlock& other) = delete;
     ControlBlock(ControlBlock&& other) = delete;
 
     virtual ~ControlBlock() = default;
-
-    template<typename T>
-    [[nodiscard]] constexpr auto Get() const noexcept { return static_cast<T*>(p_val); }
 
     constexpr void AddOne() noexcept { ref_cnt.Increment(); }
 
@@ -35,14 +31,13 @@ struct ControlBlock {
 
     ReferenceCount ref_cnt;
     IControlBlockDeallocator* manager;
-    void* p_val; // this can be eliminated if I abondon the constexpr dream
 }; // struct ControlBlock
 
 template<typename T>
 struct TypedControlBlock : public ControlBlock {
     template<typename... Args>
     constexpr TypedControlBlock(IControlBlockDeallocator* man, Args&&... args) :
-        ControlBlock(man, &val),
+        ControlBlock(man),
         val(std::forward<Args>(args)...) {}
 
     virtual ~TypedControlBlock() = default;

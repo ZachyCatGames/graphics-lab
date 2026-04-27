@@ -33,7 +33,8 @@ GraphicsArgs::GraphicsArgs()
     depthOfFieldDistance(0),
     numCpus(1), rpp(1), randpix(false),
     recursionDepth(4),
-    splitMethod("objectMedian")
+    splitMethod("objectMedian"),
+    renderMode("opengl")
 {
   reg("help", "help/usage information", ArgumentParsing::NONE, '?');
   reg("verbose", "turn on verbose output", ArgumentParsing::NONE, 'v');
@@ -50,6 +51,7 @@ GraphicsArgs::GraphicsArgs()
   reg("split", "split method for bvh construction (default is objectMedian)", ArgumentParsing::STRING, 's');
   reg("winwidth", "width of window (if using preview)", ArgumentParsing::INT, 'x');
   reg("winheight", "height of window (if using preview)", ArgumentParsing::INT, 'y');
+  reg("rendermode", "select renderer, opengl or raytracer", ArgumentParsing::STRING, 'z');
 }
 
 void GraphicsArgs::process(int argc, char *argv[])
@@ -76,6 +78,9 @@ void GraphicsArgs::process(int argc, char *argv[])
   
   isSet("winheight", windowHeight);
   if (verbose) { std::cout << "Setting Window Height to " << windowHeight << std::endl; }
+
+  isSet("rendermode", renderMode);
+  if (verbose) { std::cout << "Setting render mode to " << renderMode << std::endl; }
 
   // recalculate aspect ratio in lieu of aspectRatio being set
   aspectRatio = width / (float)height;  // as in W to H as in 16:9

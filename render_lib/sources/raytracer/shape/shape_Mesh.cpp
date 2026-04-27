@@ -3,18 +3,18 @@
 
 namespace eng::rt::shape {
 
-Mesh::Mesh(const std::vector<float>& verts, Vector3DF positionOffset, Handle<IShader> shader) :
+Mesh::Mesh(const std::vector<Vertex>& verts, Vector3DF positionOffset, Handle<IShader> shader) :
     m_Position(positionOffset),
-    ShapeBase(shader)
+    ShapeBase(shader.StaticCast<IShader>())
 {
-    assert(verts.size() % 9 == 0);
+    assert(verts.size() % 3 == 0);
 
     /* Add each triangle with the offset. */
-    for (int i = 0; i < verts.size(); i += 9) {
+    for (int i = 0; i < verts.size(); i += 3) {
         m_Triangles.emplace_back(
-            Vector3DF(verts[i+0], verts[i+1], verts[i+2]) + positionOffset,
-            Vector3DF(verts[i+3], verts[i+4], verts[i+5]) + positionOffset,
-            Vector3DF(verts[i+6], verts[i+7], verts[i+8]) + positionOffset,
+            verts[i+0].position + positionOffset,
+            verts[i+1].position + positionOffset,
+            verts[i+2].position + positionOffset,
             nullptr
         );
     }
@@ -33,7 +33,7 @@ Mesh::Mesh(const std::vector<float>& verts, Vector3DF positionOffset, Handle<ISh
 Mesh::Mesh(const std::vector<Triangle>& tris, Vector3DF position, Handle<IShader> shader) :
     m_Triangles(tris),
     m_Position(position),
-    ShapeBase(shader)
+    ShapeBase(shader.StaticCast<IShader>())
 {
     /* Prepare triangle list. */
     std::vector<IShape*> pointers;

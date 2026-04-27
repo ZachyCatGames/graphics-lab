@@ -1,5 +1,7 @@
 #pragma once
 #include <engine/framebuffer/fb_Framebuffer.h>
+#include <engine/eng_RenderBuffer.h>
+#include <engine/eng_Handle.h>
 #include <string_view>
 
 namespace eng {
@@ -20,7 +22,7 @@ public:
      * @param cameraName  Name of the camera to use for rendering.
      * @param p_fb  Framebuffer to render out to.
      */
-    virtual void Render(std::string_view cameraName, fb::Framebuffer* p_fb) = 0;
+    virtual void Render(std::string_view cameraName, Handle<RenderBuffer> fb) = 0;
 }; // class IRenderer
 
 } // namespace eng
