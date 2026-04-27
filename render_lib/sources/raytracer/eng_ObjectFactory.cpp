@@ -39,6 +39,10 @@ Handle<eng::IShader> ObjectFactory::CreatePhong(const Material& material, const 
     return MakeSharedPooled<shdr::BlinnPhong>(material, lights);
 }
 
+Handle<eng::Texture> ObjectFactory::CreateTexture(const float* textureData, size_t width, size_t height) {
+    return nullptr;
+}
+
 Handle<eng::ExportableRenderBuffer> ObjectFactory::CreateExportableRenderBuffer(size_t width, size_t height) {
     return MakeSharedPooled<ExportableRenderBuffer>(width, height);
 }

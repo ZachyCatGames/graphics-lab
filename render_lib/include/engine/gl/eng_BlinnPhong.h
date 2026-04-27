@@ -1,26 +1,24 @@
 #pragma once
-#include <engine/eng_IShader.h>
 #include <engine/GLSL.h>
-#include <engine/eng_ObjectBase.h>
+#include <engine/eng_IShader.h>
 #include <engine/eng_Material.h>
 #include <engine/eng_Vector3D.h>
 #include <engine/shader/shdr_PointLight.h>
+#include <engine/gl/eng_Texture.h>
 
 #include "glm/glm.hpp"
-#include "glm/gtc/type_ptr.hpp"
-#include "glm/gtc/matrix_transform.hpp"
 
 namespace eng::gl {
 
-class BlinnPhong : public IShader, public ObjectBase<BlinnPhong> {
+class BlinnPhong : public IShader {
 public:
     BlinnPhong(const Material& material);
 
     void Activate();
 
-    void Deactivate() { m_shaderObject.deactivate(); }
+    void Deactivate();
 
-    virtual const Material* GetMaterial() const override;
+    [[nodiscard]] Material GetMaterial() const override;
 
     BlinnPhong& AssignProjectionMatrix(const glm::mat4& projectionMatrix) {
         m_projectionMatrix = projectionMatrix;
@@ -52,8 +50,8 @@ public:
         return *this;
     }
 public:
-    sivelab::GLSLObject* GetShaderObject() { return &m_shaderObject; }
-    void SetTextureId(GLuint texId) { m_textureSamplerId = texId; }
+    [[nodiscard]] sivelab::GLSLObject* GetShaderObject() { return &m_shaderObject; }
+    void SetTextureId(GLuint texId) { m_textureSampler = texId; }
 private:
     sivelab::GLSLObject m_shaderObject;
     GLuint m_projectionMatrixId, m_viewMatrixId, m_modelMatrixId, m_normalMatrixId;
@@ -61,7 +59,9 @@ private:
     GLuint m_diffuseComponentId, m_specularComponentId, m_phongExponentId;
     GLuint m_textureSamplerId;
 public:
-    Material m_Material;
+    Handle<Texture> m_texture;
+    Vector3DF m_ambientLight, m_diffuseComponent, m_specularComponent;
+    float m_phongExponent;
     glm::mat4 m_projectionMatrix, m_viewMatrix, m_modelMatrix, m_normalMatrix;
     Vector4DF m_lightPosition;
     Vector4DF m_eyePosition;

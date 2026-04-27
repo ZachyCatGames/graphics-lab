@@ -17,6 +17,8 @@ public:
     Handle<eng::IShader> CreateLambertian(const Material& material, const std::vector<eng::shdr::PointLight>& lights) override;
     Handle<eng::IShader> CreatePhong(const Material& material, const std::vector<eng::shdr::PointLight>& lights) override;
 
+    Handle<eng::Texture> CreateTexture(const float* textureData, size_t width, size_t height) override;
+
     Handle<eng::ExportableRenderBuffer> CreateExportableRenderBuffer(size_t width, size_t height) override;
 private:
     Engine* m_pEngine;

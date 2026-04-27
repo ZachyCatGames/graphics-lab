@@ -5,6 +5,7 @@ namespace eng::gl {
 
 Mesh::Mesh(const std::vector<Vertex>& verts, const Vector3DF& position, Handle<IShader> shader) :
     m_Shader(shader.StaticCast<BlinnPhong>()),
+    m_VertexCount(verts.size()),
     m_Position(position)
 {
     assert(verts.size() % 3 == 0);
@@ -64,7 +65,7 @@ void Mesh::Render() const {
     glBindVertexArray(m_VaoId);
 
     /* Show it off to the world :) */
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, m_VertexCount);
 
     /* Unbind our vertex array, we're done. */
     glBindVertexArray(0);

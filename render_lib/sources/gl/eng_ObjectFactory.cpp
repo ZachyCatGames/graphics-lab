@@ -4,8 +4,11 @@
 #include <engine/gl/eng_PerspectiveCamera.h>
 
 #include <engine/gl/eng_Mesh.h>
+#include <engine/gl/eng_Sphere.h>
 
 #include <engine/gl/eng_BlinnPhong.h>
+
+#include <engine/gl/eng_Texture.h>
 
 namespace eng::gl {
 
@@ -14,7 +17,7 @@ Handle<eng::ICamera> ObjectFactory::CreatePerspectiveCamera(const Vector3DF& pos
 }
 
 Handle<IShape> ObjectFactory::CreateSphere(const Vector3DF& pos, float radius, Handle<IShader> shader) {
-    return nullptr;
+    return MakeSharedPooled<Sphere>(radius, pos, std::move(shader));
 }
 
 Handle<IShape> ObjectFactory::CreateTriangle(const Vector3DF& a, const Vector3DF& b, const Vector3DF& c, Handle<IShader> shader) {
@@ -31,6 +34,10 @@ Handle<IShader> ObjectFactory::CreateLambertian(const Material& material, const 
 
 Handle<IShader> ObjectFactory::CreatePhong(const Material& material, const std::vector<shdr::PointLight>& lights) {
     return MakeSharedPooled<BlinnPhong>(material);
+}
+
+Handle<eng::Texture> ObjectFactory::CreateTexture(const float* textureData, size_t width, size_t height) {
+    return MakeSharedPooled<Texture>(textureData, width, height);
 }
 
 Handle<eng::ExportableRenderBuffer> ObjectFactory::CreateExportableRenderBuffer(size_t width, size_t height) {

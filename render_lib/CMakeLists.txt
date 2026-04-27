@@ -52,6 +52,7 @@ add_library (render_lib
   sources/gl/eng_PerspectiveCamera.cpp
   sources/gl/eng_Renderer.cpp
   sources/gl/eng_Sphere.cpp
+  sources/gl/eng_Texture.cpp
 
   ${UTIL_PLAT_SRC}
 )

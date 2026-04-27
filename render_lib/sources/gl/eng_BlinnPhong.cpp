@@ -14,7 +14,13 @@ static void AssignVec4(GLuint id, const Vector4DF& vector) {
 
 } // namespace
 
-BlinnPhong::BlinnPhong(const Material& material) : m_Material(material){
+BlinnPhong::BlinnPhong(const Material& material) :
+    m_texture(material.texture.StaticCast<Texture>()),
+    m_ambientLight(material.ambientLight),
+    m_diffuseComponent(material.diffuse),
+    m_specularComponent(material.specular),
+    m_phongExponent(material.shininess)
+{
     /* Setup shader object w/ the blinn phong vertex and fragment shader. */
     m_shaderObject.addShader("vertexShader_BlinnPhong.glsl", sivelab::GLSLObject::VERTEX_SHADER);
     m_shaderObject.addShader("fragmentShader_BlinnPhong.glsl", sivelab::GLSLObject::FRAGMENT_SHADER);
@@ -39,6 +45,11 @@ BlinnPhong::BlinnPhong(const Material& material) : m_Material(material){
 }
 
 void BlinnPhong::Activate() {
+    /* Enable our texture if we have one. */
+    if (m_texture)
+        m_texture->Bind(0);
+
+    /* Activate our shader object and copy uniforms over. */
     m_shaderObject.activate();
 
     AssignMat4(m_projectionMatrixId, m_projectionMatrix);
@@ -48,14 +59,31 @@ void BlinnPhong::Activate() {
 
     AssignVec4(m_lightPosWorldId, m_lightPosition);
     AssignVec4(m_eyePosWorldId, m_eyePosition);
-    AssignVec4(m_diffuseComponentId, Vector4DF(m_Material.diffuse, 1.0));
-    AssignVec4(m_specularComponentId, Vector4DF(m_Material.specular, 1.0));
+    AssignVec4(m_diffuseComponentId, Vector4DF(m_diffuseComponent, 1.0));
+    AssignVec4(m_specularComponentId, Vector4DF(m_specularComponent, 1.0));
 
-    glUniform1f(m_phongExponentId, m_Material.shininess);
+    glUniform1f(m_phongExponentId, m_phongExponent);
 
     glUniform1i(m_textureSamplerId, m_textureSampler);
 }
 
-const Material* BlinnPhong::GetMaterial() const { return &m_Material; }
+void BlinnPhong::Deactivate() {
+    /* Deactivate our shader object. */
+    m_shaderObject.deactivate();
+
+    /* Unbind our texture if we have one. */
+    if (m_texture)
+        m_texture->Unbind();
+}
+
+Material BlinnPhong::GetMaterial() const {
+    return Material{
+        .texture        = m_texture,
+        .ambientLight   = m_ambientLight,
+        .diffuse        = m_diffuseComponent,
+        .specular       = m_specularComponent,
+        .shininess      = m_phongExponent
+    };
+}
 
 } // namespace eng::gl

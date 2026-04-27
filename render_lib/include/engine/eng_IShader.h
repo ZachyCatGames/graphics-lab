@@ -7,7 +7,7 @@ class IShader {
 public:
     virtual ~IShader() = default;
 
-    virtual const Material* GetMaterial() const = 0;
+    [[nodiscard]] virtual Material GetMaterial() const = 0;
 };
 
 } // namespace eng

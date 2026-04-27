@@ -5,9 +5,9 @@ namespace eng::rt::shdr {
 
 class Normal : public IShader {
 public:
-    virtual Vector3DF GetColor(RayCaster* pRc, int depth, const HitStruct& rec) override;
+    [[nodiscard]] Vector3DF GetColor(RayCaster* pRc, int depth, const HitStruct& rec) override;
 
-    virtual const Material* GetMaterial() const override;
+    [[nodiscard]] Material GetMaterial() const override;
 }; // class Normal
 
 } // namespace eng::shdr

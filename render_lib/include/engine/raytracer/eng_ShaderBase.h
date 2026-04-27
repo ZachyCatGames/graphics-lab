@@ -9,7 +9,7 @@ public:
 
     virtual ~ShaderBase() = default;
 
-    virtual const Material* GetMaterial() const override { return &m_Material; }
+    [[nodiscard]] Material GetMaterial() const override { return m_Material; }
 protected:
     Material m_Material;
 }; // class ShaderBase
