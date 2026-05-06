@@ -12,6 +12,8 @@ public:
     virtual Vector3DF GetPosition() = 0;
     virtual Vector3DF GetDirection() = 0;
 
+    virtual void Rotate(float pitch, float yaw) = 0;
+
     virtual float GetNearPlaneDistance() = 0;
 
     virtual std::pair<float, float> GetImageDimensions() = 0;

@@ -13,7 +13,7 @@ public:
 
     void ComputeUV();
 
-    void Rotate(float pitch, float yaw);
+    void RotateImpl(float pitch, float yaw);
 protected:
     Vector3DF m_position;
     Vector3DF m_U, m_V, m_W;
@@ -31,6 +31,8 @@ class CameraBase : public detail::CameraBaseImpl, public Interface {
 public:
     virtual Vector3DF GetPosition() override { return m_position; }
     virtual Vector3DF GetDirection() override { return m_W; }
+
+    virtual void Rotate(float pitch, float yaw) override { this->RotateImpl(pitch, yaw); }
 
     virtual float GetNearPlaneDistance() override { return m_focal_length; }
 

@@ -41,7 +41,7 @@ void CameraBaseImpl::ComputeUV() {
     m_V = cross(m_W, m_U).normalize();
 }
 
-void CameraBaseImpl::Rotate(float pitch, float yaw) {
+void CameraBaseImpl::RotateImpl(float pitch, float yaw) {
     m_W[0] = cosf(glm::radians(yaw)) * cosf(glm::radians(pitch));
     m_W[1] = sinf(glm::radians(pitch));
     m_W[2] = sinf(glm::radians(yaw)) * cosf(glm::radians(pitch));
