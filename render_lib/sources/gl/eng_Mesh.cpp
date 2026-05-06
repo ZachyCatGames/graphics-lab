@@ -1,6 +1,8 @@
 #include "engine/gl/eng_BlinnPhong.h"
 #include <engine/gl/eng_Mesh.h>
 
+#include "glm/gtc/matrix_transform.hpp"
+
 namespace eng::gl {
 
 Mesh::Mesh(const std::vector<Vertex>& verts, const Vector3DF& position, Handle<IShader> shader) :
