@@ -32,7 +32,15 @@ Handle<IShape> ObjectFactory::CreateMesh(const std::vector<Vertex>& vertices, co
 }
 
 Handle<IShader> ObjectFactory::CreateLambertian(const Material& material, const std::vector<shdr::PointLight>& lights) {
-    return MakeSharedPooled<BlinnPhong>(material, *lights.begin());
+    /* Force specular to 0 and shininess to 1, this will effectively disable specular reflections. */
+    Material mat {
+        .texture      = material.texture,
+        .ambientLight = material.ambientLight,
+        .diffuse      = material.diffuse,
+        .specular     = Vector3DF(0,0,0),
+        .shininess    = 1
+    };
+    return MakeSharedPooled<BlinnPhong>(mat, *lights.begin());
 }
 
 Handle<IShader> ObjectFactory::CreatePhong(const Material& material, const std::vector<shdr::PointLight>& lights) {

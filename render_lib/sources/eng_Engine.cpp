@@ -7,7 +7,10 @@
 #include <engine/gl/eng_ObjectFactory.h>
 #include <engine/gl/eng_Renderer.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-enum-enum-conversion"
 #include <engine/png++/png.hpp>
+#pragma GCC diagnostic pop
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>

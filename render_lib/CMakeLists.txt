@@ -47,6 +47,7 @@ add_library (render_lib
 
   # GL Core Library
   sources/gl/eng_BlinnPhong.cpp
+  sources/gl/eng_GlfwWindow.cpp
   sources/gl/eng_Mesh.cpp
   sources/gl/eng_ObjectFactory.cpp
   sources/gl/eng_PerspectiveCamera.cpp

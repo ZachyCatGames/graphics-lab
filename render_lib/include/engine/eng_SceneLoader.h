@@ -6,17 +6,29 @@
 
 namespace eng {
 
+class Engine;
+
 class SceneLoader : public ISceneLoader {
 private:
   std::shared_ptr<Scene> m_pScene; // Reference to the external scene
-  IObjectFactory* m_pObjFactory;
+  std::shared_ptr<Engine> m_pSharedEngine;
+  Engine* m_pEngine;
   size_t m_defaultImgWidth, m_defaultImgHeight;
 
 public:
   // The caller provides the scene to be filled
-  SceneLoader(const std::shared_ptr<Scene> sceneToPopulate, IObjectFactory* pObjFactory, size_t defaultImgWidth, size_t defaultImgHeight) :
+  SceneLoader(const std::shared_ptr<Scene> sceneToPopulate, Engine* pEngine, size_t defaultImgWidth, size_t defaultImgHeight) :
       m_pScene(sceneToPopulate),
-      m_pObjFactory(pObjFactory),
+      m_pEngine(pEngine),
+      m_defaultImgWidth(defaultImgWidth),
+      m_defaultImgHeight(defaultImgHeight),
+      numShaders(0),
+      numTextures(0) {}
+
+  SceneLoader(const std::shared_ptr<Scene> sceneToPopulate, std::shared_ptr<Engine> pEngine, size_t defaultImgWidth, size_t defaultImgHeight) :
+      m_pScene(sceneToPopulate),
+      m_pSharedEngine(std::move(pEngine)),
+      m_pEngine(m_pSharedEngine.get()),
       m_defaultImgWidth(defaultImgWidth),
       m_defaultImgHeight(defaultImgHeight),
       numShaders(0),

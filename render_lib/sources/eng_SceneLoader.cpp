@@ -1,4 +1,5 @@
 #include <engine/eng_SceneLoader.h>
+#include <engine/eng_Engine.h>
 #include <engine/eng_model_obj.h>
 #include <engine/eng_Material.h>
 #include <bit>
@@ -41,7 +42,7 @@ void SceneLoader::addCamera(const std::string &name, const std::string &type,
     //auto [img_width, img_height] = m_p_renderer->GetDefaultImageDimensions();
 
     /* Construct a new camera. */ // TODO fix dims
-    auto camera = m_pObjFactory->CreatePerspectiveCamera(pos_v3, view_dir_v3, focalLength, m_defaultImgWidth, m_defaultImgHeight, imagePlaneWidth);
+    auto camera = m_pEngine->CreatePerspectiveCamera(pos_v3, view_dir_v3, focalLength, m_defaultImgWidth, m_defaultImgHeight, imagePlaneWidth);
 
     /* Add it to the scene. */
     m_pScene->cameras.Insert(name, camera);
@@ -75,9 +76,9 @@ void SceneLoader::addShader(const ISceneLoader::ShaderDesc &shaderDesc) {
         auto base_color = Vector3DF(diffuse.x, diffuse.y, diffuse.z);
 
         if (shaderDesc.type == "Lambertian")
-            shader = m_pObjFactory->CreateLambertian(material, lights);
+            shader = m_pEngine->CreateLambertian(material, lights);
         else /* if (shaderDesc.type == "BlinnPhong" || shaderDesc.type == "Phong") */
-            shader = m_pObjFactory->CreatePhong(material, lights);
+            shader = m_pEngine->CreatePhong(material, lights);
 
     } else if (shaderDesc.type == "Mirror") {
         //shader = shdr::Mirror::Create();
@@ -119,11 +120,11 @@ void SceneLoader::addShape(const ISceneLoader::ShapeDesc &shapeDesc) {
     Handle<IShape> new_shape;
     if (shapeDesc.type == "sphere") {
         const auto& center = shapeDesc.center;
-        new_shape = m_pObjFactory->CreateSphere(Vector3DF(center.x, center.y, center.z), shapeDesc.radius, shader);
+        new_shape = m_pEngine->CreateSphere(Vector3DF(center.x, center.y, center.z), shapeDesc.radius, shader);
     } else if (shapeDesc.type == "triangle") {
         const auto& v0 = shapeDesc.v0, v1 = shapeDesc.v1, v2 = shapeDesc.v2;
 
-        new_shape = m_pObjFactory->CreateTriangle(
+        new_shape = m_pEngine->CreateTriangle(
             Vector3DF(v0.x, v0.y, v0.z),
             Vector3DF(v1.x, v1.y, v1.z),
             Vector3DF(v2.x, v2.y, v2.z),
