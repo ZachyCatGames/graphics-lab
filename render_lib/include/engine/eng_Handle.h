@@ -97,6 +97,7 @@ public:
 
     template<typename To>
     [[nodiscard]] constexpr Handle<To> DynamicCast() const {
+        assert(m_ctlr_blk_ptr);
         return Handle<To>(m_ctlr_blk_ptr, dynamic_cast<Handle<To>::pointer_type>(m_pValue));
     }
 
@@ -173,7 +174,8 @@ private:
         m_pValue(pValue)
     {
         /* Increment ref count. */
-        m_ctlr_blk_ptr->ref_cnt.Increment();
+        if (ctlr_blk)
+            m_ctlr_blk_ptr->ref_cnt.Increment();
     }
 
     constexpr void Free() {
