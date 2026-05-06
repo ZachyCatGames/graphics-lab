@@ -1,4 +1,5 @@
 #include <engine/gl/eng_Sphere.h>
+#include <cmath>
 
 namespace eng::gl {
 
@@ -39,6 +40,45 @@ constexpr auto CreateNormalizedSpherePoints(const auto& current) {
     } else {
         return current;
     }
+}
+
+template<size_t N>
+constexpr std::array<Vertex, N> CreateSphereNormalsAndUVs(const VertexPosList<N>& positions) {
+    std::array<Vertex, N> verts = {};
+
+    for (size_t i = 0; i < N; i++) {
+        const auto& pos = positions[i];
+
+        /*
+         * atan2 can't differentiate between vertices on X=0.0 that belong
+         * to triangles going toward positive X and negative X and will
+         * return 1.0 in either case.
+         * This causes problems with triangle going toward negative X
+         * because their U coordinate will suddently jump from a value close
+         * to close on their non-zero X vertices to 1.0 on their vertices located
+         * at X=0.0.
+         *
+         * To work around this, when we encounter a vertex at X=0.0 we check
+         * if the previous either of the previous two vertices were at a 
+         * negative X coordinate. If they were, we shift the coordinate slightly
+         * toward negative X
+         */
+        float texX = pos.x();
+        if (i > 1 && (positions[i-1].x() < 0.0 || positions[i-2].x() < 0.0) && texX == 0.0) {
+            texX = -0.001f;
+        }
+
+        const float texU = (std::atan2(texX, pos.z() + 0.001) + std::numbers::pi) / (2 * std::numbers::pi);
+        const float texV = -std::acos(pos.y()) / std::numbers::pi;
+
+        verts[i] = {
+            .position = pos,
+            .normal   = pos,
+            .texCoord = { texU, texV }
+        };
+    }
+
+    return verts;
 }
 
 constexpr std::vector<Vertex> CreateSphereVBO(float radius) {
@@ -93,18 +133,18 @@ constexpr std::vector<Vertex> CreateSphereVBO(float radius) {
         { -1.0f,  -1.0f, -1.0f },
     });
 
-    static constexpr auto normalizedSphere = CreateNormalizedSpherePoints<4>(normalizedBox);
+    //static constexpr auto normalizedSphere = CreateNormalizedSpherePoints<4>(normalizedBox);
+    static constexpr auto normalizedSphere = CreateSphereNormalsAndUVs(CreateNormalizedSpherePoints<4>(normalizedBox));
+    
+    #if 0
+    for (const auto& v : normalizedSphere) {
+        std::printf("{ %f %f %f } ", v.position.x(), v.position.y(), v.position.z());
 
-    std::vector<Vertex> vertices;
-    vertices.reserve(normalizedSphere.size());
-    for (const auto& vertPos : normalizedSphere) {
-        vertices.push_back({
-            .position = vertPos * radius,
-            .normal = -vertPos,
-            .texCoord = {} // TODO
-        });
+        std::printf("{ %f %f }\n", v.texCoord.x(), v.texCoord.y());
     }
-    return vertices;
+    #endif
+
+    return std::vector<Vertex>(std::from_range_t(), normalizedSphere);
 }
 
 } // namespace
