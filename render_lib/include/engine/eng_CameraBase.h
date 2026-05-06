@@ -14,6 +14,10 @@ public:
     void ComputeUV();
 
     void RotateImpl(float pitch, float yaw);
+
+    void MoveByUImpl(float dist) { m_position += m_U * dist; }
+    void MoveByVImpl(float dist) { m_position += m_V * dist; }
+    void MoveByWImpl(float dist) { m_position += m_W * dist; }
 protected:
     Vector3DF m_position;
     Vector3DF m_U, m_V, m_W;
@@ -29,14 +33,18 @@ protected:
 template<typename Interface>
 class CameraBase : public detail::CameraBaseImpl, public Interface {
 public:
-    virtual Vector3DF GetPosition() override { return m_position; }
-    virtual Vector3DF GetDirection() override { return m_W; }
+    Vector3DF GetPosition() override { return m_position; }
+    Vector3DF GetDirection() override { return m_W; }
 
-    virtual void Rotate(float pitch, float yaw) override { this->RotateImpl(pitch, yaw); }
+    void Rotate(float pitch, float yaw) override { this->RotateImpl(pitch, yaw); }
 
-    virtual float GetNearPlaneDistance() override { return m_focal_length; }
+    void MoveByU(float dist) override { this->MoveByUImpl(dist); }
+    void MoveByV(float dist) override { this->MoveByVImpl(dist); }
+    void MoveByW(float dist) override { this->MoveByWImpl(dist); }
 
-    virtual std::pair<float, float> GetImageDimensions() override { return { m_img_width, m_img_height }; }
+    float GetNearPlaneDistance() override { return m_focal_length; }
+
+    std::pair<float, float> GetImageDimensions() override { return { m_img_width, m_img_height }; }
 public:
     using detail::CameraBaseImpl::CameraBaseImpl;
 }; // class CameraBase

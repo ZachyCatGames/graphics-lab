@@ -14,6 +14,10 @@ public:
 
     virtual void Rotate(float pitch, float yaw) = 0;
 
+    virtual void MoveByU(float dist) = 0;
+    virtual void MoveByV(float dist) = 0;
+    virtual void MoveByW(float dist) = 0;
+
     virtual float GetNearPlaneDistance() = 0;
 
     virtual std::pair<float, float> GetImageDimensions() = 0;

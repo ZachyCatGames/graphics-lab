@@ -11,10 +11,6 @@ class PerspectiveCamera : public CameraBase<ICamera>, public ObjectBase<Perspect
 public:
     using CameraBase::CameraBase;
 
-    // TODO: Move
-    constexpr void MoveByW(float dist) noexcept { m_position += m_W * dist; }
-    constexpr void MoveByU(float dist) noexcept { m_position += m_U * dist;}
-
     [[nodiscard]] virtual glm::mat4 GetProjectionMatrix(float angleDegrees) const override;
 
     [[nodiscard]] virtual glm::mat4 GetViewMatrix() const override;
