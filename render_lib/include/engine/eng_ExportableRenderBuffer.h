@@ -6,9 +6,6 @@ namespace eng {
 
 class ExportableRenderBuffer : public RenderBuffer {
 public:
-    using RenderBuffer::RenderBuffer;
-    virtual ~ExportableRenderBuffer() override = default;
-
     [[nodiscard]] virtual fb::Framebuffer ExportToFramebuffer() const = 0;
 }; // class ExportableRenderBuffer
 

@@ -6,7 +6,7 @@
 
 namespace eng::rt {
 
-class ExportableRenderBuffer : public IDrawable, public eng::ExportableRenderBuffer, public ObjectBase<ExportableRenderBuffer> {
+class ExportableRenderBuffer : public eng::ExportableRenderBuffer, public IDrawable {
 public:
     ~ExportableRenderBuffer() override = default;
 
@@ -15,6 +15,9 @@ public:
     void SetPixelColor(size_t x, size_t y, Vector3DF color) override;
 
     [[nodiscard]] fb::Framebuffer ExportToFramebuffer() const override;
+
+    [[nodiscard]] size_t GetWidth() const override;
+    [[nodiscard]] size_t GetHeight() const override;
 private:
     fb::Framebuffer m_framebuffer;
 }; // class ExportableRenderBuffer
