@@ -1,4 +1,7 @@
 #include <engine/gl/eng_BlinnPhong.h>
+#include "engine/eng_MakeShared.h"
+#include "engine/gl/eng_Texture.h"
+#include "glm/gtc/type_ptr.hpp"
 
 namespace eng::gl {
 
@@ -12,19 +15,34 @@ static void AssignVec4(GLuint id, const Vector4DF& vector) {
     glUniform4fv(id, 1, vector.get_ptr());
 }
 
+constinit Handle<Texture> g_DefaultTexture = nullptr;
+
+Handle<Texture> GetDefaultTexture() {
+    static constexpr float defaultTextureData[] = { 1, 1, 1 };
+    if (!g_DefaultTexture)
+        g_DefaultTexture = MakeSharedPooled<Texture>(defaultTextureData, 1, 1);
+    return g_DefaultTexture;
+}
+
 } // namespace
 
-BlinnPhong::BlinnPhong(const Material& material) :
+BlinnPhong::BlinnPhong(const Material& material, shdr::PointLight light) :
     m_texture(material.texture.StaticCast<Texture>()),
     m_ambientLight(material.ambientLight),
     m_diffuseComponent(material.diffuse),
     m_specularComponent(material.specular),
-    m_phongExponent(material.shininess)
+    m_phongExponent(material.shininess),
+    m_lightPosition(Vector4DF(light.position, 1.0))
 {
     /* Setup shader object w/ the blinn phong vertex and fragment shader. */
     m_shaderObject.addShader("vertexShader_BlinnPhong.glsl", sivelab::GLSLObject::VERTEX_SHADER);
     m_shaderObject.addShader("fragmentShader_BlinnPhong.glsl", sivelab::GLSLObject::FRAGMENT_SHADER);
     m_shaderObject.createProgram();
+
+    /* Setup the default texture object if we weren't provided a texture. */
+    if (!m_texture) {
+        m_texture = GetDefaultTexture();
+    }
 
     /* Setup uniforms for transform matrices. */
     m_projectionMatrixId = m_shaderObject.createUniform("projMatrix");
@@ -64,7 +82,7 @@ void BlinnPhong::Activate() {
 
     glUniform1f(m_phongExponentId, m_phongExponent);
 
-    glUniform1i(m_textureSamplerId, m_textureSampler);
+    glUniform1i(m_textureSamplerId, m_textureSampler); // hardcoded 0 atm
 }
 
 void BlinnPhong::Deactivate() {

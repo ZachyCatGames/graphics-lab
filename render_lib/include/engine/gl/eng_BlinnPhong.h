@@ -12,7 +12,7 @@ namespace eng::gl {
 
 class BlinnPhong : public IShader {
 public:
-    BlinnPhong(const Material& material);
+    BlinnPhong(const Material& material, shdr::PointLight light);
 
     void Activate();
 
