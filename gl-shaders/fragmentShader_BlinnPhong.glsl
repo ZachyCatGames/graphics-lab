@@ -5,10 +5,12 @@ layout(location=0) out vec4 fragmentColor;
 uniform vec4 diffuseComponent;
 uniform vec4 specularComponent;
 uniform float phongExponent;
+uniform sampler2D textureSampler;
 
-vec4 in normal;
-vec4 in lightDir;
-vec4 in halfVector;
+in vec4 normal;
+in vec4 lightDir;
+in vec4 halfVector;
+in vec2 textureUV;
 
 void main(void) {
     vec4 n = normalize(normal);
@@ -23,5 +25,7 @@ void main(void) {
     float phongVal = pow(max(0.0, dot(n, h)), phongExponent);
     vec3 specularShading = vec3(specularComponent.r * phongVal, specularComponent.g * phongVal, specularComponent.b * phongVal);
 
-    fragmentColor = vec4(0.5, 0.5, 0.5, 1.0);
+    //fragmentColor = vec4(diffuseShading + specularShading, 1.0);
+
+    fragmentColor = texture(textureSampler, textureUV) * vec4(diffuseShading + specularShading, 1.0);
 }
