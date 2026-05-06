@@ -43,6 +43,10 @@ Handle<eng::Texture> ObjectFactory::CreateTexture(const float* textureData, size
     return nullptr;
 }
 
+Handle<eng::RenderBuffer> ObjectFactory::CreateDisplayRenderBuffer(GLFWwindow* pWindow) {
+    return nullptr;
+}
+
 Handle<eng::ExportableRenderBuffer> ObjectFactory::CreateExportableRenderBuffer(size_t width, size_t height) {
     return MakeSharedPooled<ExportableRenderBuffer>(width, height);
 }

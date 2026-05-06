@@ -1,3 +1,4 @@
+#include "engine/gl/eng_GlfwWindow.h"
 #include <engine/gl/eng_ObjectFactory.h>
 #include <engine/eng_MakeShared.h>
 
@@ -9,6 +10,8 @@
 #include <engine/gl/eng_BlinnPhong.h>
 
 #include <engine/gl/eng_Texture.h>
+
+#include <engine/gl/eng_GlfwWindow.h>
 
 namespace eng::gl {
 
@@ -29,15 +32,19 @@ Handle<IShape> ObjectFactory::CreateMesh(const std::vector<Vertex>& vertices, co
 }
 
 Handle<IShader> ObjectFactory::CreateLambertian(const Material& material, const std::vector<shdr::PointLight>& lights) {
-    return nullptr;
+    return MakeSharedPooled<BlinnPhong>(material, *lights.begin());
 }
 
 Handle<IShader> ObjectFactory::CreatePhong(const Material& material, const std::vector<shdr::PointLight>& lights) {
-    return MakeSharedPooled<BlinnPhong>(material);
+    return MakeSharedPooled<BlinnPhong>(material, *lights.begin());
 }
 
 Handle<eng::Texture> ObjectFactory::CreateTexture(const float* textureData, size_t width, size_t height) {
     return MakeSharedPooled<Texture>(textureData, width, height);
+}
+
+Handle<eng::RenderBuffer> ObjectFactory::CreateDisplayRenderBuffer(GLFWwindow* pWindow) {
+    return MakeSharedPooled<GlfwWindow>(pWindow);
 }
 
 Handle<eng::ExportableRenderBuffer> ObjectFactory::CreateExportableRenderBuffer(size_t width, size_t height) {

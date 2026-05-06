@@ -18,6 +18,8 @@ public:
 
     Handle<eng::Texture> CreateTexture(const float* textureData, size_t width, size_t height) override;
 
+    Handle<eng::RenderBuffer> CreateDisplayRenderBuffer(GLFWwindow* pWindow) override;
+
     Handle<eng::ExportableRenderBuffer> CreateExportableRenderBuffer(size_t width, size_t height) override;
 }; // class ObjectFactory
 
