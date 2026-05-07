@@ -54,6 +54,7 @@ BlinnPhong::BlinnPhong(const Material& material) :
     m_eyePosWorldId   = m_shaderObject.createUniform("eyePosWorld");
 
     /* Setup lighting parameter uniforms. */
+    m_ambientLightId      = m_shaderObject.createUniform("ambientLight");
     m_diffuseComponentId  = m_shaderObject.createUniform("diffuseComponent");
     m_specularComponentId = m_shaderObject.createUniform("specularComponent");
     m_phongExponentId     = m_shaderObject.createUniform("phongExponent");
@@ -76,6 +77,7 @@ void BlinnPhong::Activate() {
 
     AssignVec4(m_lightPosWorldId, m_lightPosition);
     AssignVec4(m_eyePosWorldId, m_eyePosition);
+    AssignVec4(m_ambientLightId, Vector4DF(m_ambientLight, 1.0));
     AssignVec4(m_diffuseComponentId, Vector4DF(m_diffuseComponent, 1.0));
     AssignVec4(m_specularComponentId, Vector4DF(m_specularComponent, 1.0));
 

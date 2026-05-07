@@ -54,7 +54,8 @@ void Engine::InitializeOpenGL() {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     //glClearColor(0.0, 0.7, 1.0, 1.0);
-    glClearColor(7.0 / 255.0, 35.0 / 255.0, 220.0 / 255.0, 1.0);
+    glClearColor(0,0,0,1);
+    //glClearColor(7.0 / 255.0, 35.0 / 255.0, 220.0 / 255.0, 1.0);
 
     /* Setup viewport dims. */
     glViewport(0, 0, m_displayRenderBuffer->GetWidth(), m_displayRenderBuffer->GetHeight());

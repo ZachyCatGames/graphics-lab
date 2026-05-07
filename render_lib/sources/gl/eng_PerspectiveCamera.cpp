@@ -8,7 +8,7 @@ namespace eng::gl {
 
 glm::mat4 PerspectiveCamera::GetProjectionMatrix(float angleDegrees) const {
     // TODO: far plane?
-    return glm::perspective(glm::radians(angleDegrees), m_aspect_ratio, 5.0f, -5.0f);
+    return glm::perspective(glm::radians(angleDegrees), m_aspect_ratio, 0.3f, 100.4f);
 }
 
 glm::mat4 PerspectiveCamera::GetViewMatrix() const {

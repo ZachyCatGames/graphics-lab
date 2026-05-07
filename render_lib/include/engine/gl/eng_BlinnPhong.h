@@ -56,7 +56,7 @@ private:
     sivelab::GLSLObject m_shaderObject;
     GLuint m_projectionMatrixId, m_viewMatrixId, m_modelMatrixId, m_normalMatrixId;
     GLuint m_lightPosWorldId, m_eyePosWorldId;
-    GLuint m_diffuseComponentId, m_specularComponentId, m_phongExponentId;
+    GLuint m_ambientLightId, m_diffuseComponentId, m_specularComponentId, m_phongExponentId;
     GLuint m_textureSamplerId;
 public:
     Handle<Texture> m_texture;

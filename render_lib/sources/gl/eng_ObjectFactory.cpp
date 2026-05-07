@@ -24,7 +24,22 @@ Handle<IShape> ObjectFactory::CreateSphere(const Vector3DF& pos, float radius, H
 }
 
 Handle<IShape> ObjectFactory::CreateTriangle(const Vector3DF& a, const Vector3DF& b, const Vector3DF& c, Handle<IShader> shader) {
-    return nullptr;
+    std::vector<Vertex> verts {
+        {
+            .position = a,
+            .normal   = cross(b, c)
+        },
+        {
+            .position = b,
+            .normal   = cross(c, a)
+        },
+        {
+            .position = c,
+            .normal   = cross(a, b)
+        }
+    };
+    /* TODO: this should probably take a position vector. */
+    return this->CreateMesh(verts, {0,0,0}, shader);
 }
 
 Handle<IShape> ObjectFactory::CreateMesh(const std::vector<Vertex>& vertices, const Vector3DF& position, Handle<IShader> shader) {
@@ -48,15 +63,29 @@ Handle<IShader> ObjectFactory::CreatePhong(const Material& material) {
 }
 
 Handle<IShader> ObjectFactory::CreateMirror() {
-    return nullptr;
+    /* This should be a shiny object, currently we don't do reflections... */
+    static constexpr Material material {
+        .ambientLight = {0.5, 0.5, 0.5},
+        .diffuse   = {0,0,0},
+        .specular  = {1,1,1},
+        .shininess = 400
+    };
+
+    return this->CreatePhong(material);
 }
 
 Handle<IShader> ObjectFactory::CreateDiffuseShader(const Material& material) {
-    return nullptr;
+    return this->CreateLambertian(material);
 }
 
 Handle<IShader> ObjectFactory::CreateEmitter(const Material& material) {
-    return nullptr;
+    return this->CreatePhong({
+        .texture = material.texture,
+        .ambientLight = material.ambientLight,
+        .diffuse = {0,0,0},
+        .specular = {0,0,0},
+        .shininess = 1
+    });
 }
 
 Handle<eng::Texture> ObjectFactory::CreateTexture(const float* textureData, size_t width, size_t height) {
@@ -68,6 +97,7 @@ Handle<eng::RenderBuffer> ObjectFactory::CreateDisplayRenderBuffer(GLFWwindow* p
 }
 
 Handle<eng::ExportableRenderBuffer> ObjectFactory::CreateExportableRenderBuffer(size_t width, size_t height) {
+    assert(0);
     return nullptr;
 }
 

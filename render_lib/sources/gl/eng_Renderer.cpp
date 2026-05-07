@@ -28,7 +28,7 @@ void Renderer::Render(std::string_view cameraName, Handle<RenderBuffer> fb) {
 
     /* Get camera position (eye position), projection matrix, and view matrix. */
     Vector3DF eyePosition = camera->GetPosition();
-    glm::mat4 projMatrix  = camera->GetProjectionMatrix(45.0f);
+    glm::mat4 projMatrix  = camera->GetProjectionMatrix(75.0f);
     glm::mat4 viewMatrix  = camera->GetViewMatrix();
 
     /* Check if the provided render buffer matches the current render buffer. */

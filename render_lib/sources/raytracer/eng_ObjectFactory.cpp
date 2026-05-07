@@ -55,10 +55,12 @@ Handle<eng::IShader> ObjectFactory::CreateEmitter(const Material& material) {
 }
 
 Handle<eng::Texture> ObjectFactory::CreateTexture(const float* textureData, size_t width, size_t height) {
+    assert(0);
     return nullptr;
 }
 
 Handle<eng::RenderBuffer> ObjectFactory::CreateDisplayRenderBuffer(GLFWwindow* pWindow) {
+    assert(0);
     return nullptr;
 }
 
