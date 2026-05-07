@@ -1,6 +1,9 @@
+#include "engine/eng_RenderBuffer.h"
+#include "engine/gl/eng_Texture.h"
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+#include <print>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -29,60 +32,30 @@ int CheckGLErrors(const char *s)
 
 int main(int argc, char** argv)
 {
-    /* Initialize the library */
-    if (!glfwInit()) {
-        exit (-1);
-    }
-    // throw std::runtime_error("Error! initialization of glfw failed!");
+    char* argv2[] = {
+        "program",
+        "--rendermode", "opengl",
+        "--winwidth", "800",
+        "--winheight", "800"
+    };
+    Engine engine;
+    engine.Initialize(7, argv2);
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    /* Get render buffer. */
+    Handle<RenderBuffer> renderBuffer = engine.GetDisplayRenderBuffer();
+    assert(renderBuffer);
 
-    /* Create a windowed mode window and its OpenGL context */
-    int winWidth = 1000;
-    float aspectRatio = 1.0; // 16.0 / 9.0; // winWidth / (float)winHeight;
-    int winHeight = winWidth / aspectRatio;
-    
-    GLFWwindow* window = glfwCreateWindow(winWidth, winHeight, "GLFW Example", NULL, NULL);
-    if (!window) {
-        std::cerr << "GLFW did not create a window!" << std::endl;
-        
-        glfwTerminate();
-        return -1;
-    }
-
-    /* Make the window's context current */
-    glfwMakeContextCurrent(window);
-
-    glewExperimental = GL_TRUE;
-    GLenum err=glewInit();
-    if(err != GLEW_OK) {
-        std::cerr <<"GLEW Error! glewInit failed, exiting."<< std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    const GLubyte* renderer = glGetString (GL_RENDERER);
-    const GLubyte* version = glGetString (GL_VERSION);
-    std::cout << "Renderer: " << renderer << std::endl;
-    std::cout << "OpenGL version supported: " << version << std::endl;
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    //glClearColor(0.0, 0.7, 1.0, 1.0);
-    glClearColor(7.0 / 255.0, 35.0 / 255.0, 220.0 / 255.0, 1.0);
-
-    int fb_width, fb_height;
-    glfwGetFramebufferSize(window, &fb_width, &fb_height);
-    glViewport(0, 0, fb_width, fb_height);
+    /* Get image dims. */
+    size_t winWidth  = renderBuffer->GetWidth();
+    size_t winHeight = renderBuffer->GetHeight();
 
     // Need to set a projection matrix that fits the aspect ratio set
     // by the window frame.
     //
     // The ortho parameters, in order: left, right, bottom, top, zNear, zFar
-    float halfWidth = 15.0 / 2.0;
-    float halfHeight = halfWidth / aspectRatio;
+    float aspectRatio    = float(renderBuffer->GetWidth()) / renderBuffer->GetHeight();
+    float halfWidth      = 15.0 / 2.0;
+    float halfHeight     = halfWidth / aspectRatio;
     constexpr float near = 5.0f;
     constexpr float far  = -5.0f;
 
@@ -90,94 +63,118 @@ int main(int argc, char** argv)
     glGetIntegerv(GL_MAJOR_VERSION, &major_version);
     std::cout << "GL_MAJOR_VERSION: " << major_version << std::endl;
 
-    /* Disable the mouse cursor and enable raw input if supported. */
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    if (glfwRawMouseMotionSupported())
-        glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GL_TRUE);
-
     double timeDiff = 0.0, startFrameTime = 0.0, endFrameTime = 0.0;
 
+    #if 0
     std::vector<Vertex> vertices {
         { { -3.0f, -3.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } },
         { {  3.0f, -3.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 0.0f } },
         { {  0.0f,  5.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.5f, 1.0f } }
     };
+    #endif
 
-    char* argv2[] = {
-        "program",
-        "--rendermode", "opengl"
+    std::vector<Vertex> vertices {
+        // Front face (looking down -Z)
+        { { -1.0f, -1.0f, -1.0f }, { 0, 0, -1 }, { 0.0f, 0.5f } }, // v1
+        { {  1.0f, -1.0f, -1.0f }, { 0, 0, -1 }, { 0.5f, 0.5f } },
+        { {  1.0f,  1.0f, -1.0f }, { 0, 0, -1 }, { 0.5f, 1.0f } },
+        { { -1.0f, -1.0f, -1.0f }, { 0, 0, -1 }, { 0.0f, 0.5f } }, // v2
+        { {  1.0f,  1.0f, -1.0f }, { 0, 0, -1 }, { 0.5f, 1.0f } },
+        { { -1.0f,  1.0f, -1.0f }, { 0, 0, -1 }, { 0.0f, 1.0f } },
+
+        // Right face (facing positive X)
+        { {  1.0f, -1.0f, -1.0f }, { 1, 0, 0}, { 0.5f, 0.5f } }, // v1
+        { {  1.0f, -1.0f,  1.0f }, { 1, 0, 0}, { 1.0f, 0.5f } },
+        { {  1.0f,  1.0f,  1.0f }, { 1, 0, 0}, { 1.0f, 1.0f } },
+        { {  1.0f, -1.0f, -1.0f }, { 1, 0, 0}, { 0.5f, 0.5f } }, // v2
+        { {  1.0f,  1.0f,  1.0f }, { 1, 0, 0}, { 1.0f, 1.0f } },
+        { {  1.0f,  1.0f, -1.0f }, { 1, 0, 0}, { 0.5f, 1.0f } },
+
+        // Back face (facing positive Z)
+        { {  1.0f, -1.0f,  1.0f }, { 0, 0, 1 }, { 0.0f, 0.0f } }, // v1
+        { { -1.0f, -1.0f,  1.0f }, { 0, 0, 1 }, { 0.5f, 0.0f } },
+        { { -1.0f,  1.0f,  1.0f }, { 0, 0, 1 }, { 0.5f, 0.5f } },
+        { {  1.0f, -1.0f,  1.0f }, { 0, 0, 1 }, { 0.0f, 0.0f } }, // v2
+        { { -1.0f,  1.0f,  1.0f }, { 0, 0, 1 }, { 0.5f, 0.5f } },
+        { {  1.0f,  1.0f,  1.0f }, { 0, 0, 1 }, { 0.0f, 0.5f } },
+
+        // Left face (facing negative X)
+        { { -1.0f, -1.0f,  1.0f }, { -1, 0, 0}, { 0.5f, 0.0f } }, // v1
+        { { -1.0f, -1.0f, -1.0f }, { -1, 0, 0}, { 1.0f, 0.0f } },
+        { { -1.0f,  1.0f, -1.0f }, { -1, 0, 0}, { 1.0f, 0.5f } },
+        { { -1.0f, -1.0f,  1.0f }, { -1, 0, 0}, { 0.5f, 0.0f } }, // v2
+        { { -1.0f,  1.0f, -1.0f }, { -1, 0, 0}, { 1.0f, 0.5f } },
+        { { -1.0f,  1.0f,  1.0f }, { -1, 0, 0}, { 0.5f, 0.5f } },
+
+        // Top face (facing positive Y)
+        { { -1.0f,  1.0f, -1.0f }, { 0, 1, 0 } }, // v1
+        { {  1.0f,  1.0f, -1.0f }, { 0, 1, 0 } },
+        { {  1.0f,  1.0f,  1.0f }, { 0, 1, 0 } },
+        { { -1.0f,  1.0f, -1.0f }, { 0, 1, 0 } }, // v2
+        { {  1.0f,  1.0f,  1.0f }, { 0, 1, 0 } },
+        { { -1.0f,  1.0f,  1.0f }, { 0, 1, 0 } },
+
+        // Bottom face (facing negative Y)
+        { { -1.0f, -1.0f,  1.0f }, { 0, -1, 0 } }, // v1
+        { {  1.0f, -1.0f,  1.0f }, { 0, -1, 0 } },
+        { {  1.0f, -1.0f, -1.0f }, { 0, -1, 0 } },
+        { { -1.0f, -1.0f,  1.0f }, { 0, -1, 0 } }, // v2
+        { {  1.0f, -1.0f, -1.0f }, { 0, -1, 0 } },
+        { { -1.0f, -1.0f, -1.0f }, { 0, -1, 0 } },
     };
-    Engine engine;
-    engine.Initialize(3, argv2);
 
-    IObjectFactory* pObjFactory = engine.GetObjectFactory();
+    GLuint texID;
+    Handle<gl::Texture> texHandle = engine.OpenTextureFromPNG("textureAtlas.png").StaticCast<gl::Texture>();
+    Handle<gl::Texture> texHandle2 = engine.OpenTextureFromPNG("earth_daymap_2k.png").StaticCast<gl::Texture>();
 
     /* Misc parameters. */
-    constexpr float phongExponent = 10.0;
+    constexpr float phongExponent = 60.0;
     constexpr Vector3DF diffuseComponent{ 1.0, 1.0, 1.0 };
-    constexpr Vector3DF specularComponent{ 1.0, 1.0, 1.0 };
-    constexpr Vector4DF lightPos{ 0, 0, 2, 1.0 };
+    constexpr Vector3DF specularComponent{ 4.0, 4.0, 4.0 };
+    constexpr Vector3DF lightPos{ -3, 0, 2 };
 
     // Create a shader using my GLSLObject class
-    std::vector<shdr::PointLight> lights;
     Material material{
+        .texture = texHandle,
         .ambientLight = Vector3DF::Zero(),
         .diffuse = diffuseComponent,
         .specular = specularComponent,
         .shininess = phongExponent
     };
-    Handle<gl::BlinnPhong> shader = pObjFactory->CreatePhong(material, lights);
+    Handle<gl::BlinnPhong> shader = engine.CreatePhong(material).StaticCast<gl::BlinnPhong>();
+
+    Material material2{
+        .texture = texHandle2,
+        .ambientLight = Vector3DF::Zero(),
+        .diffuse = diffuseComponent,
+        .specular = specularComponent,
+        .shininess = phongExponent
+    };
+    Handle<gl::BlinnPhong> shader2 = engine.CreatePhong(material2).StaticCast<gl::BlinnPhong>();
 
     /* Setup our mesh (single tri!) */
-    Handle<gl::Mesh> mesh = pObjFactory->CreateMesh(vertices, Vector3DF(0,0,0), shader);
+    Handle<gl::Mesh> mesh = engine.CreateMesh(vertices, Vector3DF(0,0,0), shader).StaticCast<gl::Mesh>();
+
+    /* A Sphere! */
+    Handle<gl::Mesh> sphere = engine.CreateSphere(Vector3DF(-3, 0, 0), -1.0f, shader2).StaticCast<gl::Mesh>();
 
     /* Setup our camera. */
-    constexpr eng::Vector3DF pos(0, 0, 10), viewDir(0, 0, -1);
-    Handle<gl::PerspectiveCamera> cam = pObjFactory->CreatePerspectiveCamera(pos, viewDir, 0.5, winWidth, winHeight, 1.0);
+    static constexpr eng::Vector3DF pos(0, 0, 10), viewDir(0, 0, -1);
+    Handle<gl::PerspectiveCamera> cam = engine.CreatePerspectiveCamera(pos, viewDir, 0.5, winWidth, winHeight, 1.0).StaticCast<gl::PerspectiveCamera>();
 
     /* Add things to the scene. */
     std::shared_ptr<Scene> scene = engine.GetActiveScene();
     scene->cameras.Insert("main", cam);
     scene->shapes.Insert("myCoolTriangle", mesh);
+    scene->shapes.Insert("myCoolSphere", sphere);
     scene->shaders.Insert("myCoolerShader", shader);
+    scene->shaders.Insert("myCoolestShader", shader2);
+    scene->EmplacePointLight(lightPos, {});
 
     /* Grab our renderer. */
     IRenderer* pRenderer = engine.GetRenderer();
 
-    GLuint texID;
-    {
-        png::image<png::rgb_pixel> texPngImage;
-        texPngImage.read(argv[1]);
-
-        int pngWidth = texPngImage.get_width();
-        int pngHeight = texPngImage.get_height();
-        std::print("PNG Width:  {}\n", pngWidth);
-        std::print("PNG Height: {}\n", pngHeight);
-
-        std::vector<float> texData(pngWidth * pngHeight * 3);
-
-        size_t idx = 0;
-        for (int row = 0; row < pngHeight; row++) {
-            for (int col = 0; col < pngWidth; col++) {
-                png::rgb_pixel pixel = texPngImage[pngHeight - row - 1][col];
-                texData[idx++] = ((float)pixel.red) / 255.0f;
-                texData[idx++] = ((float)pixel.green) / 255.0f;
-                texData[idx++] = ((float)pixel.blue) / 255.0f;
-            }
-        }
-
-        glGenTextures(1, &texID);
-        glBindTexture(GL_TEXTURE_2D, texID);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, pngWidth, pngHeight, 0, GL_RGB, GL_FLOAT, texData.data());
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
-
-    /* Copy eye and light position over. */
-    shader->AssignLightPosition(lightPos);
+    GLFWwindow* window = engine.GetGlfwWindow();
 
     /* Loop until the user closes the window */
     glm::mat4 modelMatrix, normalMatrix;
@@ -200,18 +197,9 @@ int main(int argc, char** argv)
         /* Increment rotation angle. */
         //mesh->IncrementRotationAngle(0.05);
 
-        // This activates texture unit 0, the next texture we bind will be bound into TU0.
-        glActiveTexture(GL_TEXTURE0);
-
-        // Bind our texture into texture unit 0.
-        glBindTexture(GL_TEXTURE_2D, texID);
-        shader->SetTextureId(0);
-
         /* Render your objects here */
         /* (my amazing triangle) */
-        pRenderer->Render("main", nullptr);
-
-        glBindTexture(GL_TEXTURE_2D, 0);
+        pRenderer->Render("main", renderBuffer);
 
         // Swap the front and back buffers
         glfwSwapBuffers(window);
