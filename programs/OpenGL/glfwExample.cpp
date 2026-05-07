@@ -1,6 +1,9 @@
+#include "engine/eng_RenderBuffer.h"
+#include "engine/gl/eng_Texture.h"
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+#include <print>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -12,7 +15,14 @@
 
 #include "GLSL.h"
 
-#include <engine/eng_PerspectiveCamera.h>
+#include <engine/eng_Engine.h>
+#include <engine/gl/eng_PerspectiveCamera.h>
+#include <engine/gl/eng_BlinnPhong.h>
+#include <engine/gl/eng_Mesh.h>
+
+#include <engine/png++/png.hpp>
+
+using namespace eng;
 
 int CheckGLErrors(const char *s)
 {
@@ -20,62 +30,32 @@ int CheckGLErrors(const char *s)
     return errCount;
 }
 
-int main(void)
+int main(int argc, char** argv)
 {
-    /* Initialize the library */
-    if (!glfwInit()) {
-        exit (-1);
-    }
-    // throw std::runtime_error("Error! initialization of glfw failed!");
+    char* argv2[] = {
+        "program",
+        "--rendermode", "opengl",
+        "--winwidth", "800",
+        "--winheight", "800"
+    };
+    Engine engine;
+    engine.Initialize(7, argv2);
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    /* Get render buffer. */
+    Handle<RenderBuffer> renderBuffer = engine.GetDisplayRenderBuffer();
+    assert(renderBuffer);
 
-    /* Create a windowed mode window and its OpenGL context */
-    int winWidth = 1000;
-    float aspectRatio = 1.0; // 16.0 / 9.0; // winWidth / (float)winHeight;
-    int winHeight = winWidth / aspectRatio;
-    
-    GLFWwindow* window = glfwCreateWindow(winWidth, winHeight, "GLFW Example", NULL, NULL);
-    if (!window) {
-        std::cerr << "GLFW did not create a window!" << std::endl;
-        
-        glfwTerminate();
-        return -1;
-    }
-
-    /* Make the window's context current */
-    glfwMakeContextCurrent(window);
-
-    glewExperimental = GL_TRUE;
-    GLenum err=glewInit();
-    if(err != GLEW_OK) {
-        std::cerr <<"GLEW Error! glewInit failed, exiting."<< std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    const GLubyte* renderer = glGetString (GL_RENDERER);
-    const GLubyte* version = glGetString (GL_VERSION);
-    std::cout << "Renderer: " << renderer << std::endl;
-    std::cout << "OpenGL version supported: " << version << std::endl;
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    //glClearColor(0.0, 0.7, 1.0, 1.0);
-    glClearColor(7.0 / 255.0, 35.0 / 255.0, 220.0 / 255.0, 1.0);
-
-    int fb_width, fb_height;
-    glfwGetFramebufferSize(window, &fb_width, &fb_height);
-    glViewport(0, 0, fb_width, fb_height);
+    /* Get image dims. */
+    size_t winWidth  = renderBuffer->GetWidth();
+    size_t winHeight = renderBuffer->GetHeight();
 
     // Need to set a projection matrix that fits the aspect ratio set
     // by the window frame.
     //
     // The ortho parameters, in order: left, right, bottom, top, zNear, zFar
-    float halfWidth = 15.0 / 2.0;
-    float halfHeight = halfWidth / aspectRatio;
+    float aspectRatio    = float(renderBuffer->GetWidth()) / renderBuffer->GetHeight();
+    float halfWidth      = 15.0 / 2.0;
+    float halfHeight     = halfWidth / aspectRatio;
     constexpr float near = 5.0f;
     constexpr float far  = -5.0f;
 
@@ -84,68 +64,126 @@ int main(void)
     std::cout << "GL_MAJOR_VERSION: " << major_version << std::endl;
 
     double timeDiff = 0.0, startFrameTime = 0.0, endFrameTime = 0.0;
-    
-    /* Generate and bind a buffer on the GPU. */
-    GLuint m_triangleVBO[1];
-    glGenBuffers(1, m_triangleVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, m_triangleVBO[0]);
 
-    std::vector<float> host_vertexBuffer {
-        -3.0f, -3.0f, 0.0f,     1.0f, 0.0f, 0.0f,     // V0
-         3.0f, -3.0f, 0.0f,     0.0f, 1.0f, 0.0f,     // V1
-         0.0f,  5.0f, 0.0f,     0.0f, 0.0f, 1.0f      // V2
+    #if 0
+    std::vector<Vertex> vertices {
+        { { -3.0f, -3.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } },
+        { {  3.0f, -3.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 0.0f } },
+        { {  0.0f,  5.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.5f, 1.0f } }
     };
-    /*
-    std::vector<float> host_vertexBuffer {
-        -0.5f, -0.5f, 0.0f,      // V0
-        0.5f, -0.5f, 0.0f,       // V1
-        0.5f, 0.5f, 0.0f,        // V2
-        -0.5, 0.5f, 0.0f,        // V3
-    }; */
+    #endif
 
-    const size_t vertexBufferSizeBytes = host_vertexBuffer.size() * sizeof(float);
+    std::vector<Vertex> vertices {
+        // Front face (looking down -Z)
+        { { -1.0f, -1.0f, -1.0f }, { 0, 0, -1 }, { 0.0f, 0.5f } }, // v1
+        { {  1.0f, -1.0f, -1.0f }, { 0, 0, -1 }, { 0.5f, 0.5f } },
+        { {  1.0f,  1.0f, -1.0f }, { 0, 0, -1 }, { 0.5f, 1.0f } },
+        { { -1.0f, -1.0f, -1.0f }, { 0, 0, -1 }, { 0.0f, 0.5f } }, // v2
+        { {  1.0f,  1.0f, -1.0f }, { 0, 0, -1 }, { 0.5f, 1.0f } },
+        { { -1.0f,  1.0f, -1.0f }, { 0, 0, -1 }, { 0.0f, 1.0f } },
 
-    /* Copy VBO from the host to the GPU. */
-    glBufferData(GL_ARRAY_BUFFER, vertexBufferSizeBytes, host_vertexBuffer.data(), GL_STATIC_DRAW);
-    
-    /* Unbind the buffer. */
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // Right face (facing positive X)
+        { {  1.0f, -1.0f, -1.0f }, { 1, 0, 0}, { 0.5f, 0.5f } }, // v1
+        { {  1.0f, -1.0f,  1.0f }, { 1, 0, 0}, { 1.0f, 0.5f } },
+        { {  1.0f,  1.0f,  1.0f }, { 1, 0, 0}, { 1.0f, 1.0f } },
+        { {  1.0f, -1.0f, -1.0f }, { 1, 0, 0}, { 0.5f, 0.5f } }, // v2
+        { {  1.0f,  1.0f,  1.0f }, { 1, 0, 0}, { 1.0f, 1.0f } },
+        { {  1.0f,  1.0f, -1.0f }, { 1, 0, 0}, { 0.5f, 1.0f } },
 
-    /* Clear host-side vertex buffer since it's not needed anymore. */
-    host_vertexBuffer.clear();
+        // Back face (facing positive Z)
+        { {  1.0f, -1.0f,  1.0f }, { 0, 0, 1 }, { 0.0f, 0.0f } }, // v1
+        { { -1.0f, -1.0f,  1.0f }, { 0, 0, 1 }, { 0.5f, 0.0f } },
+        { { -1.0f,  1.0f,  1.0f }, { 0, 0, 1 }, { 0.5f, 0.5f } },
+        { {  1.0f, -1.0f,  1.0f }, { 0, 0, 1 }, { 0.0f, 0.0f } }, // v2
+        { { -1.0f,  1.0f,  1.0f }, { 0, 0, 1 }, { 0.5f, 0.5f } },
+        { {  1.0f,  1.0f,  1.0f }, { 0, 0, 1 }, { 0.0f, 0.5f } },
 
-    GLuint m_VAO;
-    glGenVertexArrays(1, &m_VAO);
-    glBindVertexArray(m_VAO);
+        // Left face (facing negative X)
+        { { -1.0f, -1.0f,  1.0f }, { -1, 0, 0}, { 0.5f, 0.0f } }, // v1
+        { { -1.0f, -1.0f, -1.0f }, { -1, 0, 0}, { 1.0f, 0.0f } },
+        { { -1.0f,  1.0f, -1.0f }, { -1, 0, 0}, { 1.0f, 0.5f } },
+        { { -1.0f, -1.0f,  1.0f }, { -1, 0, 0}, { 0.5f, 0.0f } }, // v2
+        { { -1.0f,  1.0f, -1.0f }, { -1, 0, 0}, { 1.0f, 0.5f } },
+        { { -1.0f,  1.0f,  1.0f }, { -1, 0, 0}, { 0.5f, 0.5f } },
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_triangleVBO[0]);
+        // Top face (facing positive Y)
+        { { -1.0f,  1.0f, -1.0f }, { 0, 1, 0 } }, // v1
+        { {  1.0f,  1.0f, -1.0f }, { 0, 1, 0 } },
+        { {  1.0f,  1.0f,  1.0f }, { 0, 1, 0 } },
+        { { -1.0f,  1.0f, -1.0f }, { 0, 1, 0 } }, // v2
+        { {  1.0f,  1.0f,  1.0f }, { 0, 1, 0 } },
+        { { -1.0f,  1.0f,  1.0f }, { 0, 1, 0 } },
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
+        // Bottom face (facing negative Y)
+        { { -1.0f, -1.0f,  1.0f }, { 0, -1, 0 } }, // v1
+        { {  1.0f, -1.0f,  1.0f }, { 0, -1, 0 } },
+        { {  1.0f, -1.0f, -1.0f }, { 0, -1, 0 } },
+        { { -1.0f, -1.0f,  1.0f }, { 0, -1, 0 } }, // v2
+        { {  1.0f, -1.0f, -1.0f }, { 0, -1, 0 } },
+        { { -1.0f, -1.0f, -1.0f }, { 0, -1, 0 } },
+    };
 
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), reinterpret_cast<void*>(3 * sizeof(GLfloat)));
+    GLuint texID;
+    Handle<gl::Texture> texHandle = engine.OpenTextureFromPNG("textureAtlas.png").StaticCast<gl::Texture>();
+    Handle<gl::Texture> texHandle2 = engine.OpenTextureFromPNG("earth_daymap_2k.png").StaticCast<gl::Texture>();
 
-    glBindVertexArray(0);
+    /* Misc parameters. */
+    constexpr float phongExponent = 60.0;
+    constexpr Vector3DF diffuseComponent{ 1.0, 1.0, 1.0 };
+    constexpr Vector3DF specularComponent{ 4.0, 4.0, 4.0 };
+    constexpr Vector3DF lightPos{ -3, 0, 2 };
 
-    // Create a shader using my GLSLObject class                                                            
-    sivelab::GLSLObject shader;
-    shader.addShader( "vertexShader_withMatrixTransformation.glsl", sivelab::GLSLObject::VERTEX_SHADER );
-    shader.addShader( "fragmentShader_passthrough.glsl", sivelab::GLSLObject::FRAGMENT_SHADER );
-    shader.createProgram();
+    // Create a shader using my GLSLObject class
+    Material material{
+        .texture = texHandle,
+        .ambientLight = Vector3DF::Zero(),
+        .diffuse = diffuseComponent,
+        .specular = specularComponent,
+        .shininess = phongExponent
+    };
+    Handle<gl::BlinnPhong> shader = engine.CreatePhong(material).StaticCast<gl::BlinnPhong>();
 
-    GLuint projMatrixId, viewMatrixId, modelMatrixId;
-    projMatrixId  = shader.createUniform("projMatrix");
-    viewMatrixId  = shader.createUniform("viewMatrix");
-    modelMatrixId = shader.createUniform("modelMatrix");
+    Material material2{
+        .texture = texHandle2,
+        .ambientLight = Vector3DF::Zero(),
+        .diffuse = diffuseComponent,
+        .specular = specularComponent,
+        .shininess = phongExponent
+    };
+    Handle<gl::BlinnPhong> shader2 = engine.CreatePhong(material2).StaticCast<gl::BlinnPhong>();
 
-    constexpr eng::Vector3DF pos(0, 0, 0), viewDir(0, 0, -1);
+    /* Setup our mesh (single tri!) */
+    Handle<gl::Mesh> mesh = engine.CreateMesh(vertices, Vector3DF(0,0,0), shader).StaticCast<gl::Mesh>();
 
-    eng::PerspectiveCamera cam(pos, viewDir, 0.5, winWidth, winHeight, 1.0);
+    /* A Sphere! */
+    Handle<gl::Mesh> sphere = engine.CreateSphere(Vector3DF(-3, 0, 0), -1.0f, shader2).StaticCast<gl::Mesh>();
+
+    /* Setup our camera. */
+    static constexpr eng::Vector3DF pos(0, 0, 10), viewDir(0, 0, -1);
+    Handle<gl::PerspectiveCamera> cam = engine.CreatePerspectiveCamera(pos, viewDir, 0.5, winWidth, winHeight, 1.0).StaticCast<gl::PerspectiveCamera>();
+
+    /* Add things to the scene. */
+    std::shared_ptr<Scene> scene = engine.GetActiveScene();
+    scene->cameras.Insert("main", cam);
+    scene->shapes.Insert("myCoolTriangle", mesh);
+    scene->shapes.Insert("myCoolSphere", sphere);
+    scene->shaders.Insert("myCoolerShader", shader);
+    scene->shaders.Insert("myCoolestShader", shader2);
+    scene->EmplacePointLight(lightPos, {});
+
+    /* Grab our renderer. */
+    IRenderer* pRenderer = engine.GetRenderer();
+
+    GLFWwindow* window = engine.GetGlfwWindow();
 
     /* Loop until the user closes the window */
-    glm::mat4 modelMatrix;
+    glm::mat4 modelMatrix, normalMatrix;
+    constexpr float sensitivity = 0.2f;
     float rotationAngle = 0;
+    float lastX = winWidth / 2.0f;
+    float lastY = winHeight / 2.0f;
+    float yaw = 0;
+    float pitch = 0;
     while (!glfwWindowShouldClose(window))
     {
         endFrameTime = glfwGetTime();
@@ -156,34 +194,12 @@ int main(void)
         // background color)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        /* Create the view matrix from our camera data. */
-        glm::mat4 projectionMatrix = cam.GetProjectionMatrix(45.0f);
-        glm::mat4 m_view = cam.GetViewMatrix();
-        //glm::mat4 m_view = glm::lookAt(m_pos, m_pos - m_W, m_V);
+        /* Increment rotation angle. */
+        //mesh->IncrementRotationAngle(0.05);
 
         /* Render your objects here */
         /* (my amazing triangle) */
-        shader.activate();
-
-        /* Setup model matrix. */
-        modelMatrix = glm::mat4(1.0);
-        modelMatrix = glm::rotate(modelMatrix, rotationAngle, glm::vec3(0, 1, 0));
-
-        /* Increment rotation angle. */
-        rotationAngle += 0.05;
-        if(rotationAngle > M_PI * 2)
-            rotationAngle = 0;
-
-        /* Copy the view and project matrices to the device. */
-        glUniformMatrix4fv(projMatrixId,  1, GL_FALSE, glm::value_ptr(projectionMatrix));
-        glUniformMatrix4fv(viewMatrixId,  1, GL_FALSE, glm::value_ptr(m_view));
-        glUniformMatrix4fv(modelMatrixId, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-
-        glBindVertexArray(m_VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        glBindVertexArray(0);
-
-        shader.deactivate();
+        pRenderer->Render("main", renderBuffer);
 
         // Swap the front and back buffers
         glfwSwapBuffers(window);
@@ -194,17 +210,39 @@ int main(void)
         /* Check for movement inputs. */
         constexpr float moveRatePerFrame = 0.05;
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            cam.MoveByW(-moveRatePerFrame);
+            cam->MoveByW(-moveRatePerFrame);
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            cam.MoveByU(-moveRatePerFrame);
+            cam->MoveByU(-moveRatePerFrame);
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            cam.MoveByW(moveRatePerFrame);
+            cam->MoveByW(moveRatePerFrame);
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            cam.MoveByU(moveRatePerFrame);
+            cam->MoveByU(moveRatePerFrame);
         }
+
+        /* Get mouse position. */
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+
+        /* Calculate diffs + update previous pos. */
+        float xDiff = xpos - lastX;
+        float yDiff = ypos - lastY;
+        lastX = xpos;
+        lastY = ypos;
+
+        /* Increment and clamp yaw & pitch. */
+        yaw += xDiff * sensitivity;
+        pitch += yDiff * sensitivity;
+        if (pitch > 89.9f)
+            pitch = 89.9f;
+        else if (pitch < -89.9f)
+            pitch = -89.9f;
+
+        std::cout << xpos << ", " << ypos << '\n';
+
+        cam->Rotate(pitch, yaw);
 
         if (glfwGetKey( window, GLFW_KEY_T ) == GLFW_PRESS) {
             std::cout << "fps: " << 1.0/timeDiff << std::endl;

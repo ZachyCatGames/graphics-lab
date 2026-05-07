@@ -1,31 +1,49 @@
 #pragma once
-
 #include <engine/eng_ISceneLoader.h>
+#include <engine/eng_IObjectFactory.h>
 #include <engine/eng_Scene.h>
-#include <engine/eng_RendererBase.h>
+#include <memory>
 
 namespace eng {
 
+class Engine;
+
 class SceneLoader : public ISceneLoader {
 private:
-  RendererBase* m_p_renderer;
-  Scene* m_p_scene; // Reference to the external scene
+  std::shared_ptr<Scene> m_pScene; // Reference to the external scene
+  std::shared_ptr<Engine> m_pSharedEngine;
+  Engine* m_pEngine;
+  size_t m_defaultImgWidth, m_defaultImgHeight;
 
 public:
   // The caller provides the scene to be filled
-  SceneLoader(RendererBase* renderer, Scene* sceneToPopulate)
-      : m_p_renderer(renderer), m_p_scene(sceneToPopulate), numShaders(0), numTextures(0) {}
+  SceneLoader(const std::shared_ptr<Scene> sceneToPopulate, Engine* pEngine, size_t defaultImgWidth, size_t defaultImgHeight) :
+      m_pScene(sceneToPopulate),
+      m_pEngine(pEngine),
+      m_defaultImgWidth(defaultImgWidth),
+      m_defaultImgHeight(defaultImgHeight),
+      numShaders(0),
+      numTextures(0) {}
+
+  SceneLoader(const std::shared_ptr<Scene> sceneToPopulate, std::shared_ptr<Engine> pEngine, size_t defaultImgWidth, size_t defaultImgHeight) :
+      m_pScene(sceneToPopulate),
+      m_pSharedEngine(std::move(pEngine)),
+      m_pEngine(m_pSharedEngine.get()),
+      m_defaultImgWidth(defaultImgWidth),
+      m_defaultImgHeight(defaultImgHeight),
+      numShaders(0),
+      numTextures(0) {}
 
   void reserveCameras(size_t count) override {
     /* ... */
   }
 
   void reserveLights(size_t count) override {
-    m_p_scene->ReservePointLights(count);
+    m_pScene->ReservePointLights(count);
   }
 
   void reserveShapes(size_t count) override {
-    m_p_scene->ReserveShapes(count);
+    m_pScene->shapes.Reserve(count);
   }
 
   void reserveShaders(size_t count) override { numShaders = count; }

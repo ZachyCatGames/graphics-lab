@@ -2,23 +2,9 @@
 #include <fstream>
 #include <vector>
 
-#include <engine/eng_ObjectBase.h>
-#include <engine/eng_PerspectiveCamera.h>
-#include <engine/eng_Scene.h>
-
 #include <engine/framebuffer/fb_Framebuffer.h>
 #include <engine/framebuffer/fb_PngWriter.h>
-
-#include <engine/shape/shape_Sphere.h>
-#include <engine/shape/shape_Triangle.h>
-
-#include <engine/shader/shdr_NormalShader.h>
-#include <engine/shader/shdr_Lambertian.h>
-#include <engine/shader/shdr_BlinnPhong.h>
-#include <engine/shader/shdr_Mirror.h>
-#include <engine/shader/shdr_FlatColorShader.h>
-
-#include <engine/eng_ThreadedRenderer.h>
+#include <engine/eng_Engine.h>
 
 #include <array>
 #include <print>
@@ -78,21 +64,30 @@ int main(int argc, char* argv[])
     //auto shader = eng::BlinnPhongShader::Create(eng::ray{ eng::Vector3DF{ 0,0,0 }, eng::Vector3DF(3, 4,5)}, 20.0);
     //auto shader = eng::shdr::Lambertian::Create(eng::Ray{ eng::Vector3DF{ 0,0,0 }, eng::Vector3DF(3, 4,5)});
 
-    /* Init scene with default parameters. */
-    eng::Scene scene;
+    Engine engine;
+    engine.Initialize(argc, argv);
 
-    /* Setup renderer. */
-    eng::ThreadedRenderer renderer(&scene, img_width, img_height, 1, false, std::thread::hardware_concurrency());
+    /* Get the object factory. */
+    IObjectFactory* pObjFactory = engine.GetObjectFactory();
+
+    /* Get the current active scene. */
+    std::shared_ptr<Scene> pScene = engine.GetActiveScene();
 
     /* Setup camera. */
-    renderer.EmplaceCamera<PerspectiveCamera>(pos, dir, foc_len, img_width, img_height, vp_width);
+    Handle<ICamera> camera = pObjFactory->CreatePerspectiveCamera(pos, dir, foc_len, img_width, img_height, vp_width);
 
-    auto shader = shdr::Lambertian::Create(
-        nullptr,
-        std::array{
+    /* Setup lambertian shader. */
+    Handle<IShader> shader = pObjFactory->CreateLambertian(
+        Vector3DF(1,1,1),
+        std::vector{
             shdr::PointLight(Vector3DF(0, 0, 2.5), Vector3DF(1,1,1))
         }
     );
+
+    /* Add everything to the scene. */
+    pScene->shaders.Insert("lambertian", shader);
+    pScene->cameras.Insert("main", camera);
+
     for (int i = 0; i < numTriangles; i++) {
         Vector3DF verts[3];
         for (int j = 0; j < 3; j++) {
@@ -105,14 +100,13 @@ int main(int argc, char* argv[])
             //std::clog << verts[j] << '\n';
 
         }
-        scene.EmplaceShape<shape::Triangle>(
-            verts[0], verts[1], verts[2]
-        )
-        .BindShader(shader);
+
+        Handle<IShape> triangle = pObjFactory->CreateTriangle(verts[0], verts[1], verts[2], shader);
+        pScene->shapes.Insert(triangle);
     }
 
     /* Render through camera 0. */
-    renderer.Render(0, &fbb);
+    engine.RenderActiveScene("main", &fbb);
 
     std::print("Done\n");
 

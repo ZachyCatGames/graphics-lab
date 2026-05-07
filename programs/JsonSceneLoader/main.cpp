@@ -1,36 +1,113 @@
+#include <engine/eng_Engine.h>
 #include <engine/eng_HandleGraphicsArgs.h>
 #include <engine/eng_ObjectBase.h>
 #include <engine/eng_Scene.h>
-#include <engine/eng_SceneParser_JSON.h>
-#include <engine/eng_SceneLoader.h>
-#include <engine/eng_ThreadedRenderer.h>
-
-#include <engine/demo/demo_DrawFramebuffer.h>
-
-#include <array>
+#include <engine/framebuffer/fb_PngWriter.h>
 
 using namespace eng;
 
 int main(int argc, char** argv) {
-    /* Parse arguments. */
-    GraphicsArgs args;
-    args.process(argc, argv);
+    /* Setup the core engine context. */
+    Engine engine;
+    engine.Initialize(argc, argv);
 
-    /* Create our scene. */
-    Scene scene(args.recursionDepth);
+    /* Load the scene. */
+    const GraphicsArgs& args = engine.GetArguments();
+    std::shared_ptr<Scene> pScene = engine.LoadSceneFromJson(args.inputFileName);
 
-    /* Create our renderer. */
-    ThreadedRenderer renderer(&scene, args.width, args.height, args.rpp, args.randpix, args.numCpus);
+    /* Grab main camera. */
+    Handle<ICamera> camera = pScene->cameras.Get("main");
 
-    /* Setup our scene with objects from the specified JSON. */
-    auto scene_loader = std::make_shared<SceneLoader>(&renderer, &scene);
-    SceneParser_JSON parser(scene_loader);
-    parser.parseFileData(args.inputFileName);
+    Handle<RenderBuffer> renderBuffer = nullptr;
+    std::string renderString = engine.GetRenderString();
+    if (renderString == "opengl") {
+        renderBuffer = engine.GetDisplayRenderBuffer();
+    } else {
+        renderBuffer = engine.CreateExportableRenderBuffer(args.width, args.height);
+    }
+    assert(renderBuffer.IsValid());
 
-    /* Render the scene to a framebuffer. */
-    fb::Framebuffer fb(args.width, args.height);
-    renderer.Render(0, &fb);
+    if (renderString == "opengl") {
+        GLFWwindow* window = engine.GetGlfwWindow();
 
-    /* Write it out to a file. */
-    demo::DrawFramebuffer(fb);
+        /* Get image dims. */
+        size_t winWidth  = renderBuffer->GetWidth();
+        size_t winHeight = renderBuffer->GetHeight();
+
+        glm::mat4 modelMatrix, normalMatrix;
+        constexpr float sensitivity = 0.2f;
+        float rotationAngle = 0;
+        float lastX = winWidth / 2.0f;
+        float lastY = winHeight / 2.0f;
+        float yaw = 0;
+        float pitch = 0;
+        while (!glfwWindowShouldClose(window))
+        {
+            // Clear the window's buffer (or clear the screen to our
+            // background color)
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            /* Increment rotation angle. */
+            //mesh->IncrementRotationAngle(0.05);
+
+            /* Render your objects here */
+            /* (my amazing triangle) */
+            engine.RenderActiveScene("main", renderBuffer);
+
+            // Swap the front and back buffers
+            glfwSwapBuffers(window);
+
+            /* Poll for and process events */
+            glfwPollEvents();
+
+            /* Check for movement inputs. */
+            constexpr float moveRatePerFrame = 0.05;
+            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+                camera->MoveByW(-moveRatePerFrame);
+            }
+            if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+                camera->MoveByU(-moveRatePerFrame);
+            }
+            if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+                camera->MoveByW(moveRatePerFrame);
+            }
+            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+                camera->MoveByU(moveRatePerFrame);
+            }
+
+            /* Get mouse position. */
+            double xpos, ypos;
+            glfwGetCursorPos(window, &xpos, &ypos);
+
+            /* Calculate diffs + update previous pos. */
+            float xDiff = xpos - lastX;
+            float yDiff = ypos - lastY;
+            lastX = xpos;
+            lastY = ypos;
+
+            /* Increment and clamp yaw & pitch. */
+            yaw += xDiff * sensitivity;
+            pitch += yDiff * sensitivity;
+            if (pitch > 89.9f)
+                pitch = 89.9f;
+            else if (pitch < -89.9f)
+                pitch = -89.9f;
+
+            //std::cout << xpos << ", " << ypos << '\n';
+
+            camera->Rotate(pitch, yaw);
+
+            if (glfwGetKey( window, GLFW_KEY_T ) == GLFW_PRESS) {
+                //std::cout << "fps: " << 1.0/timeDiff << std::endl;
+            }
+            if (glfwGetKey( window, GLFW_KEY_ESCAPE ) == GLFW_PRESS) {
+                glfwSetWindowShouldClose(window, 1);
+            }
+        }
+    } else {
+        engine.RenderActiveScene("main", renderBuffer);
+        auto fb = renderBuffer.StaticCast<ExportableRenderBuffer>()->ExportToFramebuffer();
+        fb::PngWriter fbWriter("out.png");
+        fbWriter.WriteFramebuffer(fb);
+    }
 }

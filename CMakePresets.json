@@ -15,7 +15,6 @@
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "ENABLE_DEV_MODE": "ON",
         "ENABLE_TESTS": "ON",
-        "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_POLICY_VERSION_MINIMUM": "3.5",
         "CMAKE_BUILD_PARALLEL_LEVEL": "16",
         "CMAKE_BUILD_TYPE": "Debug"

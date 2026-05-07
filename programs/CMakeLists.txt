@@ -1,10 +1,11 @@
 # Add our main program subdirectory
 add_subdirectory(DiffuseDemo)
 add_subdirectory(JsonSceneLoader)
-add_subdirectory(LambertianDemo)
-add_subdirectory(PerspectiveDirectionDemo)
+#add_subdirectory(LambertianDemo)
+#add_subdirectory(PerspectiveDirectionDemo)
+add_subdirectory(ObjTest)
 
-add_subdirectory(TriChallenge)
+#add_subdirectory(TriChallenge)
 
 #
 # OpenGL Example
@@ -28,5 +29,5 @@ endif()
 #
 if (NOT ${CMAKE_SYSTEM_NAME} STREQUAL "NintendoSwitch")
   enable_testing()
-  add_subdirectory(utests)
+  #add_subdirectory(utests)
 endif()

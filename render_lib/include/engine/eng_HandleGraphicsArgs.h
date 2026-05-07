@@ -66,6 +66,8 @@ namespace eng {
     
     std::string inputFileName;
     std::string outputFileName;
+
+    std::string renderMode;
   };
 
 } // namespace eng

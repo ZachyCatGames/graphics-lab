@@ -9,30 +9,51 @@ add_library (render_lib
   sources/framebuffer/fb_PngWriter.cpp
 
   # Shader Library.
-  sources/shader/shdr_BlinnPhong.cpp
-  sources/shader/shdr_Diffuse.cpp
-  sources/shader/shdr_Lambertian.cpp
-  sources/shader/shdr_Mirror.cpp
-  sources/shader/shdr_NormalShader.cpp
+  sources/raytracer/shader/shdr_BlinnPhong.cpp
+  sources/raytracer/shader/shdr_Diffuse.cpp
+  sources/raytracer/shader/shdr_FlatColorShader.cpp
+  sources/raytracer/shader/shdr_Lambertian.cpp
+  sources/raytracer/shader/shdr_Mirror.cpp
+  sources/raytracer/shader/shdr_NormalShader.cpp
 
   # Shape Library
-  sources/shape/shape_Sphere.cpp
-  sources/shape/shape_Triangle.cpp
+  sources/raytracer/shape/shape_Mesh.cpp
+  sources/raytracer/shape/shape_Sphere.cpp
+  sources/raytracer/shape/shape_Triangle.cpp
 
   # Demo Library
-  sources/demo/demo_DrawFramebuffer.cpp
-  sources/demo/demo_SceneRenderHelper.cpp
+  #sources/demo/demo_DrawFramebuffer.cpp
+  #sources/demo/demo_SceneRenderHelper.cpp
 
   # Core Library.
   sources/eng_ArgumentParsing.cpp
-  sources/eng_Bvh.cpp
+  sources/eng_CameraBase.cpp
+  sources/eng_Engine.cpp
   sources/eng_HandleGraphicsArgs.cpp
-  sources/eng_PerspectiveCamera.cpp
-  sources/eng_RendererBase.cpp
+  sources/eng_model_obj.cpp
   sources/eng_Scene.cpp
   sources/eng_SceneLoader.cpp
   sources/eng_SceneParser_JSON.cpp
-  sources/eng_ThreadedRenderer.cpp
+  sources/GLSL.cpp
+
+  # RT Core Library
+  sources/raytracer/eng_Bvh.cpp
+  sources/raytracer/eng_ExportableRenderBuffer.cpp
+  sources/raytracer/eng_ObjectFactory.cpp
+  sources/raytracer/eng_PerspectiveCamera.cpp
+  sources/raytracer/eng_RayCaster.cpp
+  sources/raytracer/eng_RendererBase.cpp
+  sources/raytracer/eng_ThreadedRenderer.cpp
+
+  # GL Core Library
+  sources/gl/eng_BlinnPhong.cpp
+  sources/gl/eng_GlfwWindow.cpp
+  sources/gl/eng_Mesh.cpp
+  sources/gl/eng_ObjectFactory.cpp
+  sources/gl/eng_PerspectiveCamera.cpp
+  sources/gl/eng_Renderer.cpp
+  sources/gl/eng_Sphere.cpp
+  sources/gl/eng_Texture.cpp
 
   ${UTIL_PLAT_SRC}
 )
@@ -40,7 +61,24 @@ target_compile_definitions(render_lib PUBLIC HAS_GLM)
 target_link_libraries(render_lib PUBLIC Boost::program_options)
 #target_link_libraries(cs4212-util PUBLIC glm::glm)
 
+target_link_libraries (render_lib PRIVATE GLEW::GLEW)
+target_link_libraries (render_lib PRIVATE glfw)
+
+if(APPLE)
+    target_link_libraries(render_lib PRIVATE
+        "-framework OpenGL"
+        "-framework Cocoa"
+        "-framework IOKit"
+        "-framework CoreVideo"
+    )
+else()
+    target_link_libraries(render_lib PRIVATE OpenGL::GL)
+endif()
+
+
+
 target_include_directories(render_lib PUBLIC include)
 
 target_link_libraries(render_lib PRIVATE PNG::PNG)
+target_link_libraries (render_lib PRIVATE ZLIB::ZLIB)
 
