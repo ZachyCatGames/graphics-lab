@@ -2,6 +2,7 @@
 
 layout(location=0) out vec4 fragmentColor;
 
+uniform vec4 lightIntensity;
 uniform vec4 ambientLight;
 uniform vec4 diffuseComponent;
 uniform vec4 specularComponent;
@@ -28,5 +29,5 @@ void main(void) {
 
     //fragmentColor = vec4(diffuseShading + specularShading, 1.0);
 
-    fragmentColor = ambientLight + texture(textureSampler, textureUV) * vec4(diffuseShading + specularShading, 1.0);
+    fragmentColor = ambientLight + lightIntensity * texture(textureSampler, textureUV) * vec4(diffuseShading + specularShading, 1.0);
 }

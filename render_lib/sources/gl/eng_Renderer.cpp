@@ -1,6 +1,7 @@
 #include "engine/eng_ICamera.h"
 #include "engine/eng_IRenderer.h"
 #include "engine/gl/eng_PerspectiveCamera.h"
+#include "engine/shader/shdr_PointLight.h"
 #include <engine/gl/eng_IRenderable.h>
 #include <engine/gl/eng_Renderer.h>
 #include <engine/gl/eng_BlinnPhong.h>
@@ -54,6 +55,10 @@ void Renderer::Render(std::string_view cameraName, Handle<RenderBuffer> fb) {
         glm::mat4 modelMatrix  = mesh->GetModelMatrix();
         glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
 
+        /* TODO: Multi-light handling. */
+        /* Get light. */
+        const shdr::PointLight& light = m_Scene->GetPointLights()[0];
+
         /* Setup its shader. */
         /* NOTE: we only support BlinnPhong atm. */
         Handle<BlinnPhong> shader = mesh->GetShader().StaticCast<BlinnPhong>();
@@ -62,7 +67,8 @@ void Renderer::Render(std::string_view cameraName, Handle<RenderBuffer> fb) {
         shader->AssignModelMatrix(modelMatrix);
         shader->AssignNormalMatrix(normalMatrix);
         /* TODO: Multiple light handling. */
-        shader->AssignLightPosition(Vector4DF(m_Scene->GetPointLights()[0].position, 1.0));
+        shader->AssignLightPosition(Vector4DF(light.position, 1.0));
+        shader->AssignLightIntensity(Vector4DF(light.intensity, 1.0));
         shader->AssignEyePosition(Vector4DF(eyePosition, 1.0f));
 
         /* Render the mesh. */
