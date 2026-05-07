@@ -20,6 +20,8 @@ cmake --build .
 
 Your executables will then be in the build folder. They may be in sub-folders depending on the environment.
 
+If you plan on using the OpenGL renderer, you must also must manually copy the shader files in `gl-shaders` into the directory containing whichever executable you're running
+
 ## Running Demo Programs
 Demo programs for Diffuse / Lambertian shaders and the Json Scene loader are provided under the `programs` directory and are named `DiffuseDemo` and `JsonSceneLoader`, respectively.
 Executing them with `--help` passed as an argument will display their help text:
