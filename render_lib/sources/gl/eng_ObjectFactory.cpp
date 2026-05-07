@@ -31,7 +31,7 @@ Handle<IShape> ObjectFactory::CreateMesh(const std::vector<Vertex>& vertices, co
     return MakeSharedPooled<Mesh>(vertices, position, shader);
 }
 
-Handle<IShader> ObjectFactory::CreateLambertian(const Material& material, const std::vector<shdr::PointLight>& lights) {
+Handle<IShader> ObjectFactory::CreateLambertian(const Material& material) {
     /* Force specular to 0 and shininess to 1, this will effectively disable specular reflections. */
     Material mat {
         .texture      = material.texture,
@@ -40,11 +40,23 @@ Handle<IShader> ObjectFactory::CreateLambertian(const Material& material, const 
         .specular     = Vector3DF(0,0,0),
         .shininess    = 1
     };
-    return MakeSharedPooled<BlinnPhong>(mat, *lights.begin());
+    return MakeSharedPooled<BlinnPhong>(mat);
 }
 
-Handle<IShader> ObjectFactory::CreatePhong(const Material& material, const std::vector<shdr::PointLight>& lights) {
-    return MakeSharedPooled<BlinnPhong>(material, *lights.begin());
+Handle<IShader> ObjectFactory::CreatePhong(const Material& material) {
+    return MakeSharedPooled<BlinnPhong>(material);
+}
+
+Handle<IShader> ObjectFactory::CreateMirror() {
+    return nullptr;
+}
+
+Handle<IShader> ObjectFactory::CreateDiffuseShader(const Material& material) {
+    return nullptr;
+}
+
+Handle<IShader> ObjectFactory::CreateEmitter(const Material& material) {
+    return nullptr;
 }
 
 Handle<eng::Texture> ObjectFactory::CreateTexture(const float* textureData, size_t width, size_t height) {

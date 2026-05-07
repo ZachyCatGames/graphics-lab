@@ -26,13 +26,12 @@ Handle<Texture> GetDefaultTexture() {
 
 } // namespace
 
-BlinnPhong::BlinnPhong(const Material& material, shdr::PointLight light) :
+BlinnPhong::BlinnPhong(const Material& material) :
     m_texture(material.texture.StaticCast<Texture>()),
     m_ambientLight(material.ambientLight),
     m_diffuseComponent(material.diffuse),
     m_specularComponent(material.specular),
-    m_phongExponent(material.shininess),
-    m_lightPosition(Vector4DF(light.position, 1.0))
+    m_phongExponent(material.shininess)
 {
     /* Setup shader object w/ the blinn phong vertex and fragment shader. */
     m_shaderObject.addShader("vertexShader_BlinnPhong.glsl", sivelab::GLSLObject::VERTEX_SHADER);

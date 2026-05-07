@@ -61,7 +61,24 @@ target_compile_definitions(render_lib PUBLIC HAS_GLM)
 target_link_libraries(render_lib PUBLIC Boost::program_options)
 #target_link_libraries(cs4212-util PUBLIC glm::glm)
 
+target_link_libraries (render_lib PRIVATE GLEW::GLEW)
+target_link_libraries (render_lib PRIVATE glfw)
+
+if(APPLE)
+    target_link_libraries(render_lib PRIVATE
+        "-framework OpenGL"
+        "-framework Cocoa"
+        "-framework IOKit"
+        "-framework CoreVideo"
+    )
+else()
+    target_link_libraries(render_lib PRIVATE OpenGL::GL)
+endif()
+
+
+
 target_include_directories(render_lib PUBLIC include)
 
 target_link_libraries(render_lib PRIVATE PNG::PNG)
+target_link_libraries (render_lib PRIVATE ZLIB::ZLIB)
 

@@ -7,6 +7,8 @@ namespace eng::rt {
 Vector3DF RayCaster::CastRayIntoScene(const Ray& r, Interval<float> t_range, int depth) {
     /* Return black if we've reached the max recursion depth. */
     if (depth > m_maxDepth)
+        printf("%d\n", depth);
+    if (depth > m_maxDepth)
         return Vector3DF{0, 0, 0}; 
 
     /* Request the closest shape from our BVH. */
@@ -15,6 +17,8 @@ Vector3DF RayCaster::CastRayIntoScene(const Ray& r, Interval<float> t_range, int
         /* Return black if no shape was found. */
         return Vector3DF{0, 0, 0};
     }
+
+    closest_rec.r = r;
 
     /* Run the shape's shader if available. */
     auto& shader = closest_rec.shader;

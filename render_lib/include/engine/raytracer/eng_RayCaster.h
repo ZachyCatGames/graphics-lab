@@ -2,6 +2,7 @@
 #include <engine/eng_Scene.h>
 #include <engine/eng_Ray.h>
 #include <engine/raytracer/eng_Bvh.h>
+#include <memory>
 
 namespace eng::rt {
 
@@ -25,6 +26,8 @@ public:
     void Finalize() { m_scene.reset(); }
 
     [[nodiscard]] bool IsInitialized() const noexcept { return m_scene != nullptr; }
+
+    std::shared_ptr<Scene> GetScene() const { return m_scene; }
 
     void PrepareBvhTree();
 

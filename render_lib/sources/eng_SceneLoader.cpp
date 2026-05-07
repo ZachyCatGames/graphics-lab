@@ -69,30 +69,23 @@ void SceneLoader::addShader(const ISceneLoader::ShaderDesc &shaderDesc) {
     /* TODO: Move to a factory? */
     Handle<IShader> shader;
     if (shaderDesc.type == "Lambertian" || shaderDesc.type == "BlinnPhong" || shaderDesc.type == "Phong") {
-        const auto& lights    = m_pScene->GetPointLights();
         const auto& diffuse = shaderDesc.diffuse.data;
 
         /* Create base color. */
         auto base_color = Vector3DF(diffuse.x, diffuse.y, diffuse.z);
 
         if (shaderDesc.type == "Lambertian")
-            shader = m_pEngine->CreateLambertian(material, lights);
+            shader = m_pEngine->CreateLambertian(material);
         else /* if (shaderDesc.type == "BlinnPhong" || shaderDesc.type == "Phong") */
-            shader = m_pEngine->CreatePhong(material, lights);
+            shader = m_pEngine->CreatePhong(material);
 
     } else if (shaderDesc.type == "Mirror") {
-        //shader = shdr::Mirror::Create();
+        shader = m_pEngine->CreateMirror();
     } else if (shaderDesc.type == "Diffuse") {
         /* Create diffuse shader + its base color shader. */
-        const auto& diffuse = shaderDesc.diffuse.data;
-        //shader = shdr::Diffuse::Create(
-        //    shdr::FlatColor::Create(
-        //        Vector3DF(diffuse.x, diffuse.y, diffuse.z)
-        //    )
-        //);
+        shader = m_pEngine->CreateDiffuseShader(material);
     } else if (shaderDesc.type == "Emitter") {
-        const auto& color = shaderDesc.emission.data;
-        //shader = shdr::Emitter::Create(Vector3DF(color.x, color.y, color.z));
+        shader = m_pEngine->CreateEmitter(material);
     } else {
         std::cout << "Invalid shader type" << std::endl;
         return;

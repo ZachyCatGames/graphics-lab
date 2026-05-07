@@ -61,6 +61,8 @@ void Renderer::Render(std::string_view cameraName, Handle<RenderBuffer> fb) {
         shader->AssignViewMatrix(viewMatrix);
         shader->AssignModelMatrix(modelMatrix);
         shader->AssignNormalMatrix(normalMatrix);
+        /* TODO: Multiple light handling. */
+        shader->AssignLightPosition(Vector4DF(m_Scene->GetPointLights()[0].position, 1.0));
         shader->AssignEyePosition(Vector4DF(eyePosition, 1.0f));
 
         /* Render the mesh. */

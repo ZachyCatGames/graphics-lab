@@ -10,6 +10,9 @@
 
 #include <engine/raytracer/shader/shdr_BlinnPhong.h>
 #include <engine/raytracer/shader/shdr_Lambertian.h>
+#include <engine/raytracer/shader/shdr_Mirror.h>
+#include <engine/raytracer/shader/shdr_Diffuse.h>
+#include <engine/raytracer/shader/shdr_Emitter.h>
 
 #include <engine/raytracer/eng_ExportableRenderBuffer.h>
 
@@ -31,12 +34,24 @@ Handle<eng::IShape> ObjectFactory::CreateMesh(const std::vector<Vertex>& vertice
     return MakeSharedPooled<shape::Mesh>(vertices, position, shader.StaticCast<IShader>());
 }
 
-Handle<eng::IShader> ObjectFactory::CreateLambertian(const Material& material, const std::vector<eng::shdr::PointLight>& lights) {
-    return MakeSharedPooled<shdr::Lambertian>(material, lights);
+Handle<eng::IShader> ObjectFactory::CreateLambertian(const Material& material) {
+    return MakeSharedPooled<shdr::Lambertian>(material);
 }
 
-Handle<eng::IShader> ObjectFactory::CreatePhong(const Material& material, const std::vector<eng::shdr::PointLight>& lights) {
-    return MakeSharedPooled<shdr::BlinnPhong>(material, lights);
+Handle<eng::IShader> ObjectFactory::CreatePhong(const Material& material) {
+    return MakeSharedPooled<shdr::BlinnPhong>(material);
+}
+
+Handle<eng::IShader> ObjectFactory::CreateMirror() {
+    return MakeSharedPooled<shdr::Mirror>();
+}
+
+Handle<eng::IShader> ObjectFactory::CreateDiffuseShader(const Material& material) {
+    return MakeSharedPooled<shdr::Diffuse>(material);
+}
+
+Handle<eng::IShader> ObjectFactory::CreateEmitter(const Material& material) {
+    return MakeSharedPooled<shdr::Emitter>(material.ambientLight);
 }
 
 Handle<eng::Texture> ObjectFactory::CreateTexture(const float* textureData, size_t width, size_t height) {

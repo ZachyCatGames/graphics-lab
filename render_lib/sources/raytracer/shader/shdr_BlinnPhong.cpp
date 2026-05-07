@@ -8,7 +8,7 @@ Vector3DF BlinnPhong::GetColor(RayCaster* pRc, int depth, const HitStruct& rec) 
 
     Vector3DF light_sum;
 
-    for (const auto& light : m_lights) {
+    for (const auto& light : pRc->GetScene()->GetPointLights()) {
         /* Calculate ray from position to the light. */
         const Ray r {
             rec.position,

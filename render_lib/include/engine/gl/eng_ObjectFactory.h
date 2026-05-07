@@ -13,8 +13,11 @@ public:
     Handle<IShape> CreateTriangle(const Vector3DF& a, const Vector3DF& b, const Vector3DF& c, Handle<IShader> shader) override;
     Handle<IShape> CreateMesh(const std::vector<Vertex>& vertices, const Vector3DF& position, Handle<IShader> shader) override;
 
-    Handle<IShader> CreateLambertian(const Material& material, const std::vector<shdr::PointLight>& lights) override;
-    Handle<IShader> CreatePhong(const Material& material, const std::vector<shdr::PointLight>& lights) override;
+    Handle<IShader> CreateLambertian(const Material& material) override;
+    Handle<IShader> CreatePhong(const Material& material) override;
+    Handle<eng::IShader> CreateMirror() override;
+    Handle<eng::IShader> CreateDiffuseShader(const Material& material) override;
+    Handle<eng::IShader> CreateEmitter(const Material& material) override;
 
     Handle<eng::Texture> CreateTexture(const float* textureData, size_t width, size_t height) override;
 

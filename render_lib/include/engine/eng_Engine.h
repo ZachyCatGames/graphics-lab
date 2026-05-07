@@ -14,12 +14,11 @@ namespace eng {
 
 class Engine {
 public:
-    int Initialize(const GraphicsArgs& args);
     int Initialize(int argc, char** argv);
 
-    [[nodiscard]] IObjectFactory* GetObjectFactory() const { return m_pObjFactory.get(); }
-
     [[nodiscard]] std::string GetRenderString() const { return m_renderMode; }
+
+    [[nodiscard]] const GraphicsArgs& GetArguments() const { return m_gArgs; }
 
     /** Window APIs. */
     [[nodiscard]] GLFWwindow* GetGlfwWindow() const { return m_pWindow; }
@@ -29,7 +28,12 @@ public:
     /* NOTE: This is for debugging!!! */
     [[nodiscard]] IRenderer* GetRenderer() const { return m_pRenderer.get(); }
 
+    /* Scene management. */
     [[nodiscard]] const auto& GetActiveScene() const { return m_pActiveScene; }
+
+    void SetActiveScene(std::shared_ptr<Scene>& pScene) { m_pActiveScene = std::move(pScene); }
+
+    std::shared_ptr<Scene> LoadSceneFromJson(std::string_view jsonPath, bool assignActive = false);
 
     void RenderActiveScene(std::string_view cameraName, const Handle<RenderBuffer>& fb) {
         m_pRenderer->PreRender();
@@ -37,10 +41,12 @@ public:
         m_pRenderer->Render(cameraName, fb);
     }
 
+    /* Renderbuffer management. */
     const Handle<RenderBuffer>& GetDisplayRenderBuffer() {
         return m_displayRenderBuffer;
     }
 
+    /* Texture creation. */
     Handle<Texture> OpenTextureFromPNG(std::string_view path);
 
     /* Object creation wrappers. */
@@ -58,11 +64,20 @@ public:
         return m_pObjFactory->CreateMesh(vertices, position, shader);
     }
 
-    Handle<IShader> CreateLambertian(const Material& material, const std::vector<shdr::PointLight>& lights) {
-        return m_pObjFactory->CreateLambertian(material, lights);
+    Handle<IShader> CreateLambertian(const Material& material) {
+        return m_pObjFactory->CreateLambertian(material);
     }
-    Handle<IShader> CreatePhong(const Material& material, const std::vector<shdr::PointLight>& lights) {
-        return m_pObjFactory->CreatePhong(material, lights);
+    Handle<IShader> CreatePhong(const Material& material) {
+        return m_pObjFactory->CreatePhong(material);
+    }
+    Handle<IShader> CreateMirror() {
+        return m_pObjFactory->CreateMirror();
+    }
+    Handle<IShader> CreateDiffuseShader(const Material& material) {
+        return m_pObjFactory->CreateDiffuseShader(material);
+    }
+    Handle<IShader> CreateEmitter(const Material& material) {
+        return m_pObjFactory->CreateEmitter(material);
     }
 
     Handle<Texture> CreateTexture(const float* textureData, size_t width, size_t height) {

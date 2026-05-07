@@ -1,5 +1,7 @@
+#include "engine/eng_SceneParser_JSON.h"
 #include "engine/gl/eng_IRenderable.h"
 #include <engine/eng_Engine.h>
+#include <engine/eng_SceneLoader.h>
 
 #include <engine/raytracer/eng_ObjectFactory.h>
 #include <engine/raytracer/eng_ThreadedRenderer.h>
@@ -105,6 +107,24 @@ int Engine::Initialize(int argc, char** argv) {
     }
 
     return 0;
+}
+
+std::shared_ptr<Scene> Engine::LoadSceneFromJson(std::string_view jsonPath, bool assignActive) {
+    /* Create the new scene. */
+    auto pScene = std::make_shared<Scene>();
+
+    /* Setup Scene loader. */
+    auto pSceneLoader = std::make_shared<SceneLoader>(pScene, this, static_cast<size_t>(m_gArgs.width), static_cast<size_t>(m_gArgs.height));
+
+    /* And parse the JSON. */
+    SceneParser_JSON parser(pSceneLoader);
+    parser.parseFileData(std::string(jsonPath));
+
+    /* Assign it as the active scene if requested. */
+    if (assignActive)
+        this->SetActiveScene(pScene);
+
+    return pScene;
 }
 
 Handle<Texture> Engine::OpenTextureFromPNG(std::string_view path) {

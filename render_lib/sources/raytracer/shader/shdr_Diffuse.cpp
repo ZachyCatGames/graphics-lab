@@ -18,12 +18,9 @@ Vector3DF Diffuse::GetColor(RayCaster* pRc, int depth, const HitStruct& rec) {
         }
     }
 
-    /* Obtain base color from base shader. */
-    const auto base_color = m_shader->GetColor(pRc, depth, rec);
-
     const Ray r(rec.position, direction + rec.normal);
 
-    return base_color * pRc->CastRayIntoScene(r, {0.001, std::numeric_limits<float>::infinity()}, depth+1);
+    return m_Material.diffuse * pRc->CastRayIntoScene(r, {0.001, std::numeric_limits<float>::infinity()}, depth+1);
 }
 
 } // namespace eng::shdr
