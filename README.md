@@ -58,6 +58,12 @@ Additionally, `--winwidth` and `--winheight` should be specific when using the O
 
 The DiffuseDemo demo works as-is for both rendering modes, the `JsonSceneLoader` demo _also_ works but some scene may appear differently or only work under one or the other.
 
+Supported shaders are different between the renderers are different, with the raytracer supporting additional Diffuse, Mirror, and Emitter shaders.
+For interoperability, simpler replacements are provided for these when using the OpenGL renderer, but they don't function acurrately (e.g., the mirror shader just shades objects gray).
+The raytracer engine also supports global illumination and shadows, while the OpenGL one currently does not.
+I'm not sure why, but the scaling of objects also appears to be different between the renderers(?)
+Objects appear smaller in the OpenGL renderer, this might be an FoV thing, but I'm not sure.
+
 I would also _strongly_ recommend passing `--numcpus` for the diffuse shader demo, otherwise it'll take an eternity to finish (it will still take an eternity to finish).
  
 
