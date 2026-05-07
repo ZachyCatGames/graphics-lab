@@ -21,7 +21,7 @@ cmake --build .
 Your executables will then be in the build folder. They may be in sub-folders depending on the environment.
 
 ## Running Demo Programs
-Demo programs for the Lambertian and Diffuse shaders are provided under the `programs` directory and are named `LambertianDemo` and `DiffuseDemo`.
+Demo programs for Diffuse / Lambertian shaders and the Json Scene loader are provided under the `programs` directory and are named `DiffuseDemo` and `JsonSceneLoader`, respectively.
 Executing them with `--help` passed as an argument will display their help text:
 ```
 zachary@fedora:~/Projects/UMD/CS5212/project/buildRelease/programs/LambertianDemo$ ./LambertianDemo  --help
@@ -44,10 +44,19 @@ Allowed options:
                               objectMedian)
   -x [ --winwidth ] arg       width of window (if using preview)
   -y [ --winheight ] arg      height of window (if using preview)
+  -z [ --rendermode ] arg     select renderer, opengl or raytracer
 ```
 
-Not all options have an effect on both programs (e.g., `--rpp` has no effect on `LambertianDemo`).
-I would _strongly_ recommend passing `--numcpus` for the diffuse shader demo, otherwise it'll take an eternity to finish.
+`--rendermode` can be used to switch between the opengl and raytracer rendering engines.
+Some options pertaining to rays (`rpp`, `recusionDepth`, `randpix`, etc) have no effect when using the OpenGL renderer.
+
+When using the OpenGL renderers, a window will open displaying your scene; the raytracer engine currently produces an image in the background and exports the results to `./out.png`.
+`--width` and `--height` should be used to choose the rendering resolution when using the raytracer.
+Additionally, `--winwidth` and `--winheight` should be specific when using the OpenGL renderer.
+
+The DiffuseDemo demo works as-is for both rendering modes, the `JsonSceneLoader` demo _also_ works but some scene may appear differently or only work under one or the other.
+
+I would also _strongly_ recommend passing `--numcpus` for the diffuse shader demo, otherwise it'll take an eternity to finish (it will still take an eternity to finish).
  
 
 ## Development Environment Setup
