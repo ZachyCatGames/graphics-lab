@@ -11,20 +11,12 @@
 
 using namespace eng;
 
-
-constexpr int img_width  = 2000;
-constexpr int img_height = 2000;
-
     constexpr float vp_height = 2.0;
     constexpr float vp_width  = 0.5;
 
     constexpr eng::Vector3DF pos{0, 5, 0};
     constexpr eng::Vector3DF dir = Vector3DF{0.0, 0, -1.0};
     constexpr float foc_len = 0.2;
-
-    constexpr auto aspect_ratio = static_cast<float>(img_width) / img_height;
-
-fb::Framebuffer fbb(img_width, img_height);
 
 int main(int argc, char** argv) {
 
@@ -40,13 +32,13 @@ int main(int argc, char** argv) {
     });
 
     Handle<IShader> redShader = engine.CreateEmitter({
-        .ambientLight = Vector3DF(55,0,0)
+        .ambientLight = Vector3DF(1,0,0)
     });
     Handle<IShader> greenShader = engine.CreateEmitter({
-        .ambientLight = Vector3DF(0,55,0)
+        .ambientLight = Vector3DF(0,1,0)
     });
     Handle<IShader> blueShader = engine.CreateEmitter({
-        .ambientLight = Vector3DF(0,0,55)
+        .ambientLight = Vector3DF(0,0,1)
     });
 
     scene->shaders.Insert("groundShader", gndShader);
@@ -85,6 +77,9 @@ int main(int argc, char** argv) {
         })
     );
     scene->shapes.Insert("light", emitter);
+
+    /* Add a point light at the same location. */
+    scene->EmplacePointLight({0, 30, -1}, {7,7,7});
 
     /* Create a sphere. */
     auto sphere = engine.CreateSphere(eng::Vector3DF{4, 6, -10}, 5,
